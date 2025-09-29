@@ -118,11 +118,15 @@
       grep = "rg";
       find = "fd";
 
+      # Editor shortcuts
+      vim = "nvim";
+
       # Git shortcuts
       g = "git";
       gs = "git status";
       gd = "git diff";
       gc = "git commit";
+      gcm = "git commit -m";
       gp = "git push";
       gl = "git pull";
 
@@ -142,6 +146,21 @@
       hms = "home-manager switch --flake ~/dev/dotfiles#$(whoami)@macos";
       hme = "nvim ~/dev/dotfiles/home/common.nix";
     };
+
+    envExtra = ''
+      # Nix daemon setup (critical for system reliability)
+      if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+        . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+      fi
+
+      # Add Nix profiles to PATH (essential for nix and home-manager)
+      if [ -e "$HOME/.nix-profile/bin" ]; then
+        export PATH="$HOME/.nix-profile/bin:$PATH"
+      fi
+      if [ -e '/nix/var/nix/profiles/default/bin' ]; then
+        export PATH="/nix/var/nix/profiles/default/bin:$PATH"
+      fi
+    '';
 
     initContent = ''
       # Better history searching
@@ -294,7 +313,7 @@
 
   # Config files that are directly symlinked from our dotfiles repo
   home.file = {
-    # Zed editor settings - you can edit this file directly!
-    ".config/zed/settings.json".source = ../config/zed/settings.json;
+    # Zed editor settings - commented out since config file doesn't exist
+    # ".config/zed/settings.json".source = ../config/zed/settings.json;
   };
 }

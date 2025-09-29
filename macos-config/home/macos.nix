@@ -6,6 +6,11 @@
 }: {
   # macOS-specific packages
   home.packages = with pkgs; [
+    # Terminal emulators
+    # ghostty # Has build issues on macOS due to Wayland dependencies
+    # You can install Ghostty directly from https://ghostty.org for macOS
+    alacritty # Fast, cross-platform terminal (works great on macOS)
+
     # Development tools that are particularly useful on macOS
     cocoapods # iOS development
     xcbuild # Xcode build tool
