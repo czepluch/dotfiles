@@ -4,7 +4,9 @@
       "WebFetch(domain:search.nixos.org)",
       "WebSearch",
       "Bash(nix flake check:*)",
-      "Read(//nix/store/x8ndl9vx1scdlbj519y44qpr0cdah01v-home-manager/bin/**)"
+      "Read(//nix/store/x8ndl9vx1scdlbj519y44qpr0cdah01v-home-manager/bin/**)",
+      "Bash(htop:*)",
+      "Bash(lspci:*)"
     ],
     "deny": [],
     "ask": []

@@ -12,9 +12,18 @@
     };
     # Latest kernel for better hardware support
     kernelPackages = pkgs.linuxPackages_latest;
+    kernelParams = [
+        "amdgpu.dcdebugmask=0x12"
+        "iommu=pt"
+        "pcie_aspm=force"  # Enable ASPM for power saving
+        "amdgpu.ppfeaturemask=0xffffffff"  # Enable all power features
+        "amdgpu.dpm=1"  # Enable dynamic power management
+    ];
     # Clean /tmp on boot
     tmp.cleanOnBoot = true;
   };
+  
+  hardware.enableRedistributableFirmware = true;
 
   # Network configuration
   networking = {
@@ -71,6 +80,13 @@
     enable32Bit = true;
   };
 
+  # AMD GPU Configuration
+  services.xserver.videoDrivers = [ "amdgpu" ];
+  hardware.amdgpu = {
+    initrd.enable = true;
+    opencl.enable = false;  # Disable OpenCL if not needed
+  };
+
   # Bluetooth
   hardware.bluetooth = {
     enable = true;
@@ -98,6 +114,17 @@
     unzip
     pciutils  # lspci
     usbutils  # lsusb
+
+    # Power management
+    powertop
+
+    # GPU tools
+    radeontop  # AMD GPU monitoring
+    lm_sensors  # Temperature monitoring
+
+    # Network tools
+    networkmanager-openvpn
+    networkmanagerapplet
   ];
 
   # Enable shells
@@ -166,9 +193,6 @@
     };
   };
 
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
-
   # System state version - DON'T CHANGE after initial install
-  system.stateVersion = "24.05";
+  system.stateVersion = "25.05";
 }

@@ -18,11 +18,26 @@
     ];
   };
 
-  # Login manager (SDDM with Wayland support)
-  services.displayManager.sddm = {
+  # Login manager - greetd with tuigreet
+  services.greetd = {
     enable = true;
-    wayland.enable = true;
-    # theme = "where_is_my_sddm_theme";  # Remove custom theme for now
+    settings = {
+      default_session = {
+        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --remember --remember-session --cmd Hyprland";
+        user = "greeter";
+      };
+    };
+  };
+
+  # Allow greetd to access the seat
+  systemd.services.greetd.serviceConfig = {
+    Type = "idle";
+    StandardInput = "tty";
+    StandardOutput = "tty";
+    StandardError = "journal";
+    TTYReset = true;
+    TTYVHangup = true;
+    TTYVTDisallocate = true;
   };
 
   # Polkit (for authentication prompts)
@@ -71,6 +86,13 @@
 
     # Flatpak support (optional)
     flatpak.enable = true;
+  };
+
+  # Logind configuration for lid switch
+  services.logind = {
+    lidSwitch = "lock";  # Lock (not suspend) when lid closes
+    lidSwitchDocked = "ignore";  # Don't do anything when docked
+    lidSwitchExternalPower = "lock";  # Lock even when plugged in
   };
 
   # Environment variables for Wayland

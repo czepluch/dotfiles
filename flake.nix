@@ -27,6 +27,9 @@
       url = "gitlab:rycee/nur-expressions?dir=pkgs/firefox-addons";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Catppuccin theme
+    catppuccin.url = "github:catppuccin/nix";
   };
 
   outputs = { self, nixpkgs, nixpkgs-stable, home-manager, hyprland, nixos-hardware, ... }@inputs:
@@ -67,7 +70,6 @@
       # Common arguments passed to all modules
       commonArgs = {
         inherit inputs userConfig;
-        inherit pkgs pkgs-stable;
       };
 
     in {
@@ -78,6 +80,10 @@
           inherit system;
           specialArgs = commonArgs;
           modules = [
+            ({ config, ... }: {
+              nixpkgs.pkgs = pkgsFor system;
+	      _module.args.pkgs-stable = pkgs-stable;
+	    })
             # Hardware (generated during installation)
             ./hardware-configuration.nix
 
@@ -94,9 +100,7 @@
 
             # Hardware optimizations (uncomment for your hardware)
             # nixos-hardware.nixosModules.common-gpu-amd
-            # nixos-hardware.nixosModules.common-gpu-nvidia-nonprime
             # nixos-hardware.nixosModules.common-cpu-amd
-            # nixos-hardware.nixosModules.common-cpu-intel
           ];
         };
       };
@@ -115,11 +119,13 @@
 
             # Choose your profile (comment out others)
             # ./home/profiles/developer.nix  # Heavy dev tools
-            ./home/profiles/base.nix        # Base setup
             # ./home/profiles/creative.nix
 
             # Hyprland Home Manager module
             hyprland.homeManagerModules.default
+
+            # Catppuccin theme module
+            inputs.catppuccin.homeModules.catppuccin
           ];
         };
       };
