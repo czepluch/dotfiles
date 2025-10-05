@@ -221,11 +221,11 @@
         "$mod, k, movefocus, u"
         "$mod, j, movefocus, d"
 
-        # Move focus with arrow keys
-        "$mod, left, movefocus, l"
-        "$mod, right, movefocus, r"
-        "$mod, up, movefocus, u"
-        "$mod, down, movefocus, d"
+        # Resize windows with arrow keys
+        "$mod, left, resizeactive, -80 0"
+        "$mod, right, resizeactive, 80 0"
+        "$mod, up, resizeactive, 0 -80"
+        "$mod, down, resizeactive, 0 80"
 
         # Workspaces
         "$mod, 1, workspace, 1"
@@ -279,11 +279,6 @@
         # Color picker
         "$mod SHIFT, C, exec, hyprpicker -a" # Pick color and copy to clipboard
       ];
-
-      # Lid switch - handled by hypridle's before_sleep_cmd
-      # bindl = [
-      #   ", switch:on:Lid Switch, exec, loginctl lock-session"
-      # ];
 
       # Mouse bindings
       bindm = [
