@@ -1,13 +1,8 @@
 NixOS fix list
-- Broken boot disk loading for 90 seconds
-- Launch hyprland on boot
 - Power management
-- Cursor pointer
 - AMD driver (potentially rollback changes in config)
-- Emoji and icon support
 - Monitor refresh rate (dynamic)
-- zed settings, extensions consistency (login)
-- fix monitor scaling
 - fingerprint unlock
-- copy/paste in terminal
-- don't turn off laptop when pressing the power button shortly. Just do nothing unless holding the power button for a longer duration.
+- bluelight hyprsunet reconfig
+- easy switch power profile, on battery use low power for battery life (done), but we need to fix that we switch to performance when needed
+- IR camera setup continued (howdy add) (doesn't work for now)

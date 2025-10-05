@@ -9,8 +9,8 @@
   # Catppuccin theme - global settings
   catppuccin = {
     enable = true;
-    flavor = "mocha";  # Options: latte, frappe, macchiato, mocha
-    accent = "mauve";  # Options: rosewater, flamingo, pink, mauve, red, maroon, peach, yellow, green, teal, sky, sapphire, blue, lavender
+    flavor = "mocha"; # Options: latte, frappe, macchiato, mocha
+    accent = "mauve"; # Options: rosewater, flamingo, pink, mauve, red, maroon, peach, yellow, green, teal, sky, sapphire, blue, lavender
   };
 
   # Cursor theme
@@ -28,38 +28,44 @@
     firefox
 
     # File management
-    nautilus  # GNOME file manager (lighter than dolphin)
+    nautilus # GNOME file manager (lighter than dolphin)
 
     # Media
     vlc
-    mpv  # Lightweight video player
+    mpv # Lightweight video player
 
     # System utilities
     pavucontrol
     gnome-calculator
     eog # Image viewer
-    brightnessctl  # Screen brightness control
-    playerctl  # Media player control
+    brightnessctl # Screen brightness control
+    playerctl # Media player control
 
     # Hyprland essentials
     waybar
     wofi
     mako
-    font-awesome  # Icon fonts for waybar
+    font-awesome # Icon fonts for waybar
     swww # Wallpaper daemon
     grimblast # Screenshots
-    swaylock-effects
+    hyprlock # Hyprland's native screen locker
     hypridle
-    wl-clipboard  # Wayland clipboard utilities
+    hyprsunset # Screen color temperature adjustment (like redshift/f.lux)
+    hyprpicker # Color picker utility
+    hyprsysteminfo # System information utility
+    hyprpolkitagent # Hyprland's polkit authentication agent
+    wl-clipboard # Wayland clipboard utilities
 
     # Code
-    zed-editor
+    # Note: These packages auto-update from nixpkgs-unstable
+    # Run 'nix flake update' periodically to get latest versions
+    zed-editor # Latest: check with 'nix eval nixpkgs#zed-editor.version'
     claude-code
     bitwarden-desktop
 
     # Terminal
-    kitty  # Alternative GPU-accelerated terminal
-    warp-terminal  # Modern terminal with AI features
+    kitty # Alternative GPU-accelerated terminal
+    warp-terminal # Latest: check with 'nix eval nixpkgs#warp-terminal.version'
   ];
 
   # Basic Firefox configuration
@@ -70,7 +76,7 @@
       isDefault = true;
       name = "default";
 
-      extensions.force = true;  # Allow Catppuccin module to manage extensions
+      extensions.force = true; # Allow Catppuccin module to manage extensions
 
       settings = {
         "privacy.trackingprotection.enabled" = true;
@@ -88,16 +94,23 @@
     package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
 
     settings = {
+      # Environment variables for scaling
+      env = [
+        "XCURSOR_SIZE,24"
+        "GDK_SCALE,1.5"
+        "GDK_DPI_SCALE,1"
+        "ELECTRON_OZONE_PLATFORM_HINT,wayland" # Force Electron apps to use Wayland for proper scaling
+      ];
       # Performance optimizations
       debug = {
         disable_logs = true;
-        damage_tracking = 2;  # Full damage tracking for better performance
+        damage_tracking = 2; # Full damage tracking for better performance
       };
 
       misc = {
-        force_default_wallpaper = 0;  # Disable anime wallpaper
-        vfr = true;  # Variable frame rate
-        vrr = 0;  # Disable VRR
+        force_default_wallpaper = 0; # Disable anime wallpaper
+        vfr = true; # Variable frame rate
+        vrr = 0; # Disable VRR
         disable_hyprland_logo = true;
         disable_splash_rendering = true;
       };
@@ -113,7 +126,7 @@
         kb_options = "grp:ctrl_space_toggle,caps:escape";
         follow_mouse = 1;
         touchpad = {
-          natural_scroll = true;  # Mac-style scrolling
+          natural_scroll = true; # Mac-style scrolling
           disable_while_typing = true;
         };
         sensitivity = 0;
@@ -129,16 +142,21 @@
         layout = "dwindle";
       };
 
+      # XWayland settings - fixes blurry/pixelated apps
+      xwayland = {
+        force_zero_scaling = true;
+      };
+
       # Cursor settings
       cursor = {
-        no_warps = true;  # Prevent cursor warping
+        no_warps = true; # Prevent cursor warping
       };
 
       # Decoration - reduced for performance
       decoration = {
         rounding = 5;
         blur = {
-          enabled = false;  # Disable blur for major CPU savings
+          enabled = false; # Disable blur for major CPU savings
           size = 3;
           passes = 1;
         };
@@ -149,7 +167,7 @@
         enabled = true;
         bezier = "myBezier, 0.05, 0.9, 0.1, 1.05";
         animation = [
-          "windows, 1, 3, myBezier"  # Faster animations
+          "windows, 1, 3, myBezier" # Faster animations
           "windowsOut, 1, 3, default, popin 80%"
           "border, 1, 5, default"
           "fade, 1, 3, default"
@@ -165,9 +183,9 @@
 
       # Window rules
       windowrulev2 = [
-	"float,class:^(pavucontrol)$"
-	"float,class:^(blueman-manager)$"
-	"float,class:^(Calculator)$"
+        "float,class:^(pavucontrol)$"
+        "float,class:^(blueman-manager)$"
+        "float,class:^(Calculator)$"
         "float,class:^(firefox)$,title:^(Picture-in-Picture)$"
         "pin,class:^(firefox)$,title:^(Picture-in-Picture)$"
         # Disable opacity for performance
@@ -176,8 +194,11 @@
         # Fix blurry text for specific apps
         "forcergbx,class:^(dev.warp.Warp)$"
         "forcergbx,class:^(Bitwarden)$"
-        "rounding 0,class:^(dev.warp.Warp)$"  # Disable rounding for sharper text
+        "rounding 0,class:^(dev.warp.Warp)$" # Disable rounding for sharper text
         "rounding 0,class:^(Bitwarden)$"
+        "noblur,class:^(dev.warp.Warp)$"
+        "noshadow,class:^(dev.warp.Warp)$"
+        "xray 0,class:^(dev.warp.Warp)$" # Disable transparency
       ];
 
       # Key bindings
@@ -237,7 +258,7 @@
         # Screenshots - Mac-like (copy + save)
         ", Print, exec, grimblast --notify copysave area"
         "$mod, Print, exec, grimblast --notify copysave screen"
-        "$mod SHIFT, Print, exec, grimblast --notify save area"  # Save only (no copy)
+        "$mod SHIFT, Print, exec, grimblast --notify save area" # Save only (no copy)
 
         # Media keys
         ", XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
@@ -251,12 +272,18 @@
         # Brightness (if laptop)
         ", XF86MonBrightnessUp, exec, brightnessctl s 10%+"
         ", XF86MonBrightnessDown, exec, brightnessctl s 10%-"
+
+        # Night light (blue light filter)
+        "$mod SHIFT, N, exec, pkill hyprsunset || hyprsunset -t 3400" # Toggle night mode
+
+        # Color picker
+        "$mod SHIFT, C, exec, hyprpicker -a" # Pick color and copy to clipboard
       ];
 
-      # Lid switch - lock when lid closes
-      bindl = [
-        ", switch:on:Lid Switch, exec, loginctl lock-session"
-      ];
+      # Lid switch - handled by hypridle's before_sleep_cmd
+      # bindl = [
+      #   ", switch:on:Lid Switch, exec, loginctl lock-session"
+      # ];
 
       # Mouse bindings
       bindm = [
@@ -269,6 +296,8 @@
         "waybar"
         "mako"
         "swww-daemon"
+        "hyprpolkitagent"
+        "hyprsunset -t 4500" # Start with warm color temp (toggle with Super+Shift+N)
         "[workspace special:magic silent] alacritty"
         "hypridle"
       ];
@@ -282,7 +311,7 @@
       mainBar = {
         layer = "top";
         position = "top";
-        height = 32;
+        height = 40;
 
         modules-left = ["hyprland/workspaces"];
         modules-center = ["hyprland/window"];
@@ -291,23 +320,23 @@
         "hyprland/workspaces" = {
           format = "{icon}";
           format-icons = {
-            "1" = "🌐";  # Browser/Web
-            "2" = "💻";  # Code/Development
-            "3" = "📧";  # Email/Communication
-            "4" = "🎵";  # Music/Media
-            "5" = "📁";  # Files/Documents
+            "1" = "󰈹"; # Browser/Web
+            "2" = "󰅩"; # Code/Development
+            "3" = "󰇰"; # Email/Communication
+            "4" = "󰝚"; # Music/Media
+            "5" = "󰉋"; # Files/Documents
             "6" = "6";
             "7" = "7";
             "8" = "8";
             "9" = "9";
             "10" = "10";
-            "default" = "";
+            "default" = "󰋜";
           };
           disable-scroll = true;
           all-outputs = true;
           on-click = "activate";
           persistent-workspaces = {
-            "*" = 5;  # Show 5 workspaces on all monitors
+            "*" = 5; # Show 5 workspaces on all monitors
           };
         };
 
@@ -316,7 +345,7 @@
         };
 
         "hyprland/language" = {
-          format = "🌐 {}";
+          format = "󰌌 {}";
           format-en = "us";
           format-da = "dk";
           tooltip = false;
@@ -324,8 +353,8 @@
         };
 
         clock = {
-          format = "🕐 {:%H:%M}";
-          format-alt = "📅 {:%A, %B %d, %Y}";
+          format = "󰥔 {:%H:%M}";
+          format-alt = "󰃭 {:%A, %B %d, %Y}";
           tooltip-format = "<tt><small>{calendar}</small></tt>";
           calendar = {
             mode = "month";
@@ -338,14 +367,14 @@
         };
 
         cpu = {
-          format = "💻 {usage}%";
+          format = "󰻠 {usage}%";
           interval = 2;
           tooltip = true;
         };
 
         memory = {
-          format = "🧠 {}%";
-          format-alt = "🧠 {used:0.1f}G/{total:0.1f}G";
+          format = "󰍛 {}%";
+          format-alt = "󰍛 {used:0.1f}G/{total:0.1f}G";
           interval = 2;
           tooltip = true;
           tooltip-format = "Memory: {used:0.1f}GiB / {total:0.1f}GiB\nSwap: {swapUsed:0.1f}GiB / {swapTotal:0.1f}GiB";
@@ -358,20 +387,20 @@
             critical = 15;
           };
           format = "{icon} {capacity}%";
-          format-charging = "⚡ {capacity}%";
-          format-plugged = "🔌 {capacity}%";
-          format-full = "✅ Full";
-          format-icons = ["🪫" "🔋" "🔋" "🔋" "🔋"];
+          format-charging = "󰂄 {capacity}%";
+          format-plugged = "󰚥 {capacity}%";
+          format-full = "󰁹 Full";
+          format-icons = ["󰂎" "󰁺" "󰁻" "󰁼" "󰁽"];
           interval = 10;
           tooltip = true;
           tooltip-format = "Battery: {capacity}%\n{timeTo}";
         };
 
         network = {
-          format-wifi = "📶 {signalStrength}%";
-          format-ethernet = "🌐 Connected";
-          format-linked = "🔗 (No IP)";
-          format-disconnected = "❌ Disconnected";
+          format-wifi = "󰤨 {signalStrength}%";
+          format-ethernet = "󰈀 Connected";
+          format-linked = "󰈀 (No IP)";
+          format-disconnected = "󰤭 Disconnected";
           format-alt = "{ifname}: {ipaddr}/{cidr}";
           tooltip = true;
           tooltip-format = "Interface: {ifname}\nSSID: {essid}\nIP: {ipaddr}\nSignal: {signalStrength}%\n↓ {bandwidthDownBits} ↑ {bandwidthUpBits}";
@@ -380,17 +409,17 @@
 
         pulseaudio = {
           format = "{icon} {volume}%";
-          format-bluetooth = "{icon} {volume}% 🎧";
-          format-bluetooth-muted = "🔇 🎧";
-          format-muted = "🔇";
+          format-bluetooth = "{icon} {volume}% 󰂯";
+          format-bluetooth-muted = "󰝟 󰂯";
+          format-muted = "󰝟";
           format-icons = {
-            headphone = "🎧";
-            hands-free = "🎧";
-            headset = "🎧";
-            phone = "📱";
-            portable = "🔊";
-            car = "🚗";
-            default = ["🔈" "🔉" "🔊"];
+            headphone = "󰋋";
+            hands-free = "󰋎";
+            headset = "󰋎";
+            phone = "󰏲";
+            portable = "󰜟";
+            car = "󰄋";
+            default = ["󰕿" "󰖀" "󰕾"];
           };
           tooltip = true;
           tooltip-format = "Volume: {volume}%\n{desc}";
@@ -400,7 +429,7 @@
         };
 
         backlight = {
-          format = "☀️ {percent}%";
+          format = "󰃞 {percent}%";
           tooltip = true;
           on-scroll-up = "brightnessctl s 5%+";
           on-scroll-down = "brightnessctl s 5%-";
@@ -410,8 +439,8 @@
           thermal-zone = 2;
           hwmon-path = "/sys/class/hwmon/hwmon2/temp1_input";
           critical-threshold = 80;
-          format = "🌡️ {temperatureC}°C";
-          format-critical = "🔥 {temperatureC}°C";
+          format = "󰔏 {temperatureC}°C";
+          format-critical = "󰸁 {temperatureC}°C";
           tooltip = true;
         };
 
@@ -427,13 +456,13 @@
         border: none;
         border-radius: 0;
         font-family: "JetBrainsMono Nerd Font", monospace;
-        font-size: 13px;
+        font-size: 15px;
         min-height: 0;
       }
 
       window#waybar {
         background-color: rgba(30, 30, 46, 0.9);
-        border-bottom: 3px solid rgba(203, 166, 247, 0.8);
+        border-bottom: 3px solid rgba(116, 199, 236, 0.8);  /* Sapphire blue for distinction */
         color: #cdd6f4;
       }
 
@@ -443,7 +472,7 @@
       }
 
       #workspaces button.active {
-        background-color: #cba6f7;
+        background-color: rgba(116, 199, 236, 0.8);
         color: #1e1e2e;
       }
 
@@ -575,6 +604,12 @@
   # Changes in Zed will be reflected in the dotfiles repo
   xdg.configFile."zed/settings.json".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/config/zed/settings.json";
 
+  # GNOME Keyring - for storing credentials
+  services.gnome-keyring = {
+    enable = true;
+    components = ["secrets"];
+  };
+
   # Notification daemon
   services.mako.settings = {
     enable = true;
@@ -587,17 +622,75 @@
     defaultTimeout = 5000;
   };
 
-  # Screen locker
-  programs.swaylock = {
+  # Screen locker - Hyprlock (Hyprland native)
+  programs.hyprlock = {
     enable = true;
-    package = pkgs.swaylock-effects;
     settings = {
-      color = "1e1e2e";
-      font-size = 24;
-      indicator-idle-visible = false;
-      indicator-radius = 100;
-      show-failed-attempts = true;
-      effect-blur = "9x5";
+      general = {
+        disable_loading_bar = true;
+        hide_cursor = true;
+        grace = 0;
+      };
+
+      background = [
+        {
+          path = "screenshot";
+          blur_passes = 3;
+          blur_size = 8;
+        }
+      ];
+
+      input-field = [
+        {
+          size = "300, 50";
+          position = "0, -80";
+          monitor = "eDP-1"; # Specify primary monitor to avoid duplicate input fields
+          dots_center = true;
+          fade_on_empty = false;
+          font_color = "rgb(cdd6f4)";
+          inner_color = "rgb(1e1e2e)";
+          outer_color = "rgb(cba6f7)";
+          outline_thickness = 2;
+          placeholder_text = "<span foreground=\"##a6adc8\">Password...</span>";
+          shadow_passes = 2;
+        }
+      ];
+
+      label = [
+        {
+          # Time
+          monitor = "";
+          text = "cmd[update:1000] echo \"<b><big> $(date +\"%H:%M:%S\") </big></b>\"";
+          color = "rgb(cdd6f4)";
+          font_size = 64;
+          font_family = "JetBrainsMono Nerd Font";
+          position = "0, 150";
+          halign = "center";
+          valign = "center";
+        }
+        {
+          # Date
+          monitor = "";
+          text = "cmd[update:1000] echo \"<b> $(date +\"%A, %B %d\") </b>\"";
+          color = "rgb(a6adc8)";
+          font_size = 24;
+          font_family = "JetBrainsMono Nerd Font";
+          position = "0, 50";
+          halign = "center";
+          valign = "center";
+        }
+        {
+          # User
+          monitor = "";
+          text = "  $USER";
+          color = "rgb(cba6f7)";
+          font_size = 18;
+          font_family = "JetBrainsMono Nerd Font";
+          position = "0, -20";
+          halign = "center";
+          valign = "center";
+        }
+      ];
     };
   };
 
@@ -692,9 +785,9 @@
     enable = true;
     settings = {
       general = {
-        before_sleep_cmd = "loginctl lock-session";  # Lock before suspend
+        before_sleep_cmd = "loginctl lock-session"; # Lock before suspend
         after_sleep_cmd = "hyprctl dispatch dpms on";
-        lock_cmd = "pidof swaylock || swaylock";  # Avoid multiple instances
+        lock_cmd = "pidof hyprlock || hyprlock"; # Avoid multiple instances
       };
 
       listener = [
@@ -705,7 +798,7 @@
         }
         {
           timeout = 120;
-          on-timeout = "loginctl lock-session";  # Use loginctl for proper lock
+          on-timeout = "loginctl lock-session"; # Use loginctl for proper lock
         }
         {
           timeout = 150;

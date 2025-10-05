@@ -1,8 +1,11 @@
 # Core NixOS System Configuration
 # Essential system-level settings that need root access
-{ config, pkgs, userConfig, ... }:
-
 {
+  config,
+  pkgs,
+  userConfig,
+  ...
+}: {
   # Boot configuration
   boot = {
     loader = {
@@ -13,16 +16,16 @@
     # Latest kernel for better hardware support
     kernelPackages = pkgs.linuxPackages_latest;
     kernelParams = [
-        "amdgpu.dcdebugmask=0x12"
-        "iommu=pt"
-        "pcie_aspm=force"  # Enable ASPM for power saving
-        "amdgpu.ppfeaturemask=0xffffffff"  # Enable all power features
-        "amdgpu.dpm=1"  # Enable dynamic power management
+      "amdgpu.dcdebugmask=0x12"
+      "iommu=pt"
+      "pcie_aspm=force" # Enable ASPM for power saving
+      "amdgpu.ppfeaturemask=0xffffffff" # Enable all power features
+      "amdgpu.dpm=1" # Enable dynamic power management
     ];
     # Clean /tmp on boot
     tmp.cleanOnBoot = true;
   };
-  
+
   hardware.enableRedistributableFirmware = true;
 
   # Network configuration
@@ -64,6 +67,7 @@
 
   # Audio with PipeWire (modern audio server)
   security.rtkit.enable = true;
+
   services.pipewire = {
     enable = true;
     alsa = {
@@ -81,10 +85,10 @@
   };
 
   # AMD GPU Configuration
-  services.xserver.videoDrivers = [ "amdgpu" ];
+  services.xserver.videoDrivers = ["amdgpu"];
   hardware.amdgpu = {
     initrd.enable = true;
-    opencl.enable = false;  # Disable OpenCL if not needed
+    opencl.enable = false; # Disable OpenCL if not needed
   };
 
   # Bluetooth
@@ -94,11 +98,14 @@
   };
   services.blueman.enable = true;
 
+  # Power button behavior - ignore short press
+  services.logind.settings.Login.HandlePowerKey = "ignore";
+
   # User account
   users.users.${userConfig.username} = {
     isNormalUser = true;
     description = userConfig.name;
-    extraGroups = [ "wheel" "networkmanager" "audio" "video" "input" "uucp" ];
+    extraGroups = ["wheel" "networkmanager" "audio" "video" "input" "uucp"];
     shell = pkgs.zsh;
   };
 
@@ -112,15 +119,15 @@
     htop
     tree
     unzip
-    pciutils  # lspci
-    usbutils  # lsusb
+    pciutils # lspci
+    usbutils # lsusb
 
     # Power management
     powertop
 
     # GPU tools
-    radeontop  # AMD GPU monitoring
-    lm_sensors  # Temperature monitoring
+    radeontop # AMD GPU monitoring
+    lm_sensors # Temperature monitoring
 
     # Network tools
     networkmanager-openvpn
@@ -130,6 +137,15 @@
   # Enable shells
   programs.zsh.enable = true;
   programs.fish.enable = true;
+
+  # Enable nix-ld for running dynamically linked executables (e.g., Mason LSP servers)
+  programs.nix-ld.enable = true;
+  programs.nix-ld.libraries = with pkgs; [
+    stdenv.cc.cc.lib
+    zlib
+    openssl
+    curl
+  ];
 
   # Fonts
   fonts = {
@@ -150,10 +166,10 @@
 
     fontconfig = {
       defaultFonts = {
-        serif = [ "Noto Serif" ];
-        sansSerif = [ "Noto Sans" ];
-        monospace = [ "JetBrainsMono Nerd Font" ];
-        emoji = [ "Noto Color Emoji" ];
+        serif = ["Noto Serif"];
+        sansSerif = ["Noto Sans"];
+        monospace = ["JetBrainsMono Nerd Font"];
+        emoji = ["Noto Color Emoji"];
       };
     };
   };
@@ -162,17 +178,17 @@
   nix = {
     settings = {
       # Enable flakes and new command-line tool
-      experimental-features = [ "nix-command" "flakes" ];
+      experimental-features = ["nix-command" "flakes"];
 
       # Optimize storage
       auto-optimise-store = true;
 
       # Build performance
       max-jobs = "auto";
-      cores = 0;  # Use all cores
+      cores = 0; # Use all cores
 
       # Trusted users for binary cache
-      trusted-users = [ "root" "@wheel" ];
+      trusted-users = ["root" "@wheel"];
 
       # Substituters for faster downloads
       substituters = [

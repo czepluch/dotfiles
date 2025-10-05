@@ -1,8 +1,11 @@
 # Base Home Manager Configuration
 # Essential user-level settings and packages
-{ config, pkgs, userConfig, ... }:
-
 {
+  config,
+  pkgs,
+  userConfig,
+  ...
+}: {
   # Home Manager basics
   home = {
     username = userConfig.username;
@@ -12,36 +15,58 @@
     # Essential user packages
     packages = with pkgs; [
       # Terminal and shell utilities
-      alacritty             # Backup terminal
-      eza                   # Better ls
-      ripgrep               # Better grep
-      fd                    # Better find
-      bat                   # Better cat
-      fzf                   # Fuzzy finder
-      zoxide                # Smart cd
-      starship              # Shell prompt
-      tmux                  # Terminal multiplexer
+      alacritty # Backup terminal
+      eza # Better ls
+      ripgrep # Better grep
+      fd # Better find
+      bat # Better cat
+      fzf # Fuzzy finder
+      zoxide # Smart cd
+      starship # Shell prompt
+      tmux # Terminal multiplexer
 
       # File management
-      ranger                # TUI file manager
-      file                  # File type detection
-      tree                  # Directory tree view
-      du-dust               # Better du
-      duf                   # Better df
+      ranger # TUI file manager
+      file # File type detection
+      tree # Directory tree view
+      du-dust # Better du
+      duf # Better df
 
       # System monitoring
-      btop                  # Better htop
-      bandwhich             # Network usage monitor
-      hyperfine             # Benchmarking tool
+      btop # Better htop
+      bandwhich # Network usage monitor
+      hyperfine # Benchmarking tool
+      fastfetch # System info display (for flex/rice screenshots)
 
       # Text processing
-      jq                    # JSON processor
-      yq-go                 # YAML processor
+      jq # JSON processor
+      yq-go # YAML processor
 
       # Network tools
       wget
       curl
       rsync
+      httpie # Better curl for APIs
+      gping # Ping with a graph
+
+      # Git workflow
+      lazygit # TUI for git
+      delta # Better git diff viewer
+      gh # GitHub CLI
+
+      # Productivity
+      tealdeer # Quick command references (tldr)
+
+      # Programming languages
+      rustup # Rust toolchain manager
+      gleam # Gleam language
+      nixd # Nix language server
+      alejandra # Nix formatter
+
+      # Neovim/LazyVim dependencies
+      gcc # Required for treesitter
+      lua-language-server
+      stylua # Lua formatter
     ];
   };
 
@@ -54,14 +79,27 @@
     userName = userConfig.name;
     userEmail = userConfig.email;
 
+    delta = {
+      enable = true;
+      options = {
+        navigate = true;
+        light = false;
+        line-numbers = true;
+        side-by-side = false;
+        syntax-theme = "Catppuccin-mocha";
+      };
+    };
+
     extraConfig = {
       init.defaultBranch = "main";
       push.autoSetupRemote = true;
       pull.rebase = true;
-      core.editor = "zed --wait";  # Use VS Code as editor
+      core.editor = "zed --wait"; # Use Zed as editor
 
-      # Better diffs
+      # Better diffs with delta
       diff.algorithm = "histogram";
+      diff.colorMoved = "default";
+      merge.conflictstyle = "diff3";
 
       # Useful aliases
       alias = {
@@ -129,11 +167,11 @@
         "history"
         "fzf"
       ];
-      theme = "robbyrussell";  # Will be overridden by Starship
+      theme = "robbyrussell"; # Will be overridden by Starship
     };
 
     # Additional shell configuration
-    initExtra = ''
+    initContent = ''
       # Initialize zoxide
       eval "$(zoxide init zsh)"
 
@@ -216,6 +254,78 @@
       set-option -g renumber-windows on
     '';
   };
+
+  # Neovim with LazyVim
+  programs.neovim = {
+    enable = true;
+    defaultEditor = true;
+    viAlias = true;
+    vimAlias = true;
+  };
+
+  # LazyVim configuration files
+  xdg.configFile."nvim/init.lua".text = ''
+    -- Bootstrap lazy.nvim
+    local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+    if not vim.loop.fs_stat(lazypath) then
+      vim.fn.system({
+        "git",
+        "clone",
+        "--filter=blob:none",
+        "https://github.com/folke/lazy.nvim.git",
+        "--branch=stable",
+        lazypath,
+      })
+    end
+    vim.opt.rtp:prepend(lazypath)
+
+    -- Load LazyVim
+    require("lazy").setup({
+      spec = {
+        { "LazyVim/LazyVim", import = "lazyvim.plugins" },
+        { import = "plugins" },
+      },
+      defaults = {
+        lazy = false,
+        version = false,
+      },
+      checker = { enabled = false },
+      performance = {
+        rtp = {
+          disabled_plugins = {
+            "gzip",
+            "tarPlugin",
+            "tohtml",
+            "tutor",
+            "zipPlugin",
+          },
+        },
+      },
+    })
+  '';
+
+  xdg.configFile."nvim/lua/config/lazy.lua".text = ''
+    return {}
+  '';
+
+  xdg.configFile."nvim/lua/config/options.lua".text = ''
+    -- Options are automatically loaded before lazy.nvim startup
+    vim.g.mapleader = " "
+    vim.g.maplocalleader = "\\"
+  '';
+
+  xdg.configFile."nvim/lua/config/keymaps.lua".text = ''
+    -- Keymaps are automatically loaded
+  '';
+
+  xdg.configFile."nvim/lua/config/autocmds.lua".text = ''
+    -- Autocmds are automatically loaded
+  '';
+
+  xdg.configFile."nvim/lua/plugins/init.lua".text = ''
+    -- Custom plugins can be added here
+    return {}
+  '';
 
   # Alacritty terminal configuration
   programs.alacritty = {

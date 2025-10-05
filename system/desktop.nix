@@ -1,8 +1,11 @@
 # Desktop Environment Configuration
 # Hyprland and related services
-{ config, pkgs, inputs, ... }:
-
 {
+  config,
+  pkgs,
+  inputs,
+  ...
+}: {
   # Enable Hyprland
   programs.hyprland = {
     enable = true;
@@ -14,7 +17,7 @@
   xdg.portal = {
     enable = true;
     extraPortals = with pkgs; [
-      xdg-desktop-portal-gtk  # For file picker
+      xdg-desktop-portal-gtk # For file picker
     ];
   };
 
@@ -23,7 +26,7 @@
     enable = true;
     settings = {
       default_session = {
-        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --remember --remember-session --cmd Hyprland";
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-session --cmd Hyprland";
         user = "greeter";
       };
     };
@@ -42,21 +45,6 @@
 
   # Polkit (for authentication prompts)
   security.polkit.enable = true;
-
-  # Polkit authentication agent (for GUI password prompts)
-  systemd.user.services.polkit-kde-authentication-agent-1 = {
-    description = "polkit-kde-authentication-agent-1";
-    wantedBy = [ "graphical-session.target" ];
-    wants = [ "graphical-session.target" ];
-    after = [ "graphical-session.target" ];
-    serviceConfig = {
-      Type = "simple";
-      ExecStart = "${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1";
-      Restart = "on-failure";
-      RestartSec = 1;
-      TimeoutStopSec = 10;
-    };
-  };
 
   # Essential desktop services
   services = {
@@ -84,15 +72,25 @@
     upower.enable = true;
     power-profiles-daemon.enable = true;
 
+    # Auto-switch power profiles based on AC status
+    udev.extraRules = ''
+      # Switch to power-saver when on battery
+      SUBSYSTEM=="power_supply", ATTR{online}=="0", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set power-saver"
+      # Switch to balanced when plugged in
+      SUBSYSTEM=="power_supply", ATTR{online}=="1", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced"
+    '';
+
     # Flatpak support (optional)
     flatpak.enable = true;
   };
 
   # Logind configuration for lid switch
-  services.logind = {
-    lidSwitch = "lock";  # Lock (not suspend) when lid closes
-    lidSwitchDocked = "ignore";  # Don't do anything when docked
-    lidSwitchExternalPower = "lock";  # Lock even when plugged in
+  services.logind.settings = {
+    Login = {
+      HandleLidSwitch = "suspend"; # Suspend when lid closes
+      HandleLidSwitchDocked = "ignore"; # Don't do anything when docked
+      HandleLidSwitchExternalPower = "suspend"; # Suspend even when plugged in
+    };
   };
 
   # Environment variables for Wayland
@@ -117,24 +115,24 @@
   # System packages for desktop environment
   environment.systemPackages = with pkgs; [
     # Wayland utilities
-    wl-clipboard          # Clipboard utilities
-    wlr-randr            # Monitor configuration
-    wayland-utils        # Wayland info tools
+    wl-clipboard # Clipboard utilities
+    wlr-randr # Monitor configuration
+    wayland-utils # Wayland info tools
 
     # Screenshot and screen recording
-    grim                 # Screenshot tool
-    slurp                # Area selection for screenshots
-    wf-recorder          # Screen recorder
+    grim # Screenshot tool
+    slurp # Area selection for screenshots
+    wf-recorder # Screen recorder
 
     # File manager and archives
-    xfce.thunar          # File manager
-    xfce.thunar-volman   # Volume management
-    xarchiver            # Archive manager
+    xfce.thunar # File manager
+    xfce.thunar-volman # Volume management
+    xarchiver # Archive manager
 
     # Basic GUI applications
-    pavucontrol          # Audio control
+    pavucontrol # Audio control
     gnome-calculator
-    eog                  # Image viewer
+    eog # Image viewer
 
     # Theme and appearance
     libsForQt5.qt5.qtquickcontrols2
