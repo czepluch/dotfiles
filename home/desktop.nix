@@ -212,6 +212,7 @@
         "$mod, E, exec, thunar"
         "$mod, V, togglefloating"
         "$mod, D, exec, wofi --show drun"
+        "$mod, W, exec, wofi --show window"
         "$mod, P, pseudo"
         "$mod, J, togglesplit"
 
@@ -254,6 +255,10 @@
         # Special workspace (scratchpad)
         "$mod, S, togglespecialworkspace, magic"
         "$mod SHIFT, S, movetoworkspace, special:magic"
+
+        # Workspace navigation
+        "$mod, TAB, workspace, e+1"
+        "$mod SHIFT, TAB, workspace, e-1"
 
         # Screenshots - Mac-like (copy + save)
         ", Print, exec, grimblast --notify copysave area"
@@ -654,7 +659,7 @@
       label = [
         {
           # Time
-          monitor = "";
+          monitor = "eDP-1";
           text = "cmd[update:1000] echo \"<b><big> $(date +\"%H:%M:%S\") </big></b>\"";
           color = "rgb(cdd6f4)";
           font_size = 64;
@@ -665,7 +670,7 @@
         }
         {
           # Date
-          monitor = "";
+          monitor = "eDP-1";
           text = "cmd[update:1000] echo \"<b> $(date +\"%A, %B %d\") </b>\"";
           color = "rgb(a6adc8)";
           font_size = 24;
@@ -676,7 +681,7 @@
         }
         {
           # User
-          monitor = "";
+          monitor = "eDP-1";
           text = "  $USER";
           color = "rgb(cba6f7)";
           font_size = 18;
@@ -780,7 +785,7 @@
     enable = true;
     settings = {
       general = {
-        before_sleep_cmd = "loginctl lock-session"; # Lock before suspend
+        before_sleep_cmd = "pidof hyprlock || hyprlock"; # Lock before suspend
         after_sleep_cmd = "hyprctl dispatch dpms on";
         lock_cmd = "pidof hyprlock || hyprlock"; # Avoid multiple instances
       };
