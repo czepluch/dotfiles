@@ -223,6 +223,47 @@
         truncation_length = 3;
         format = "[$path]($style)[$read_only]($read_only_style) ";
       };
+
+      # Language support
+      rust = {
+        disabled = false;
+        format = "[$symbol($version )]($style)";
+      };
+
+      gleam = {
+        disabled = false;
+        format = "[$symbol($version )]($style)";
+      };
+
+      solidity = {
+        disabled = false;
+        format = "[$symbol($version )]($style)";
+      };
+
+      nodejs = {
+        disabled = false;
+        format = "[$symbol($version )]($style)";
+      };
+
+      python = {
+        disabled = false;
+        format = "[$symbol($version )]($style)";
+      };
+
+      nix_shell = {
+        disabled = false;
+        format = "[$symbol$state( \\($name\\))]($style) ";
+      };
+
+      package = {
+        disabled = false;
+        format = "[$symbol$version]($style) ";
+      };
+
+      docker_context = {
+        disabled = false;
+        format = "[$symbol$context]($style) ";
+      };
     };
   };
 

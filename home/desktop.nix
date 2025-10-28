@@ -55,6 +55,7 @@
     hyprsysteminfo # System information utility
     hyprpolkitagent # Hyprland's polkit authentication agent
     wl-clipboard # Wayland clipboard utilities
+    cliphist # Clipboard history manager
 
     # Code
     # Note: These packages auto-update from nixpkgs-unstable
@@ -281,6 +282,9 @@
         # Night light (blue light filter)
         "$mod SHIFT, N, exec, pkill hyprsunset || hyprsunset -t 3400" # Toggle night mode
 
+        # Clipboard history
+        "$mod, V, exec, cliphist list | wofi --dmenu | cliphist decode | wl-copy" # Show clipboard history
+
         # Color picker
         "$mod SHIFT, C, exec, hyprpicker -a" # Pick color and copy to clipboard
       ];
@@ -300,6 +304,8 @@
         "hyprsunset -t 4500" # Start with warm color temp (toggle with Super+Shift+N)
         "[workspace special:magic silent] alacritty"
         "hypridle"
+        "wl-paste --type text --watch cliphist store" # Clipboard history for text
+        "wl-paste --type image --watch cliphist store" # Clipboard history for images
       ];
     };
   };
@@ -437,7 +443,7 @@
 
         temperature = {
           thermal-zone = 2;
-          hwmon-path = "/sys/class/hwmon/hwmon2/temp1_input";
+          # hwmon-path removed - let waybar auto-detect for stability across reboots/kernel updates
           critical-threshold = 80;
           format = "󰔏 {temperatureC}°C";
           format-critical = "󰸁 {temperatureC}°C";
@@ -630,6 +636,7 @@
         disable_loading_bar = true;
         hide_cursor = true;
         grace = 0;
+        # Fade animations enabled (default) - race condition fixed by logind delay
       };
 
       background = [
@@ -644,7 +651,7 @@
         {
           size = "300, 50";
           position = "0, -80";
-          monitor = "eDP-1"; # Specify primary monitor to avoid duplicate input fields
+          monitor = ""; # Empty string = all monitors (shows on focused/primary)
           dots_center = true;
           fade_on_empty = false;
           font_color = "rgb(cdd6f4)";
@@ -659,7 +666,7 @@
       label = [
         {
           # Time
-          monitor = "eDP-1";
+          monitor = ""; # Empty string = all monitors
           text = "cmd[update:1000] echo \"<b><big> $(date +\"%H:%M:%S\") </big></b>\"";
           color = "rgb(cdd6f4)";
           font_size = 64;
@@ -670,7 +677,7 @@
         }
         {
           # Date
-          monitor = "eDP-1";
+          monitor = ""; # Empty string = all monitors
           text = "cmd[update:1000] echo \"<b> $(date +\"%A, %B %d\") </b>\"";
           color = "rgb(a6adc8)";
           font_size = 24;
@@ -681,7 +688,7 @@
         }
         {
           # User
-          monitor = "eDP-1";
+          monitor = ""; # Empty string = all monitors
           text = "  $USER";
           color = "rgb(cba6f7)";
           font_size = 18;
@@ -785,7 +792,9 @@
     enable = true;
     settings = {
       general = {
-        before_sleep_cmd = "pidof hyprlock || hyprlock"; # Lock before suspend
+        # When lid closes, logind triggers suspend which calls this first
+        # Lock screen and wait briefly for initialization before allowing suspend
+        before_sleep_cmd = "pidof hyprlock || hyprlock & sleep 0.5";
         after_sleep_cmd = "hyprctl dispatch dpms on";
         lock_cmd = "pidof hyprlock || hyprlock"; # Avoid multiple instances
       };
@@ -798,12 +807,17 @@
         }
         {
           timeout = 120;
-          on-timeout = "loginctl lock-session"; # Use loginctl for proper lock
+          on-timeout = "pidof hyprlock || hyprlock"; # Direct lock - avoid loginctl race conditions
         }
         {
           timeout = 150;
           on-timeout = "hyprctl dispatch dpms off";
           on-resume = "hyprctl dispatch dpms on";
+        }
+        {
+          # Suspend after 10 minutes of inactivity (only on battery)
+          timeout = 600;
+          on-timeout = "if cat /sys/class/power_supply/BAT*/status | grep -q Discharging; then systemctl suspend; fi";
         }
       ];
     };

@@ -78,6 +78,10 @@
       SUBSYSTEM=="power_supply", ATTR{online}=="0", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set power-saver"
       # Switch to balanced when plugged in
       SUBSYSTEM=="power_supply", ATTR{online}=="1", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced"
+
+      # Battery low notifications
+      SUBSYSTEM=="power_supply", ATTR{status}=="Discharging", ATTR{capacity}=="[0-9]", RUN+="${pkgs.libnotify}/bin/notify-send -u critical 'Battery Critical' 'Battery at %s{capacity}%% - Plug in now!'"
+      SUBSYSTEM=="power_supply", ATTR{status}=="Discharging", ATTR{capacity}=="1[0-5]", RUN+="${pkgs.libnotify}/bin/notify-send -u normal 'Battery Low' 'Battery at %s{capacity}%% - Consider plugging in'"
     '';
 
     # Flatpak support (optional)
@@ -85,12 +89,12 @@
   };
 
   # Logind configuration for lid switch
-  services.logind.settings = {
-    Login = {
-      HandleLidSwitch = "suspend"; # Suspend when lid closes
-      HandleLidSwitchDocked = "ignore"; # Don't do anything when docked
-      HandleLidSwitchExternalPower = "suspend"; # Suspend even when plugged in
-    };
+  # Triggers suspend, which calls hypridle's before_sleep_cmd to lock first
+  # This ensures proper lock → suspend sequence
+  services.logind.settings.Login = {
+    HandleLidSwitch = "suspend";
+    HandleLidSwitchDocked = "ignore";
+    HandleLidSwitchExternalPower = "suspend";
   };
 
   # Environment variables for Wayland

@@ -122,6 +122,9 @@
     pciutils # lspci
     usbutils # lsusb
 
+    # Command runner (for justfile)
+    just
+
     # Power management
     powertop
 
