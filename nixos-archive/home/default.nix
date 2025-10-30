@@ -29,7 +29,7 @@
       ranger # TUI file manager
       file # File type detection
       tree # Directory tree view
-      du-dust # Better du
+      dust # Better du
       duf # Better df
 
       # System monitoring
@@ -420,5 +420,9 @@
       templates = "${config.home.homeDirectory}/templates";
       publicShare = "${config.home.homeDirectory}/public";
     };
+
+    # Claude Code system-wide configuration
+    # This symlinks the config from dotfiles so it's tracked in git
+    configFile."claude/CLAUDE.md".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/config/claude/CLAUDE.md";
   };
 }

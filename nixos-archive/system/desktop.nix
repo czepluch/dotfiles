@@ -88,9 +88,7 @@
     flatpak.enable = true;
   };
 
-  # Logind configuration for lid switch
-  # Triggers suspend, which calls hypridle's before_sleep_cmd to lock first
-  # This ensures proper lock → suspend sequence
+  # Logind configuration for lid switch behavior
   services.logind.settings.Login = {
     HandleLidSwitch = "suspend";
     HandleLidSwitchDocked = "ignore";

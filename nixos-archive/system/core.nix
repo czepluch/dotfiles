@@ -21,6 +21,8 @@
       "pcie_aspm=force" # Enable ASPM for power saving
       "amdgpu.ppfeaturemask=0xffffffff" # Enable all power features
       "amdgpu.dpm=1" # Enable dynamic power management
+      "atkbd.reset=1" # Force keyboard controller reset on resume (fixes suspend/resume keyboard issues)
+      "i8042.reset=1" # Reset i8042 PS/2 controller on resume (additional fix for keyboard wake issues)
     ];
     # Clean /tmp on boot
     tmp.cleanOnBoot = true;
@@ -161,7 +163,7 @@
       # System fonts
       noto-fonts
       noto-fonts-cjk-sans
-      noto-fonts-emoji
+      noto-fonts-color-emoji
       # Programming fonts
       source-code-pro
       hack-font

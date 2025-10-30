@@ -636,7 +636,6 @@
         disable_loading_bar = true;
         hide_cursor = true;
         grace = 0;
-        # Fade animations enabled (default) - race condition fixed by logind delay
       };
 
       background = [
@@ -792,9 +791,7 @@
     enable = true;
     settings = {
       general = {
-        # When lid closes, logind triggers suspend which calls this first
-        # Lock screen and wait briefly for initialization before allowing suspend
-        before_sleep_cmd = "pidof hyprlock || hyprlock & sleep 0.5";
+        before_sleep_cmd = "pidof hyprlock || hyprlock";
         after_sleep_cmd = "hyprctl dispatch dpms on";
         lock_cmd = "pidof hyprlock || hyprlock"; # Avoid multiple instances
       };
@@ -807,7 +804,7 @@
         }
         {
           timeout = 120;
-          on-timeout = "pidof hyprlock || hyprlock"; # Direct lock - avoid loginctl race conditions
+          on-timeout = "loginctl lock-session";
         }
         {
           timeout = 150;
