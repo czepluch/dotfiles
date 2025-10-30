@@ -5,8 +5,6 @@ Quick reference for setting up a new system.
 ## Git Config
 
 ```
-Name: Jacob Czepluch
-Email: j.czepluch@proton.me
 Editor: zed --wait
 Default branch: main
 ```
