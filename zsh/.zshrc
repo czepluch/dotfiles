@@ -39,10 +39,10 @@ export EDITOR=nvim
 export VISUAL=nvim
 
 # Modern CLI tool replacements
-alias ls='eza --icons -a'
+alias ls='eza --icons'
 alias ll='eza -la --icons'
 alias la='eza -a --icons'
-alias lt='eza --tree --level=2 --icons -a'
+alias lt='eza --tree --level=2 --icons'
 alias l='eza -lah --icons'
 alias cat='bat'
 alias batp='bat --paging=always'
