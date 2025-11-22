@@ -1,0 +1,7 @@
+# Ignore node/bun dependencies and lock files
+node_modules/
+bun.lock
+package.json
+
+# Keep only AGENTS.md
+!AGENTS.md
