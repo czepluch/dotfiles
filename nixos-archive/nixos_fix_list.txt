@@ -1,8 +1,0 @@
-NixOS fix list
-- Power management
-- AMD driver (potentially rollback changes in config)
-- Monitor refresh rate (dynamic)
-- fingerprint unlock
-- bluelight hyprsunet reconfig
-- easy switch power profile, on battery use low power for battery life (done), but we need to fix that we switch to performance when needed
-- IR camera setup continued (howdy add) (doesn't work for now)
