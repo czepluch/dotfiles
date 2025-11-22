@@ -15,6 +15,9 @@ setopt hist_save_no_dups      # Don't write duplicate entries to history file
 setopt hist_reduce_blanks     # Remove superfluous blanks from history
 setopt hist_verify            # Show command with history expansion before running it
 
+# Include hidden files in tab completion
+setopt globdots
+
 # History search with arrow keys
 # Type a few letters and press up/down to search history starting with those letters
 autoload -U up-line-or-beginning-search
