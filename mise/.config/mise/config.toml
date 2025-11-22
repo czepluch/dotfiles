@@ -1,0 +1,5 @@
+[tools]
+foundry = "latest"
+gleam = "latest"
+node = "lts"
+solidity = "latest"

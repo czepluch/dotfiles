@@ -1,0 +1,233 @@
+/* =============================================================================
+ * Base2Tone Field Dark Theme for Waybar
+ * Matches Kitty terminal theme - Clean minimal design
+ * ============================================================================= */
+
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "JetBrainsMono Nerd Font";
+    font-size: 13px;
+    min-height: 0;
+}
+
+/* Base2Tone Field Dark Colors (matching Kitty theme) */
+@define-color bg        #18201e;  /* background */
+@define-color fg        #8ea4a0;  /* foreground - muted teal-gray */
+@define-color surface   #242e2c;  /* slightly lighter bg */
+@define-color border    #42524f;  /* subtle border */
+
+/* Accent colors - teal/turquoise and bright field green */
+@define-color teal      #40ddc3;  /* medium teal */
+@define-color teal-bright #88f2e0;  /* bright teal */
+@define-color teal-deep #25d0b4;  /* deep teal */
+@define-color green     #3be381;  /* bright field green */
+@define-color green-bright #55ec94;  /* brighter green */
+@define-color green-light #85ffb8;  /* light green/yellow */
+
+/* Status colors */
+@define-color warning   #85ffb8;  /* light green for warnings */
+@define-color critical  #0fbda0;  /* teal-red for critical */
+
+window#waybar {
+    background: alpha(@bg, 0.95);
+    color: @fg;
+    border-radius: 0;
+}
+
+/* Workspaces */
+#workspaces {
+    background: @surface;
+    margin: 4px 4px 4px 6px;
+    padding: 0 2px;
+    border-radius: 8px;
+}
+
+#workspaces button {
+    padding: 0 6px;
+    color: @fg;
+    background: transparent;
+    border-radius: 6px;
+    margin: 3px 1px;
+    transition: all 0.3s ease;
+}
+
+#workspaces button:hover {
+    background: @border;
+    color: @teal-bright;
+}
+
+#workspaces button.active {
+    background: @teal;
+    color: @bg;
+}
+
+#workspaces button.urgent {
+    background: @critical;
+    color: @bg;
+    animation: blink 1s ease-in-out infinite;
+}
+
+/* Window Title */
+#window {
+    background: @surface;
+    margin: 4px 2px;
+    padding: 0 10px;
+    border-radius: 8px;
+    color: @teal-bright;
+    font-weight: 500;
+}
+
+/* Right Side Modules - Clean text-only design */
+#pulseaudio,
+#network,
+#cpu,
+#memory,
+#temperature,
+#backlight,
+#battery,
+#clock,
+#tray,
+#language,
+#power-profiles-daemon {
+    background: transparent;
+    padding: 0 8px;
+    margin: 4px 1px;
+    color: @fg;
+}
+
+/* All right-side modules use same green color for clean, unified look */
+#clock {
+    color: @green;
+    margin-right: 8px;
+}
+
+#battery {
+    color: @green;
+}
+
+#battery.charging {
+    color: @green-bright;
+}
+
+#battery.warning:not(.charging) {
+    color: @warning;
+}
+
+#battery.critical:not(.charging) {
+    color: @critical;
+    animation: blink 0.5s linear infinite;
+}
+
+#network {
+    color: @green;
+    min-width: 90px;
+}
+
+#network.disconnected {
+    color: @critical;
+}
+
+#pulseaudio {
+    color: @green;
+}
+
+#pulseaudio.muted {
+    color: @border;
+}
+
+#cpu {
+    color: @green;
+}
+
+#memory {
+    color: @green;
+}
+
+#temperature {
+    color: @green;
+}
+
+#temperature.critical {
+    color: @critical;
+    animation: blink 0.5s linear infinite;
+}
+
+#backlight {
+    color: @green;
+}
+
+#language {
+    color: @green;
+    padding: 0 10px;
+}
+
+/* Power Profiles */
+#power-profiles-daemon {
+    color: @green;
+}
+
+#power-profiles-daemon.performance {
+    color: @critical;
+}
+
+#power-profiles-daemon.balanced {
+    color: @teal;
+}
+
+#power-profiles-daemon.power-saver {
+    color: @green-bright;
+}
+
+/* Tray */
+#tray {
+    background: transparent;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+    color: @critical;
+}
+
+/* Mode */
+#mode {
+    background: @surface;
+    color: @critical;
+    margin: 4px;
+    padding: 0 12px;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+/* Scratchpad */
+#scratchpad {
+    background: transparent;
+    color: @teal;
+    margin: 4px;
+    padding: 0 12px;
+    border-radius: 10px;
+}
+
+#scratchpad.empty {
+    background-color: transparent;
+}
+
+/* Custom Power Button */
+#custom-power {
+    background: @surface;
+    color: @critical;
+    margin: 4px 8px 4px 2px;
+    padding: 0 12px;
+    border-radius: 10px;
+}
+
+/* Animations */
+@keyframes blink {
+    to {
+        color: @fg;
+    }
+}

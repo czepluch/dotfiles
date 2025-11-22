@@ -1,0 +1,138 @@
+# Yazi Theme - Base2Tone Field Dark inspired
+
+[flavor]
+use = ""
+
+[manager]
+cwd = { fg = "#3be381" }  # Bright field green
+
+# Hovered
+hovered = { fg = "#18201e", bg = "#3be381" }
+preview_hovered = { underline = true }
+
+# Find
+find_keyword = { fg = "#85ffb8", italic = true }
+find_position = { fg = "#40ddc3", bg = "reset", italic = true }
+
+# Marker
+marker_copied = { fg = "#3be381", bg = "#3be381" }
+marker_cut = { fg = "#ff6b6b", bg = "#ff6b6b" }
+marker_marked = { fg = "#25d0b4", bg = "#25d0b4" }
+marker_selected = { fg = "#40ddc3", bg = "#40ddc3" }
+
+# Tab
+tab_active = { fg = "#18201e", bg = "#3be381" }
+tab_inactive = { fg = "#8ea4a0", bg = "#18201e" }
+tab_width = 1
+
+# Count
+count_copied = { fg = "#18201e", bg = "#3be381" }
+count_cut = { fg = "#18201e", bg = "#ff6b6b" }
+count_selected = { fg = "#18201e", bg = "#40ddc3" }
+
+# Border
+border_symbol = "│"
+border_style = { fg = "#25d0b4" }
+
+# Highlighting
+syntect_theme = ""
+
+[status]
+separator_open = ""
+separator_close = ""
+separator_style = { fg = "#25d0b4", bg = "#25d0b4" }
+
+# Mode
+mode_normal = { fg = "#18201e", bg = "#3be381", bold = true }
+mode_select = { fg = "#18201e", bg = "#40ddc3", bold = true }
+mode_unset = { fg = "#18201e", bg = "#88f2e0", bold = true }
+
+# Progress
+progress_label = { fg = "#8ea4a0", bold = true }
+progress_normal = { fg = "#3be381", bg = "#18201e" }
+progress_error = { fg = "#ff6b6b", bg = "#18201e" }
+
+# Permissions
+permissions_t = { fg = "#3be381" }
+permissions_r = { fg = "#40ddc3" }
+permissions_w = { fg = "#85ffb8" }
+permissions_x = { fg = "#25d0b4" }
+permissions_s = { fg = "#8ea4a0" }
+
+[input]
+border = { fg = "#25d0b4" }
+title = {}
+value = {}
+selected = { reversed = true }
+
+[completion]
+border = { fg = "#25d0b4" }
+active = { bg = "#3be381", fg = "#18201e" }
+inactive = {}
+
+[tasks]
+border = { fg = "#25d0b4" }
+title = {}
+hovered = { fg = "#3be381" }
+
+[which]
+cols = 3
+mask = { bg = "#18201e" }
+cand = { fg = "#40ddc3" }
+rest = { fg = "#8ea4a0" }
+desc = { fg = "#25d0b4" }
+separator = "  "
+separator_style = { fg = "#25d0b4" }
+
+[help]
+on = { fg = "#3be381" }
+run = { fg = "#40ddc3" }
+desc = { fg = "#8ea4a0" }
+hovered = { bg = "#25d0b4", bold = true }
+footer = { fg = "#18201e", bg = "#8ea4a0" }
+
+[filetype]
+rules = [
+  # Images
+  { mime = "image/*", fg = "#40ddc3" },
+  
+  # Videos
+  { mime = "video/*", fg = "#3be381" },
+  { mime = "audio/*", fg = "#3be381" },
+  
+  # Archives
+  { mime = "application/*zip", fg = "#ff6b6b" },
+  { mime = "application/*tar", fg = "#ff6b6b" },
+  { mime = "application/*compressed", fg = "#ff6b6b" },
+  
+  # Documents
+  { mime = "application/pdf", fg = "#85ffb8" },
+  { name = "*.md", fg = "#25d0b4" },
+  
+  # Code
+  { name = "*.{js,ts,jsx,tsx}", fg = "#40ddc3" },
+  { name = "*.{py,pyc}", fg = "#3be381" },
+  { name = "*.{rs,toml}", fg = "#ff6b6b" },
+  { name = "*.{sol,gleam}", fg = "#25d0b4" },
+  
+  # Directories
+  { name = "*/", fg = "#3be381" },
+  
+  # Fallback
+  { name = "*", fg = "#8ea4a0" },
+]
+
+[icon]
+rules = [
+  { name = "*/", text = "" },
+  { name = "*.rs", text = "" },
+  { name = "*.py", text = "" },
+  { name = "*.js", text = "" },
+  { name = "*.ts", text = "" },
+  { name = "*.sol", text = "󰞻" },
+  { name = "*.md", text = "" },
+  { name = "*.json", text = "" },
+  { name = "*.toml", text = "" },
+  { name = "*.yaml", text = "" },
+  { name = "*.yml", text = "" },
+]

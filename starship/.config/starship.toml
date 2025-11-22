@@ -1,0 +1,205 @@
+# Get editor completions based on the config schema
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Starship Configuration
+# Based on Base2Tone Field Dark theme (matching kitty theme)
+# Duotone: teal/turquoise and bright field green
+
+# Timeout for commands (in milliseconds)
+command_timeout = 1000
+scan_timeout = 30
+
+# Add a blank line between shell prompts
+add_newline = true
+
+# Base2Tone Field Dark color palette (matching kitty theme)
+palette = "base2tone-field"
+
+[palettes.base2tone-field]
+background = "#18201e"       # Dark greenish-black background
+foreground = "#8ea4a0"       # Muted teal-gray foreground
+black = "#18201e"            # Background black
+red = "#ff6b6b"              # Contrasting red for errors (pops!)
+green = "#3be381"            # Bright field green
+yellow = "#85ffb8"           # Light green (for warnings)
+blue = "#25d0b4"             # Teal
+magenta = "#88f2e0"          # Bright cyan
+cyan = "#40ddc3"             # Medium teal
+white = "#8ea4a0"            # Muted teal-gray
+bright-black = "#5a6d6a"     # Gray-teal (for borders)
+bright-red = "#ff6b6b"       # Same contrasting red
+bright-green = "#55ec94"     # Brighter green
+bright-yellow = "#a8fff1"    # Brightest cyan-green
+bright-blue = "#40ddc3"      # Bright teal
+bright-magenta = "#88f2e0"   # Bright cyan
+bright-cyan = "#a8fff1"      # Brightest cyan
+bright-white = "#f9fbfa"     # Nearly white
+
+# Format string - defines the order and layout of modules
+format = """
+[╭─](bright-black)\
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+$git_state\
+$git_metrics\
+$fill\
+$cmd_duration\
+$line_break\
+[╰─](bright-black)\
+$character\
+"""
+
+# Replace the "❯" symbol in the prompt with "➜"
+[character]
+success_symbol = "[➜](bold green)"
+error_symbol = "[➜](bold red)"
+vimcmd_symbol = "[⌘](bold yellow)"
+
+# Shows current username
+[username]
+style_user = "bold yellow"
+style_root = "bold red"
+format = "[$user]($style) "
+disabled = false
+show_always = true
+
+# Shows current directory
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+fish_style_pwd_dir_length = 0
+use_logical_path = true
+format = "[$path]($style)[$read_only]($read_only_style) "
+style = "bold cyan"
+read_only = " "
+read_only_style = "red"
+truncation_symbol = "…/"
+home_symbol = "~"
+
+# Git branch name
+[git_branch]
+symbol = " "
+format = "on [$symbol$branch(:$remote_branch)]($style) "
+style = "bold magenta"
+truncation_length = 24
+truncation_symbol = "…"
+only_attached = false
+
+# Git status - shows repository state
+[git_status]
+format = '([\[$all_status$ahead_behind\]]($style) )'
+style = "bold red"
+conflicted = "⚔️ "
+ahead = "⇡${count} "
+behind = "⇣${count} "
+diverged = "⇕⇡${ahead_count}⇣${behind_count} "
+up_to_date = "✓"
+untracked = "?${count} "
+stashed = "$${count} "
+modified = "!${count} "
+staged = "+${count} "
+renamed = "»${count} "
+deleted = "✘${count} "
+
+# Git state (rebase, merge, etc.)
+[git_state]
+format = '[\($state( $progress_current of $progress_total)\)]($style) '
+style = "bright-black"
+
+# Git metrics (added/deleted lines)
+[git_metrics]
+added_style = "bold green"
+deleted_style = "bold red"
+only_nonzero_diffs = true
+format = '([+$added]($added_style) )([-$deleted]($deleted_style) )'
+disabled = false
+
+# Command duration
+[cmd_duration]
+min_time = 500
+format = "took [$duration]($style) "
+style = "bold yellow"
+show_milliseconds = false
+
+# Fill space between left and right sections
+[fill]
+symbol = " "
+
+# Line break
+[line_break]
+disabled = false
+
+# Programming language and tool versions
+# These show up automatically when you're in a project with relevant files
+
+[nodejs]
+symbol = " "
+format = "via [$symbol($version )]($style)"
+style = "bold green"
+
+[python]
+symbol = " "
+format = 'via [${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+style = "bold yellow"
+
+[rust]
+symbol = " "
+format = "via [$symbol($version )]($style)"
+style = "bold red"
+
+[golang]
+symbol = " "
+format = "via [$symbol($version )]($style)"
+style = "bold cyan"
+
+[gleam]
+symbol = "⭐ "
+format = "via [$symbol($version )]($style)"
+style = "bold magenta"
+
+[solidity]
+symbol = "◆ "
+format = "via [$symbol($version )]($style)"
+style = "bold blue"
+
+[docker_context]
+symbol = " "
+format = "via [$symbol$context]($style) "
+style = "bold blue"
+only_with_files = true
+
+[package]
+symbol = "📦 "
+format = "via [$symbol$version]($style) "
+style = "bold bright-black"
+display_private = false
+
+[java]
+symbol = " "
+format = "via [$symbol($version )]($style)"
+style = "bold red"
+
+[ruby]
+symbol = " "
+format = "via [$symbol($version )]($style)"
+style = "bold red"
+
+[terraform]
+symbol = "💠 "
+format = "via [$symbol$workspace]($style) "
+style = "bold magenta"
+
+[kubernetes]
+symbol = "☸ "
+format = 'on [$symbol$context( \($namespace\))]($style) '
+style = "bold blue"
+disabled = false
+
+# Disable modules you don't need (uncomment to disable)
+# [aws]
+# disabled = true
+# [gcloud]
+# disabled = true

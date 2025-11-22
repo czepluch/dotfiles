@@ -1,0 +1,54 @@
+# Yazi Configuration
+
+[manager]
+ratio = [1, 4, 3]  # Sidebar, main, preview column widths
+sort_by = "alphabetical"
+sort_sensitive = false
+sort_reverse = false
+sort_dir_first = true
+linemode = "size"  # Show file sizes
+show_hidden = false
+show_symlink = true
+scrolloff = 5
+
+[preview]
+tab_size = 4
+max_width = 600
+max_height = 900
+cache_dir = ""  # Use default cache
+image_filter = "lanczos3"
+image_quality = 80
+
+[opener]
+# Image viewer - imv for Wayland
+image = [
+  { run = 'imv "$@"', orphan = true, for = "linux" },
+]
+
+# Video player
+video = [
+  { run = 'mpv "$@"', orphan = true, for = "linux" },
+]
+
+# PDF viewer
+pdf = [
+  { run = 'zathura "$@"', orphan = true, for = "linux" },
+]
+
+# Text editor
+edit = [
+  { run = 'nvim "$@"', block = true, for = "linux" },
+]
+
+# Archives
+archive = [
+  { run = 'file-roller "$@"', orphan = true, for = "linux" },
+]
+
+[open]
+rules = [
+  { name = "*.{jpg,jpeg,png,gif,bmp,webp,svg}", use = "image" },
+  { name = "*.{mp4,mkv,avi,mov,webm,flv}", use = "video" },
+  { name = "*.pdf", use = "pdf" },
+  { name = "*.{zip,tar,gz,bz2,xz,7z,rar}", use = "archive" },
+]

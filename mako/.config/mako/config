@@ -1,0 +1,20 @@
+# Timeout in milliseconds (5000 = 5 seconds)
+default-timeout=10000
+
+# Position
+anchor=top-right
+margin=10
+
+# Styling
+background-color=#1e1e2ecc
+text-color=#cdd6f4
+border-color=#89b4fa
+border-size=2
+border-radius=10
+padding=10
+width=300
+height=80
+
+# Grouping
+group-by=app-name
+max-visible=3

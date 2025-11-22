@@ -1,129 +1,50 @@
-# Personal Config Reference
+# dotfiles
 
-Quick reference for setting up a new system.
+My Arch Linux dotfiles managed with GNU Stow.
 
-## Git Config
-
-```
-Editor: zed --wait
-Default branch: main
-```
-
-## Keyboard
-
-```
-Layout: us,dk
-Toggle: Ctrl+Space
-Caps Lock: Escape
-```
-
-## Monitor
-
-```
-Display: 2880x1800@60Hz
-Scaling: 1.5x
-Monitor ID: eDP-1
-```
-
-## Kernel Parameters (AMD Ryzen Laptop)
-
-```
-atkbd.reset=1 i8042.reset=1
-```
-
-Add to bootloader config to fix keyboard not waking from suspend.
-
-## Shell Aliases
+## Setup
 
 ```bash
-alias ll='eza -la --git'
-alias ls='eza --icons'
-alias cat='bat'
-alias grep='rg'
-alias find='fd'
-alias ..='cd ..'
-alias ...='cd ../..'
-alias up='cd ..'
+git clone git@github.com:czepluch/dotfiles.git ~/dotfiles
+cd ~/dotfiles
+stow */
 ```
 
-## Apps/Packages
+## Structure
 
-### Core CLI Tools
-```
-zsh zsh-autosuggestions zsh-syntax-highlighting
-eza bat ripgrep fd fzf zoxide
-starship tmux
-git git-delta lazygit gh
-btop fastfetch
-jq yq
-```
+Each directory is a "stow package" that contains configs symlinked to `~/`:
 
-### Desktop
-```
-hyprland waybar wofi mako
-hyprlock hypridle hyprpicker
-kitty alacritty
-wl-clipboard cliphist grim slurp
-```
+- **zsh** - Shell configuration with modern CLI tools
+- **starship** - Custom prompt theme (Base2Tone Field Dark)
+- **git** - Git configuration and aliases
+- **ssh** - SSH client config (keys not included)
+- **hypr** - Hyprland compositor configuration
+- **waybar** - Status bar configuration
+- **kitty** - Terminal emulator theme
+- **nvim** - Neovim/LazyVim configuration
+- **yazi** - File manager configuration
 
-### GUI Apps
-```
-firefox
-zed
-bitwarden
-vlc mpv
-```
-
-### Development
-```
-neovim
-rustup
-gcc
-lua-language-server stylua
-```
-
-### Fonts
-```
-ttf-jetbrains-mono-nerd
-ttf-hack-nerd
-noto-fonts noto-fonts-emoji
-ttf-font-awesome
-```
-
-## System Services
+## Usage
 
 ```bash
-# Enable these
-systemctl enable bluetooth.service
-systemctl enable NetworkManager.service
+# Install all packages
+stow */
+
+# Install specific package
+stow zsh
+
+# Uninstall package
+stow -D zsh
+
+# Reinstall package
+stow -R zsh
 ```
 
-## Zsh Setup
+## System
 
-```bash
-# Install Oh My Zsh
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-
-# Plugins location: ~/.oh-my-zsh/custom/plugins/
-git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
-git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
-```
-
-## Config Locations
-
-```
-~/.config/hypr/          # Hyprland
-~/.config/waybar/        # Status bar
-~/.config/wofi/          # Launcher
-~/.config/zed/           # Zed editor
-~/.zshrc                 # Shell
-~/.gitconfig             # Git
-```
-
----
-
-## Old Configs
-
-- `nixos-archive/` - Original NixOS setup (backup)
-- `.config/` - Extracted configs from NixOS (reference)
-- `omarchy-overlay/` - Minimal overlay files
+- **OS**: Arch Linux
+- **WM**: Hyprland (Wayland)
+- **Shell**: Zsh
+- **Terminal**: Kitty
+- **Editor**: Neovim (LazyVim)
+- **Theme**: Base2Tone Field Dark

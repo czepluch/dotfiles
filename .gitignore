@@ -1,85 +1,12 @@
-# NixOS Dotfiles .gitignore
-
-# Nix build outputs
-result
-result-*
-.direnv/
-.envrc
-
-# Hardware configuration (should be host-specific)
-# Uncomment if you don't want to track hardware configs
-# nix/hosts/*/hardware-configuration.nix
-
-# Secrets and sensitive files
-secrets/
-*.age
-*.secret
-.sops.yaml
-
-# Backup files
-backups/
-*.backup
-*.bak
-*~
-
-# Editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-*.tmp
-.DS_Store
-Thumbs.db
-
-# Local configuration overrides
-local.nix
-local/
-*.local
-
-# Cache directories
-.cache/
-__pycache__/
-*.pyc
-node_modules/
-.npm/
-
-# Log files
-*.log
-logs/
-
-# VM files from nixos-rebuild build-vm
-*.qcow2
-run-*-vm
-
-# Generated documentation
-docs/book/
-
-# Personal files that shouldn't be in dotfiles
-personal/
-private/
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Temporary files
-*.tmp
-*.temp
-temp/
-
-# Development environments
-.devenv/
-
-# Age keys (if using agenix)
-keys.txt
-
-# Home Manager result links
-.hm-*
-
-# Flake lock backup
-flake.lock.bak
+# SSH private keys (NEVER commit these!)
+**/.ssh/id_*
+**/.ssh/*.pem
+**/.ssh/known_hosts
+# Sensitive files
+**/.netrc
+**/.npmrc
+**/secrets.*
+# Cache/generated files
+**/.cache/
+**/cache/
+**/__pycache__/
