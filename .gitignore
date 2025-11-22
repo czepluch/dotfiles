@@ -10,3 +10,8 @@
 **/.cache/
 **/cache/
 **/__pycache__/
+
+# Internal documentation
+CLAUDE.md
+STOW_SETUP.md
+AGENTS.md
