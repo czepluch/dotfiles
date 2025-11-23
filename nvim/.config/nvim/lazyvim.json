@@ -1,6 +1,7 @@
 {
   "extras": [
-
+    "lazyvim.plugins.extras.lang.gleam",
+    "lazyvim.plugins.extras.lang.solidity"
   ],
   "install_version": 8,
   "news": {
