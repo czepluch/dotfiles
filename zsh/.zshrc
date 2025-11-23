@@ -143,4 +143,7 @@ eval "$(zoxide init zsh)"
 
 # Starship prompt
 eval "$(starship init zsh)"
+
+# Add cargo binaries to PATH
+export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
