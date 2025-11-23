@@ -131,11 +131,9 @@ function ya() {
   rm -f -- "$tmp"
 }
 
-# SSH agent - start and load key
-if ! pgrep -u "$USER" ssh-agent > /dev/null; then
-  eval "$(ssh-agent -s)" > /dev/null
-fi
-ssh-add ~/.ssh/id_ed25519 2>/dev/null
+# SSH agent - using keychain for persistence across sessions
+# --nogui: prompt in terminal instead of GUI
+eval $(keychain --eval --nogui --quiet id_ed25519)
 
 # Mise (version manager)
 eval "$(mise activate zsh)"
