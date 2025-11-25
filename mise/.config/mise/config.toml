@@ -2,7 +2,7 @@
 erlang = "latest"
 foundry = "latest"
 gleam = "latest"
-node = "latest"
+node = "lts"
 solidity = "latest"
 
 [settings]
