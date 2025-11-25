@@ -2,5 +2,8 @@
 erlang = "latest"
 foundry = "latest"
 gleam = "latest"
-node = "lts"
+node = "latest"
 solidity = "latest"
+
+[settings]
+idiomatic_version_file_enable_tools = ["node"]

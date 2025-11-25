@@ -27,15 +27,31 @@ zle -N down-line-or-beginning-search
 bindkey "^[[A" up-line-or-beginning-search    # Up arrow
 bindkey "^[[B" down-line-or-beginning-search  # Down arrow
 
+# Detect OS
+OS_TYPE="$(uname -s)"
+
 # Completions
 # Enable zsh-completions (250+ additional completion definitions)
-fpath=(/usr/share/zsh/site-functions $fpath)
+if [[ "$OS_TYPE" == "Darwin" ]]; then
+  # macOS (Homebrew)
+  fpath=(/opt/homebrew/share/zsh/site-functions $fpath)
+else
+  # Linux (system packages)
+  fpath=(/usr/share/zsh/site-functions $fpath)
+fi
 autoload -Uz compinit
 compinit
 
 # Plugins
-source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+if [[ "$OS_TYPE" == "Darwin" ]]; then
+  # macOS (Homebrew paths)
+  source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+  source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+else
+  # Linux (system paths)
+  source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+  source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
 
 # Default app
 export EDITOR=nvim
@@ -82,8 +98,11 @@ alias glg='lazygit'
 # Config editing
 alias zrc='nvim ~/.zshrc'
 alias zsrc='source ~/.zshrc'
-alias hyprconf='nvim ~/.config/hypr/hyprland.conf'
 alias nvimconf='cd ~/.config/nvim && nvim'
+# Linux-specific config aliases
+if [[ "$OS_TYPE" != "Darwin" ]]; then
+  alias hyprconf='nvim ~/.config/hypr/hyprland.conf'
+fi
 
 # Quick directory jumps (customize to your frequent dirs)
 alias dev='cd ~/dev'
@@ -91,12 +110,22 @@ alias dots='cd ~/.config'
 alias dl='cd ~/Downloads'
 
 # System
-alias ports='netstat -tulanp'
 alias psg='ps aux | grep -v grep | grep -i -e VSZ -e'
 alias df='df -h'
-alias free='free -h'
-alias update='paru -Syu'
-alias cleanup='paru -Sc --noconfirm'
+
+# OS-specific system commands
+if [[ "$OS_TYPE" == "Darwin" ]]; then
+  # macOS
+  alias ports='sudo lsof -iTCP -sTCP:LISTEN -n -P'
+  alias update='brew update && brew upgrade'
+  alias cleanup='brew cleanup'
+else
+  # Linux
+  alias ports='netstat -tulanp'
+  alias free='free -h'
+  alias update='paru -Syu'
+  alias cleanup='paru -Sc --noconfirm'
+fi
 
 # FZF enhanced commands
 # Preview files with bat, directories with eza
@@ -131,9 +160,14 @@ function ya() {
   rm -f -- "$tmp"
 }
 
-# SSH agent - using keychain for persistence across sessions
-# --nogui: prompt in terminal instead of GUI
-eval $(keychain --eval --nogui --quiet id_ed25519)
+# SSH agent - Linux only (macOS handles this automatically)
+if [[ "$OS_TYPE" != "Darwin" ]]; then
+  # Linux: use keychain for persistence across sessions
+  # --nogui: prompt in terminal instead of GUI
+  if command -v keychain &> /dev/null; then
+    eval $(keychain --eval --nogui --quiet id_ed25519)
+  fi
+fi
 
 # Mise (version manager)
 eval "$(mise activate zsh)"
