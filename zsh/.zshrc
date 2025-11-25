@@ -181,3 +181,59 @@ eval "$(starship init zsh)"
 # Add cargo binaries to PATH
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+
+# Improved history search (Ctrl+R with fzf)
+export FZF_CTRL_R_OPTS="
+  --preview 'echo {}' --preview-window up:3:hidden:wrap
+  --bind 'ctrl-/:toggle-preview'
+  --color header:italic
+  --header 'Press CTRL-/ to toggle preview'"
+
+# Better directory colors for macOS
+if [[ "$OS_TYPE" == "Darwin" ]]; then
+  export CLICOLOR=1
+  export LSCOLORS=GxFxCxDxBxegedabagaced
+fi
+
+# Helpful functions
+# Extract any archive type
+extract() {
+  if [ -f "$1" ]; then
+    case "$1" in
+      *.tar.bz2)   tar xjf "$1"     ;;
+      *.tar.gz)    tar xzf "$1"     ;;
+      *.bz2)       bunzip2 "$1"     ;;
+      *.rar)       unrar e "$1"     ;;
+      *.gz)        gunzip "$1"      ;;
+      *.tar)       tar xf "$1"      ;;
+      *.tbz2)      tar xjf "$1"     ;;
+      *.tgz)       tar xzf "$1"     ;;
+      *.zip)       unzip "$1"       ;;
+      *.Z)         uncompress "$1"  ;;
+      *.7z)        7z x "$1"        ;;
+      *)           echo "'$1' cannot be extracted via extract()" ;;
+    esac
+  else
+    echo "'$1' is not a valid file"
+  fi
+}
+
+# Create directory and cd into it
+mkcd() {
+  mkdir -p "$1" && cd "$1"
+}
+
+# Quick backup of a file
+bak() {
+  cp "$1" "$1.bak-$(date +%Y%m%d-%H%M%S)"
+}
+
+# Find and kill process by name
+fkill() {
+  local pid
+  pid=$(ps aux | grep -v grep | grep "$1" | fzf | awk '{print $2}')
+  if [ -n "$pid" ]; then
+    kill -9 "$pid"
+    echo "Killed process $pid"
+  fi
+}

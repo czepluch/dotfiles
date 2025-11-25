@@ -1,17 +1,22 @@
-# SSH private keys (NEVER commit these!)
-**/.ssh/id_*
-**/.ssh/*.pem
-**/.ssh/known_hosts
-# Sensitive files
-**/.netrc
-**/.npmrc
-**/secrets.*
-# Cache/generated files
-**/.cache/
-**/cache/
-**/__pycache__/
+# Ignore backup files
+*.backup-*
 
-# Internal documentation
-CLAUDE.md
-STOW_SETUP.md
-AGENTS.md
+# Ignore OS-specific files
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# Ignore editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ignore any personal override files
+*.local
+*_local
+
+# Keep this file
+!.gitignore
