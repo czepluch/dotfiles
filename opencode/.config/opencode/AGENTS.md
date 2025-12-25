@@ -7,6 +7,7 @@
 - If the user asks a question, then just answer the question. Don't go ahead and start implementing things. You can provide suggested next steps or a plan for how to tackle the things in the question
 - Never make assumptions about tools installed. Always verify your theories. If you are unsure which neovim plugin is used for something specific either look at the config and find out or ask the user. Never make assumptions.
 - Use the internet for research too, be thorough
+- Consult the official documentation of projects you're working with when trying to find solutions -- often they clearly show how to use APIs and config files.
 - If you're uncertain about something while working, stop and ask the user for advice. It's a waste of everyone's time to just assume things.
 
 ## Working with Git

@@ -1,0 +1,1 @@
+/home/jstcz/.config/aether/theme/neovim.lua
