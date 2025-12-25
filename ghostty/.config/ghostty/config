@@ -31,6 +31,10 @@ clipboard-read = allow
 clipboard-write = allow
 copy-on-select = clipboard
 
+# Override default: paste from clipboard instead of selection
+# This allows SUPER+V (which sends shift+insert) to paste from clipboard
+keybind = shift+insert=paste_from_clipboard
+
 # macOS specific
 macos-titlebar-style = transparent
 macos-option-as-alt = true
