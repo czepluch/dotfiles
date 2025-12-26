@@ -237,6 +237,3 @@ fkill() {
     echo "Killed process $pid"
   fi
 }
-
-# SSH Agent (systemd managed)
-export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
