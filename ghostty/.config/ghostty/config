@@ -14,29 +14,8 @@ window-theme = dark
 # Background opacity (0.0 - 1.0)
 background-opacity = 0.95
 
-# Aether theme colors
-background = #002b36
-foreground = #fdf6e3
-
-# Standard colors
-palette = 0=#002b36
-palette = 1=#dc322f
-palette = 2=#859900
-palette = 3=#b58900
-palette = 4=#268bd2
-palette = 5=#d33682
-palette = 6=#2aa198
-palette = 7=#839496
-
-# Bright colors
-palette = 8=#073642
-palette = 9=#cb4b16
-palette = 10=#586e75
-palette = 11=#657b83
-palette = 12=#839496
-palette = 13=#6c71c4
-palette = 14=#93a1a1
-palette = 15=#fdf6e3
+# Aether theme integration - load colors from Aether's generated config
+config-file = ~/.config/aether/theme/ghostty.conf
 
 # Cursor
 cursor-style = block
