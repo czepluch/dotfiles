@@ -8,7 +8,7 @@
 # manage just the colors. When changing Aether themes, update the [palettes.aether]
 # section below to match your new theme colors.
 #
-# Current palette: Tokyo Night
+# Current palette: Aether (custom)
 
 # Timeout for commands (in milliseconds)
 command_timeout = 1000
@@ -21,24 +21,24 @@ add_newline = true
 palette = "aether"
 
 [palettes.aether]
-background = "#1a1b26"
-foreground = "#c0caf5"
-black = "#1a1b26"
-red = "#f7768e"
-green = "#9ece6a"
-yellow = "#e0af68"
-blue = "#7aa2f7"
-magenta = "#bb9af7"
-cyan = "#7dcfff"
-white = "#a9b1d6"
-bright-black = "#414868"
-bright-red = "#f7768e"
-bright-green = "#9ece6a"
-bright-yellow = "#e0af68"
-bright-blue = "#7aa2f7"
-bright-magenta = "#bb9af7"
-bright-cyan = "#7dcfff"
-bright-white = "#c0caf5"
+background = "#080a1a"
+foreground = "#ffffff"
+black = "#080a1a"
+red = "#c0b765"
+green = "#5bdee9"
+yellow = "#dd5aed"
+blue = "#8683d3"
+magenta = "#e89cf0"
+cyan = "#8cdbe8"
+white = "#efe1f3"
+bright-black = "#636aa4"
+bright-red = "#ddd8a4"
+bright-green = "#a8f1f7"
+bright-yellow = "#f1a9fa"
+bright-blue = "#c6c5ed"
+bright-magenta = "#fbebfd"
+bright-cyan = "#d7f4f9"
+bright-white = "#ffffff"
 
 # Format string - defines the order and layout of modules
 format = """
