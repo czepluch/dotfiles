@@ -19,9 +19,10 @@ config-file = ~/.config/aether/theme/ghostty.conf
 
 # Cursor
 cursor-style = block
+cursor-click-to-move = true
 
 # Shell integration
-shell-integration-features = cursor,sudo,title
+shell-integration-features = no-cursor,sudo,title
 
 # Mouse
 mouse-hide-while-typing = true
