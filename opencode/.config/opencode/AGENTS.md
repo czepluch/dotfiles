@@ -16,17 +16,6 @@
 - **Show changes before committing** - use `git status` and `git diff` to show what will be committed
 - **Wait for approval on commits** - don't automatically commit and push
 
-## System Context
-- **Shell**: Zsh with modern CLI tools (eza, bat, fd, rg, btop, zoxide, fzf)
-- **Editor**: Neovim (LazyVim) with Avante.nvim (OpenCode integration)
-- **Terminal**: Kitty
-- **Theme**: Base2Tone Field Dark (teal/green: #25d0b4, #3be381, background: #18201e)
-- **Dotfiles**: GNU Stow-managed in `~/dotfiles/`
-
-## Dotfiles Management
-- **Always edit in `~/dotfiles/`** - configs are symlinked from there
-- **Stow packages**: btop, fuzzel, git, hypr, kitty, mako, mise, nvim, opencode, ssh, starship, waybar, yazi, zsh
-
 ## Working Style
 - **Ask, don't assume** - when in doubt, ask the user
 - **Explain reasoning** - help the user understand why you're suggesting something
