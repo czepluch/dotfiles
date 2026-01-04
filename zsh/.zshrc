@@ -144,6 +144,10 @@ alias ....='cd ../../..'
 alias ~='cd ~'
 alias -- -='cd -'  # Go back to previous directory
 
+
+# Application aliases
+alias oo="opencode"
+
 # Zoxide aliases (smart cd replacement)
 # After sourcing zoxide below, 'z' and 'zi' will be available
 # z <directory> - jump to directory
