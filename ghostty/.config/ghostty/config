@@ -12,7 +12,8 @@ window-decoration = true
 window-theme = dark
 
 # Background opacity (0.0 - 1.0)
-background-opacity = 0.95
+# background-opacity = 0.95
+background-opacity = 1.0 
 
 # Aether theme integration - load colors from Aether's generated config
 config-file = ~/.config/aether/theme/ghostty.conf
