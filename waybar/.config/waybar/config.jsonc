@@ -8,10 +8,10 @@
     "modules-left": [
         "hyprland/workspaces"
     ],
-    "modules-center": [
-        "hyprland/window"
-    ],
+    "modules-center": [],
     "modules-right": [
+        "tray",
+        "custom/vpn",
         "pulseaudio",
         "cpu",
         "memory",
@@ -19,8 +19,7 @@
         "backlight",
         "battery",
         "hyprland/language",
-        "clock",
-        "tray"
+        "clock"
     ],
 
     // Modules configuration
@@ -129,5 +128,11 @@
         "format": "{}",
         "format-en":"EN",
         "format-da":"DA"
+    },
+    "custom/vpn": {
+        "exec": "if ip link show wg0 &>/dev/null || ip link show dappnode-local &>/dev/null || ip link show dappnode-remote &>/dev/null; then echo '󰌾'; else echo ''; fi",
+        "interval": 5,
+        "tooltip-exec": "wg show 2>/dev/null | head -5 || echo 'VPN disconnected'",
+        "on-click": "if ip link show dappnode-local &>/dev/null || ip link show dappnode-remote &>/dev/null; then sudo wg-quick down dappnode-local 2>/dev/null; sudo wg-quick down dappnode-remote 2>/dev/null; else sudo wg-quick up dappnode-remote; fi"
     }
 }

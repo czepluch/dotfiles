@@ -4,6 +4,7 @@ foundry = "latest"
 gleam = "latest"
 node = "lts"
 solidity = "latest"
+zig = "master"
 
 [settings]
 idiomatic_version_file_enable_tools = ["node"]

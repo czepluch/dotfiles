@@ -148,6 +148,12 @@ alias -- -='cd -'  # Go back to previous directory
 # Application aliases
 alias oo="opencode"
 
+# WireGuard VPN (DAppNode)
+alias vpn-home='sudo wg-quick up dappnode-local'
+alias vpn-remote='sudo wg-quick up dappnode-remote'
+alias vpn-down='sudo wg-quick down dappnode-local 2>/dev/null; sudo wg-quick down dappnode-remote 2>/dev/null'
+alias vpn-status='sudo wg show'
+
 # Zoxide aliases (smart cd replacement)
 # After sourcing zoxide below, 'z' and 'zi' will be available
 # z <directory> - jump to directory
