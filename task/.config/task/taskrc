@@ -1,16 +1,64 @@
 # Taskwarrior Configuration
 # Stowed from ~/dotfiles/task/.config/task/taskrc
-# Theme: dark-blue-256 (good match for Aether colors)
+# Using terminal colors (Aether theme)
 
 # Data location (XDG compliant)
 data.location=~/.local/share/task
 hooks.location=~/.config/task/hooks
 
-# Color theme - using dark-blue for Aether compatibility
-include /usr/share/doc/task/rc/dark-blue-256.theme
+# =============================================================================
+# Terminal Color Theme (Aether-compatible)
+# Using terminal color codes that match Aether theme
+# =============================================================================
 
-# Enable colors
-color=on
+# Basic colors using terminal palette
+color.label=color8
+color.label.sort=color8
+color.alternate=on color0
+color.header=color6
+color.footnote=color6
+color.warning=bold color1
+color.error=white on color1
+color.debug=color6
+color.completed=color8
+color.deleted=color8 on color1
+color.active=color6 on color4
+color.recurring=color3
+color.scheduled=on color4
+color.until=color8
+color.blocked=white on color1
+color.blocking=white on color4
+color.project.none=color8
+color.uda.priority.H=color2
+color.uda.priority.L=color6
+color.uda.priority.M=color4
+color.tag.next=color3
+color.tag.none=color8
+color.tagged=color6
+color.due.today=bold color3
+color.due=color7
+color.overdue=bold white on color1
+color.burndown.done=on color8
+color.burndown.pending=on color4
+color.burndown.started=on color6
+color.history.add=color0 on color6
+color.history.delete=color0 on color2
+color.history.done=color0 on color4
+color.summary.background=on color4
+color.summary.bar=on color2
+color.calendar.due.today=color0 on color7
+color.calendar.due=color0 on color7
+color.calendar.holiday=color7 on color6
+color.calendar.overdue=color0 on color7
+color.calendar.scheduled=color8
+color.calendar.today=color0 on color3
+color.calendar.weekend=on color0
+color.calendar.weeknumber=color6
+color.sync.added=color8
+color.sync.changed=color6
+color.sync.rejected=color4
+color.undo.after=color2
+color.undo.before=color6
 
 # =============================================================================
 # UI Settings
@@ -20,7 +68,7 @@ color=on
 confirmation=on
 
 # Display settings
-verbose=on
+# verbose=on  # Uncomment to see filter details at bottom of reports
 
 # Date format
 dateformat=Y-M-D
@@ -66,30 +114,6 @@ report.projectlist.labels=Project,Tasks
 report.projectlist.sort=project+
 
 # =============================================================================
-# Color Customizations (override theme)
-# =============================================================================
-
-# Highlight active tasks
-color.active=bold cyan on blue
-
-# Overdue tasks in red
-color.overdue=bold white on red
-
-# Due today in yellow
-color.due.today=bold yellow
-
-# Scheduled tasks
-color.scheduled=green
-
-# Blocked/blocking
-color.blocked=white on red
-color.blocking=bold white on blue
-
-# Completed and deleted (grayed out)
-color.completed=gray8
-color.deleted=gray8 on red
-
-# =============================================================================
 # Aliases
 # =============================================================================
 
@@ -113,3 +137,7 @@ context.dev=project:Dev
 # =============================================================================
 
 news.version=3.4.2
+
+# Enable colors (must be at end)
+color=on
+_forcecolor=on
