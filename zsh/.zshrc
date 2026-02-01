@@ -147,6 +147,7 @@ alias -- -='cd -'  # Go back to previous directory
 
 # Application aliases
 alias oo="opencode"
+alias t="task"
 
 # WireGuard VPN (DAppNode)
 alias vpn-home='sudo wg-quick up dappnode-local'

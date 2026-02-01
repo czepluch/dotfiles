@@ -1,0 +1,115 @@
+# Taskwarrior Configuration
+# Stowed from ~/dotfiles/task/.config/task/taskrc
+# Theme: dark-blue-256 (good match for Aether colors)
+
+# Data location (XDG compliant)
+data.location=~/.local/share/task
+hooks.location=~/.config/task/hooks
+
+# Color theme - using dark-blue for Aether compatibility
+include /usr/share/doc/task/rc/dark-blue-256.theme
+
+# Enable colors
+color=on
+
+# =============================================================================
+# UI Settings
+# =============================================================================
+
+# Confirmation settings
+confirmation=on
+
+# Display settings
+verbose=on
+
+# Date format
+dateformat=Y-M-D
+dateformat.report=Y-M-D
+
+# Default command when just typing 'task'
+default.command=next
+
+# =============================================================================
+# Urgency Settings
+# =============================================================================
+
+# Urgency coefficients
+urgency.user.tag.next.coefficient=15.0
+urgency.due.coefficient=12.0
+urgency.scheduled.coefficient=5.0
+urgency.age.coefficient=2.0
+
+# =============================================================================
+# Custom Reports
+# =============================================================================
+
+# Simple list with important fields
+report.list.columns=id,project,priority,description,due,urgency
+report.list.labels=ID,Project,Pri,Description,Due,Urgency
+report.list.sort=urgency-
+
+# Inbox - uncategorized tasks
+report.inbox.columns=id,description,entry
+report.inbox.labels=ID,Description,Added
+report.inbox.filter=project: -COMPLETED -DELETED
+report.inbox.sort=entry+
+
+# Today - due today or overdue
+report.today.columns=id,project,priority,description,due
+report.today.labels=ID,Project,Pri,Description,Due
+report.today.filter=due.before:tomorrow or due:today -COMPLETED -DELETED
+report.today.sort=urgency-
+
+# Projects overview
+report.projectlist.columns=project,description.count
+report.projectlist.labels=Project,Tasks
+report.projectlist.sort=project+
+
+# =============================================================================
+# Color Customizations (override theme)
+# =============================================================================
+
+# Highlight active tasks
+color.active=bold cyan on blue
+
+# Overdue tasks in red
+color.overdue=bold white on red
+
+# Due today in yellow
+color.due.today=bold yellow
+
+# Scheduled tasks
+color.scheduled=green
+
+# Blocked/blocking
+color.blocked=white on red
+color.blocking=bold white on blue
+
+# Completed and deleted (grayed out)
+color.completed=gray8
+color.deleted=gray8 on red
+
+# =============================================================================
+# Aliases
+# =============================================================================
+
+alias.in=inbox
+alias.today=today
+alias.tom=tomorrow
+alias.yest=yesterday
+alias.week=7days
+alias.month=30days
+
+# =============================================================================
+# Contexts
+# =============================================================================
+
+context.work=project:Work
+context.personal=project:Personal
+context.dev=project:Dev
+
+# =============================================================================
+# News (suppress after reading)
+# =============================================================================
+
+news.version=3.4.2
