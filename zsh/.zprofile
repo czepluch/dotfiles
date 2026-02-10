@@ -1,4 +1,3 @@
-# Auto-start Hyprland on TTY1
-if [ -z "$WAYLAND_DISPLAY" ] && [ "$XDG_VTNR" -eq 1 ]; then
-  exec start-hyprland
-fi
+# Hyprland auto-start disabled - using SDDM now
+# Previous auto-start code removed
+# Login to TTY1 will now show SDDM greeter instead
