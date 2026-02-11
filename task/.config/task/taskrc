@@ -138,9 +138,8 @@ context.dev=project:Dev
 
 news.version=3.4.2
 
+# Import local setteings from .taskrc.local
+include ~/.config/task/taskrc.local
 # Enable colors (must be at end)
 color=on
 _forcecolor=on
-sync.server.client_id=9756b7b3-4fbe-476d-a518-52f0595e2977
-sync.encryption_secret=749218c9b369f6679b0aeb8fe3bd646cd84aefe4bc7bb3fd5a566385ee7cd72d
-sync.server.url=http:\/\/taskchampion.public.dappnode:8080
