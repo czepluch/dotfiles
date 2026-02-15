@@ -1,5 +1,8 @@
 # Yazi Configuration
 
+[flavor]
+use = "catppuccin-mocha"
+
 [mgr]
 ratio = [1, 4, 3]  # Sidebar, main, preview column widths
 sort_by = "alphabetical"
