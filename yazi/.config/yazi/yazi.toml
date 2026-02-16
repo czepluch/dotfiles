@@ -49,29 +49,17 @@ archive = [
 ]
 
 [open]
-rules = [
-  # Images
-  { name = "*.{jpg,jpeg,png,gif,bmp,webp,svg}", use = "image" },
+# Prepend our custom rules so they take precedence over Yazi's defaults
+prepend_rules = [
+  # Images - use mime type matching which is more reliable
+  { mime = "image/*", use = "image" },
   
   # Videos
-  { name = "*.{mp4,mkv,avi,mov,webm,flv}", use = "video" },
+  { mime = "video/*", use = "video" },
   
   # PDFs
-  { name = "*.pdf", use = "pdf" },
+  { mime = "application/pdf", use = "pdf" },
   
   # Archives
-  { name = "*.{zip,tar,gz,bz2,xz,7z,rar}", use = "archive" },
-  
-  # Text/Code files - open in nvim
-  { name = "*.{txt,md,markdown}", use = "edit" },
-  { name = "*.{json,yaml,yml,toml,xml}", use = "edit" },
-  { name = "*.{js,ts,jsx,tsx,mjs,cjs}", use = "edit" },
-  { name = "*.{rs,go,py,rb,php,java,c,cpp,h,hpp}", use = "edit" },
-  { name = "*.{sh,bash,zsh,fish}", use = "edit" },
-  { name = "*.{sol,gleam,lua,vim}", use = "edit" },
-  { name = "*.{html,css,scss,sass,less}", use = "edit" },
-  { name = "*.{conf,ini,cfg,env}", use = "edit" },
-  
-  # Fallback - any other text file
-  { mime = "text/*", use = "edit" },
+  { mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}", use = "archive" },
 ]
