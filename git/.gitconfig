@@ -1,6 +1,7 @@
 [user]
 	name = jstcz
 	email = j.czepluch@proton.me
+	signingkey = /home/jstcz/.ssh/id_ed25519.pub
 [init]
 	defaultBranch = main
 [url "git@github.com:"]
@@ -13,3 +14,9 @@
 	unstage = reset HEAD --
 	last = log -1 HEAD
 	lg = log --oneline --graph --decorate
+[gpg]
+	format = ssh
+[commit]
+	gpgsign = true
+[gpg "ssh"]
+	allowedSignersFile = /home/jstcz/.ssh/allowed_signers
