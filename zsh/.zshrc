@@ -126,6 +126,7 @@ else
   alias free='free -h'
   alias update='paru -Syu'
   alias cleanup='paru -Sc --noconfirm'
+  alias hpaper='killall hyprpaper && hyprpaper &'
 fi
 
 # FZF enhanced commands
