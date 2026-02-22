@@ -22,6 +22,9 @@ Thumbs.db
 AGENTS.md
 CLAUDE.md
 
+# Theme system - active palette is a copy of the selected palette file
+themes/colors.toml
+
 # Keep this file
 !.gitignore
 hypr/.config/hypr/shaders/

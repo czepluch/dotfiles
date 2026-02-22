@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+#
+# theme-set - Switch the active color palette and apply it
+#
+# Usage:
+#   theme-set <palette-name>    Set and apply a palette
+#   theme-set                   List available palettes
+#
+set -euo pipefail
+
+THEMES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+PALETTES_DIR="$THEMES_DIR/palettes"
+COLORS_FILE="$THEMES_DIR/colors.toml"
+APPS_DIR="$THEMES_DIR/apps"
+THEME_APPLY="$THEMES_DIR/bin/theme-apply"
+
+# Neovim colorscheme plugin location
+NVIM_COLORSCHEME="$HOME/.config/nvim/lua/plugins/colorscheme.lua"
+
+list_palettes() {
+    echo "Available palettes:"
+    for f in "$PALETTES_DIR"/*.toml; do
+        [[ -f "$f" ]] || continue
+        local name
+        name="$(basename "$f" .toml)"
+        if [[ -f "$COLORS_FILE" ]] && diff -q "$f" "$COLORS_FILE" &>/dev/null; then
+            echo "  $name (active)"
+        else
+            echo "  $name"
+        fi
+    done
+}
+
+main() {
+    if [[ $# -eq 0 ]]; then
+        list_palettes
+        exit 0
+    fi
+
+    local palette="$1"
+    local palette_file="$PALETTES_DIR/${palette}.toml"
+
+    if [[ ! -f "$palette_file" ]]; then
+        echo "error: palette '$palette' not found" >&2
+        echo "" >&2
+        list_palettes >&2
+        exit 1
+    fi
+
+    # Copy palette to colors.toml
+    cp "$palette_file" "$COLORS_FILE"
+    echo "Palette: $palette"
+
+    # Run theme-apply
+    "$THEME_APPLY"
+
+    # Pattern E: copy neovim metadata if available
+    local nvim_src="$APPS_DIR/$palette/neovim.lua"
+    if [[ -f "$nvim_src" ]]; then
+        mkdir -p "$(dirname "$NVIM_COLORSCHEME")"
+        cp "$nvim_src" "$NVIM_COLORSCHEME"
+        echo "Neovim colorscheme updated."
+    fi
+
+    # Reload apps that need explicit signals
+    killall -SIGUSR2 ghostty 2>/dev/null || true
+    killall -SIGUSR2 waybar 2>/dev/null || true
+    makoctl reload 2>/dev/null || true
+
+    echo ""
+    echo "Restart yazi, lazygit, btop, and neovim to pick up new theme."
+}
+
+main "$@"

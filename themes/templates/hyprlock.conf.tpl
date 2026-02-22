@@ -1,0 +1,6 @@
+$color = rgba({background.rgb}, 1)
+$inner_color = rgba({background.rgb}, 0.66)
+$outer_color = rgba({magenta.rgb}, 1)
+$font_color = rgba({foreground.rgb}, 1)
+$placeholder_color = rgba({foreground.rgb}, 0.7)
+$check_color = rgba({cyan.rgb}, 1)

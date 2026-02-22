@@ -1,0 +1,196 @@
+#!/usr/bin/env bash
+#
+# theme-apply - Process template files using colors.toml palette
+#
+# Reads themes/colors.toml, builds sed substitutions for all color variables
+# in three formats ({key}, {key.strip}, {key.rgb}), processes templates,
+# and writes output to ~/.config/themes/current/.
+#
+# Usage: theme-apply
+#
+set -euo pipefail
+
+THEMES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+COLORS_FILE="$THEMES_DIR/colors.toml"
+TEMPLATES_DIR="$THEMES_DIR/templates"
+MARKERS_DIR="$THEMES_DIR/markers"
+OUTPUT_DIR="$HOME/.config/themes/current"
+
+# Named aliases: map color numbers to friendly names
+declare -A ALIASES=(
+    [red]=color1
+    [green]=color2
+    [yellow]=color3
+    [blue]=color4
+    [magenta]=color5
+    [cyan]=color6
+    [white]=color7
+    [bright_red]=color9
+    [bright_green]=color10
+    [bright_yellow]=color11
+    [bright_blue]=color12
+    [bright_magenta]=color13
+    [bright_cyan]=color14
+)
+
+# Parse colors.toml into associative array
+declare -A COLORS
+parse_colors() {
+    while IFS= read -r line; do
+        # Skip comments and blank lines
+        [[ "$line" =~ ^[[:space:]]*# ]] && continue
+        [[ -z "${line// /}" ]] && continue
+
+        # Match key = "value" or key = "#value"
+        if [[ "$line" =~ ^[[:space:]]*([a-zA-Z_][a-zA-Z0-9_]*)[[:space:]]*=[[:space:]]*\"([^\"]+)\" ]]; then
+            local key="${BASH_REMATCH[1]}"
+            local val="${BASH_REMATCH[2]}"
+            COLORS["$key"]="$val"
+        fi
+    done < "$COLORS_FILE"
+
+    # Derive named aliases
+    for alias in "${!ALIASES[@]}"; do
+        local source="${ALIASES[$alias]}"
+        if [[ -n "${COLORS[$source]:-}" ]]; then
+            COLORS["$alias"]="${COLORS[$source]}"
+        fi
+    done
+}
+
+# Convert hex (#rrggbb) to "r, g, b" decimal
+hex_to_rgb() {
+    local hex="${1#\#}"
+    printf "%d, %d, %d" "0x${hex:0:2}" "0x${hex:2:2}" "0x${hex:4:2}"
+}
+
+# Build sed substitution file
+build_sed_file() {
+    local sed_file="$1"
+    > "$sed_file"
+
+    for key in "${!COLORS[@]}"; do
+        local val="${COLORS[$key]}"
+        local stripped="${val#\#}"
+        local rgb
+        rgb="$(hex_to_rgb "$val")"
+
+        # {key} -> #hex
+        echo "s|{${key}}|${val}|g" >> "$sed_file"
+        # {key.strip} -> hex (no #)
+        echo "s|{${key}.strip}|${stripped}|g" >> "$sed_file"
+        # {key.rgb} -> r, g, b
+        echo "s|{${key}.rgb}|${rgb}|g" >> "$sed_file"
+    done
+}
+
+# Process template files (Pattern A/B/C)
+process_templates() {
+    local sed_file="$1"
+
+    if [[ ! -d "$TEMPLATES_DIR" ]]; then
+        return
+    fi
+
+    for tpl in "$TEMPLATES_DIR"/*.tpl; do
+        [[ -f "$tpl" ]] || continue
+        local basename
+        basename="$(basename "$tpl" .tpl)"
+        sed -f "$sed_file" "$tpl" > "$OUTPUT_DIR/$basename"
+    done
+}
+
+# Process marker files (Pattern D) - replace content between markers in target configs
+process_markers() {
+    local sed_file="$1"
+
+    if [[ ! -d "$MARKERS_DIR" ]]; then
+        return
+    fi
+
+    for marker_tpl in "$MARKERS_DIR"/*.tpl; do
+        [[ -f "$marker_tpl" ]] || continue
+        local basename
+        basename="$(basename "$marker_tpl" .tpl)"
+
+        # Determine target file from marker name
+        local target=""
+        case "$basename" in
+            starship-palette)
+                target="$HOME/.config/starship.toml"
+                ;;
+            lazygit-theme)
+                target="$HOME/.config/lazygit/config.yml"
+                ;;
+            *)
+                echo "warning: unknown marker target for $basename" >&2
+                continue
+                ;;
+        esac
+
+        if [[ ! -f "$target" ]]; then
+            echo "warning: marker target $target does not exist, skipping" >&2
+            continue
+        fi
+
+        # Process the template through sed
+        local processed
+        processed="$(sed -f "$sed_file" "$marker_tpl")"
+
+        # Replace content between ### THEME-START ### and ### THEME-END ### markers
+        local tmp
+        tmp="$(mktemp)"
+        awk -v replacement="$processed" '
+            /### THEME-START ###/ {
+                print
+                print replacement
+                skip = 1
+                next
+            }
+            /### THEME-END ###/ {
+                skip = 0
+                print
+                next
+            }
+            !skip { print }
+        ' "$target" > "$tmp"
+        mv "$tmp" "$target"
+    done
+}
+
+SED_FILE=""
+cleanup() { [[ -n "$SED_FILE" ]] && rm -f "$SED_FILE"; }
+trap cleanup EXIT
+
+main() {
+    # Auto-default to catppuccin-mocha if no palette is active
+    if [[ ! -f "$COLORS_FILE" ]]; then
+        local default_palette="$THEMES_DIR/palettes/catppuccin-mocha.toml"
+        if [[ -f "$default_palette" ]]; then
+            cp "$default_palette" "$COLORS_FILE"
+        else
+            echo "error: $COLORS_FILE not found and no default palette available" >&2
+            exit 1
+        fi
+    fi
+
+    # Create output directory
+    mkdir -p "$OUTPUT_DIR"
+
+    # Parse colors
+    parse_colors
+
+    # Build sed substitution file
+    SED_FILE="$(mktemp)"
+    build_sed_file "$SED_FILE"
+
+    # Process templates -> output dir
+    process_templates "$SED_FILE"
+
+    # Process markers -> in-place replacement
+    process_markers "$SED_FILE"
+
+    echo "Theme applied. Output: $OUTPUT_DIR"
+}
+
+main "$@"
