@@ -194,6 +194,9 @@ eval "$(starship init zsh)"
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
+# Dotfiles theme scripts
+export PATH="$HOME/dotfiles/themes/bin:$PATH"
+
 # Improved history search (Ctrl+R with fzf)
 export FZF_CTRL_R_OPTS="
   --preview 'echo {}' --preview-window up:3:hidden:wrap

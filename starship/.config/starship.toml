@@ -3,12 +3,8 @@
 
 # Starship Configuration
 #
-# NOTE: Colors are managed manually in this file.
-# Starship doesn't support importing external palette files, so Aether cannot
-# manage just the colors. When changing Aether themes, update the [palettes.aether]
-# section below to match your new theme colors.
-#
-# Current palette: Aether (custom)
+# NOTE: The palette section between THEME-START/THEME-END markers is managed
+# by theme-apply. Run 'theme-set <palette>' to update colors.
 
 # Timeout for commands (in milliseconds)
 command_timeout = 1000
@@ -17,28 +13,29 @@ scan_timeout = 30
 # Add a blank line between shell prompts
 add_newline = true
 
-# Color palette (manually maintained - see note at top of file)
-palette = "aether"
+# ### THEME-START ###
+palette = "theme"
 
-[palettes.aether]
-background = "#080a1a"
-foreground = "#ffffff"
-black = "#080a1a"
-red = "#c0b765"
-green = "#5bdee9"
-yellow = "#dd5aed"
-blue = "#8683d3"
-magenta = "#e89cf0"
-cyan = "#8cdbe8"
-white = "#efe1f3"
-bright-black = "#636aa4"
-bright-red = "#ddd8a4"
-bright-green = "#a8f1f7"
-bright-yellow = "#f1a9fa"
-bright-blue = "#c6c5ed"
-bright-magenta = "#fbebfd"
-bright-cyan = "#d7f4f9"
-bright-white = "#ffffff"
+[palettes.theme]
+background = "#1e1e2e"
+foreground = "#cdd6f4"
+black = "#45475a"
+red = "#f38ba8"
+green = "#a6e3a1"
+yellow = "#f9e2af"
+blue = "#89b4fa"
+magenta = "#cba6f7"
+cyan = "#94e2d5"
+white = "#bac2de"
+bright-black = "#585b70"
+bright-red = "#f38ba8"
+bright-green = "#a6e3a1"
+bright-yellow = "#f9e2af"
+bright-blue = "#89b4fa"
+bright-magenta = "#cba6f7"
+bright-cyan = "#94e2d5"
+bright-white = "#a6adc8"
+# ### THEME-END ###
 
 # Format string - defines the order and layout of modules
 format = """
