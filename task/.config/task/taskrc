@@ -1,64 +1,85 @@
 # Taskwarrior Configuration
-# Stowed from ~/dotfiles/task/.config/task/taskrc
-# Using terminal colors (Aether theme)
 
 # Data location (XDG compliant)
 data.location=~/.local/share/task
 hooks.location=~/.config/task/hooks
 
 # =============================================================================
-# Terminal Color Theme (Aether-compatible)
-# Using terminal color codes that match Aether theme
+# Colors - uses terminal palette (inherited from ghostty theme)
 # =============================================================================
 
-# Basic colors using terminal palette
-color.label=color8
-color.label.sort=color8
+# Colors reference terminal palette (set by ghostty theme)
+# color0=black color1=red color2=green color3=yellow
+# color4=blue color5=magenta color6=cyan color7=white color8=bright-black
+
+# UI chrome
+color.label=bold color7
+color.label.sort=bold color7
 color.alternate=on color0
-color.header=color6
-color.footnote=color6
-color.warning=bold color1
-color.error=white on color1
-color.debug=color6
+color.header=color4
+color.footnote=color4
+color.warning=bold color3
+color.error=bold white on color1
+color.debug=color8
+
+# Task states
 color.completed=color8
-color.deleted=color8 on color1
-color.active=color6 on color4
-color.recurring=color3
-color.scheduled=on color4
+color.deleted=color8
+color.active=bold color6
+color.recurring=color5
+color.scheduled=color4
 color.until=color8
-color.blocked=white on color1
-color.blocking=white on color4
-color.project.none=color8
-color.uda.priority.H=color2
-color.uda.priority.L=color6
-color.uda.priority.M=color4
-color.tag.next=color3
-color.tag.none=color8
+color.blocked=color7 on color8
+color.blocking=bold color4
+
+# Priority
+color.uda.priority.H=bold color1
+color.uda.priority.M=color3
+color.uda.priority.L=color8
+
+# Tags
+color.tag.next=bold color3
+color.tag.none=
 color.tagged=color6
+color.project.none=
+
+# Due dates
+color.due=color3
 color.due.today=bold color3
-color.due=color7
-color.overdue=bold white on color1
-color.burndown.done=on color8
+color.overdue=bold color1
+
+# Burndown
+color.burndown.done=on color0
 color.burndown.pending=on color4
 color.burndown.started=on color6
+
+# History
 color.history.add=color0 on color6
-color.history.delete=color0 on color2
-color.history.done=color0 on color4
-color.summary.background=on color4
-color.summary.bar=on color2
-color.calendar.due.today=color0 on color7
-color.calendar.due=color0 on color7
-color.calendar.holiday=color7 on color6
-color.calendar.overdue=color0 on color7
-color.calendar.scheduled=color8
-color.calendar.today=color0 on color3
+color.history.delete=color0 on color1
+color.history.done=color0 on color2
+
+# Summary
+color.summary.background=on color0
+color.summary.bar=on color4
+
+# Calendar
+color.calendar.due.today=bold color0 on color3
+color.calendar.due=color3
+color.calendar.holiday=color0 on color6
+color.calendar.overdue=bold color0 on color1
+color.calendar.scheduled=color4
+color.calendar.today=bold color0 on color4
 color.calendar.weekend=on color0
-color.calendar.weeknumber=color6
-color.sync.added=color8
-color.sync.changed=color6
-color.sync.rejected=color4
+color.calendar.weeknumber=color8
+
+# Sync
+color.sync.added=color2
+color.sync.changed=color3
+color.sync.rejected=color1
+
+# Undo
 color.undo.after=color2
-color.undo.before=color6
+color.undo.before=color1
 
 # =============================================================================
 # UI Settings
