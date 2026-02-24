@@ -2,10 +2,6 @@
 #
 # theme-set - Switch the active color palette and apply it
 #
-# Usage:
-#   theme-set <palette-name>    Set and apply a palette
-#   theme-set                   List available palettes
-#
 set -euo pipefail
 
 THEMES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -16,6 +12,59 @@ THEME_APPLY="$THEMES_DIR/bin/theme-apply"
 
 # Neovim colorscheme plugin location
 NVIM_COLORSCHEME="$HOME/.config/nvim/lua/plugins/colorscheme.lua"
+
+usage() {
+    cat <<'EOF'
+Usage: theme-set [options] [<palette>]
+
+Switch the active color palette and apply it to all configured apps.
+
+With no arguments, lists available palettes.
+
+Options:
+  --neovim <palette>    Only update the neovim colorscheme for a palette
+  -h, --help            Show this help message
+
+Examples:
+  theme-set                       List available palettes
+  theme-set catppuccin-mocha      Activate the catppuccin-mocha palette
+  theme-set tokyo-night           Activate the tokyo-night palette
+  theme-set --neovim ayu          Update only the neovim colorscheme for ayu
+
+What it does:
+  1. Copies palettes/<name>.toml to colors.toml
+  2. Runs theme-apply to render all templates
+  3. Copies neovim metadata from apps/<name>/ if present
+  4. Sends reload signals to ghostty, waybar, and mako
+EOF
+}
+
+neovim_guide() {
+    local palette="$1"
+    cat <<EOF
+No neovim colorscheme found for '$palette'.
+
+To add one:
+  1. cp $APPS_DIR/TEMPLATE-neovim.lua $APPS_DIR/$palette/neovim.lua
+  2. Edit the file - the template has instructions for finding the right plugin
+  3. Run: theme-set --neovim $palette
+EOF
+}
+
+set_neovim() {
+    local palette="$1"
+    local nvim_src="$APPS_DIR/$palette/neovim.lua"
+
+    if [[ ! -f "$nvim_src" ]]; then
+        neovim_guide "$palette"
+        exit 1
+    fi
+
+    mkdir -p "$(dirname "$NVIM_COLORSCHEME")"
+    cp "$nvim_src" "$NVIM_COLORSCHEME"
+    echo "Neovim colorscheme updated for '$palette'."
+    echo "Restart neovim to pick up the new colorscheme."
+}
 
 list_palettes() {
     echo "Available palettes:"
@@ -36,6 +85,27 @@ main() {
         list_palettes
         exit 0
     fi
+
+    case "$1" in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        --neovim)
+            if [[ -z "${2:-}" ]]; then
+                echo "error: --neovim requires a palette name" >&2
+                echo "Run 'theme-set --help' for usage." >&2
+                exit 1
+            fi
+            set_neovim "$2"
+            exit 0
+            ;;
+        -*)
+            echo "error: unknown option '$1'" >&2
+            echo "Run 'theme-set --help' for usage." >&2
+            exit 1
+            ;;
+    esac
 
     local palette="$1"
     local palette_file="$PALETTES_DIR/${palette}.toml"

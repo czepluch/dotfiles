@@ -2,13 +2,34 @@
 #
 # theme-apply - Process template files using colors.toml palette
 #
-# Reads themes/colors.toml, builds sed substitutions for all color variables
-# in three formats ({key}, {key.strip}, {key.rgb}), processes templates,
-# and writes output to ~/.config/themes/current/.
-#
-# Usage: theme-apply
-#
 set -euo pipefail
+
+usage() {
+    cat <<'EOF'
+Usage: theme-apply
+
+Render all templates using the current colors.toml palette. This is the
+engine behind theme-set - you rarely need to run it directly.
+
+Options:
+  -h, --help    Show this help message
+
+Examples:
+  theme-apply                   Apply current palette to all templates
+  theme-set catppuccin-mocha    (preferred) Set palette and apply in one step
+
+What it does:
+  1. Reads colors.toml (defaults to catppuccin-mocha if missing)
+  2. Builds sed substitutions for {key}, {key.strip}, {key.rgb} formats
+  3. Renders templates/*.tpl to ~/.config/themes/current/
+  4. Replaces marker sections in starship and lazygit configs
+
+Template variable formats:
+  {accent}         #89b4fa          Full hex with #
+  {accent.strip}   89b4fa           Hex without #
+  {accent.rgb}     137, 180, 250    Decimal RGB
+EOF
+}
 
 THEMES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 COLORS_FILE="$THEMES_DIR/colors.toml"
@@ -159,10 +180,24 @@ process_markers() {
 }
 
 SED_FILE=""
-cleanup() { [[ -n "$SED_FILE" ]] && rm -f "$SED_FILE"; }
+cleanup() { [[ -n "$SED_FILE" ]] && rm -f "$SED_FILE" || true; }
 trap cleanup EXIT
 
 main() {
+    case "${1:-}" in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        "")
+            ;;
+        *)
+            echo "error: unexpected argument '$1'" >&2
+            echo "Run 'theme-apply --help' for usage." >&2
+            exit 1
+            ;;
+    esac
+
     # Auto-default to catppuccin-mocha if no palette is active
     if [[ ! -f "$COLORS_FILE" ]]; then
         local default_palette="$THEMES_DIR/palettes/catppuccin-mocha.toml"

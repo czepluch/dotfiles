@@ -76,6 +76,16 @@ Process all templates using the current `colors.toml`:
 2. Processes `templates/*.tpl` -> `~/.config/themes/current/`
 3. Processes `markers/*.tpl` -> replaces marker sections in target configs
 
+### theme-import [theme-name]
+Import a ghostty theme into the palette format:
+1. Reads theme from `/usr/share/ghostty/themes/`
+2. Maps ghostty keys to palette keys (cursor-color -> cursor, palette N -> colorN, etc.)
+3. Sets `accent` to the value of `color4`
+4. Writes `palettes/<slug>.toml` with slugified name (lowercase, spaces to hyphens)
+5. If `--apply`, runs `theme-set <slug>` after writing
+
+Flags: `--list` (list available themes), `--apply` (activate after import), `--force` (overwrite existing palette). With no arguments and fzf installed, opens an interactive theme browser.
+
 ### theme-set (no args)
 Lists available palettes, marking the active one.
 
@@ -108,6 +118,7 @@ themes/
   bin/
     theme-set
     theme-apply
+    theme-import
   SPEC.md
 ```
 

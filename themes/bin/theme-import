@@ -1,0 +1,208 @@
+#!/usr/bin/env bash
+#
+# theme-import - Import ghostty themes into the palette format
+#
+set -euo pipefail
+
+THEMES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+PALETTES_DIR="$THEMES_DIR/palettes"
+GHOSTTY_THEMES_DIR="/usr/share/ghostty/themes"
+
+# Flags
+APPLY=false
+FORCE=false
+LIST=false
+THEME_NAME=""
+
+usage() {
+    cat <<'EOF'
+Usage: theme-import [options] [<theme-name>]
+
+Import a ghostty theme into the palette format. Converts ghostty's color
+definitions into a palettes/*.toml file compatible with theme-set.
+
+With no arguments and fzf installed, opens an interactive theme browser.
+
+Options:
+  --list        List all available ghostty themes
+  --apply       Activate the palette immediately after importing
+  --force       Overwrite an existing palette file
+  -h, --help    Show this help message
+
+Examples:
+  theme-import                          Browse themes interactively with fzf
+  theme-import "Catppuccin Mocha"       Import a specific theme
+  theme-import --apply "Tokyo Night"    Import and activate immediately
+  theme-import --force "Afterglow"      Re-import, overwriting existing palette
+  theme-import --list                   List all 400+ available ghostty themes
+  theme-import --list | grep -i nord    Search for themes by name
+
+Key mapping:
+  ghostty palette = N=#hex   ->  colorN
+  ghostty background         ->  background
+  ghostty foreground         ->  foreground
+  ghostty cursor-color       ->  cursor
+  ghostty selection-*        ->  selection_*
+  (derived)                  ->  accent (defaults to color4)
+  ghostty cursor-text        ->  (skipped)
+EOF
+}
+
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -h|--help)
+                usage
+                exit 0
+                ;;
+            --apply)
+                APPLY=true
+                shift
+                ;;
+            --force)
+                FORCE=true
+                shift
+                ;;
+            --list)
+                LIST=true
+                shift
+                ;;
+            -*)
+                echo "error: unknown option '$1'" >&2
+                echo "Run 'theme-import --help' for usage." >&2
+                exit 1
+                ;;
+            *)
+                THEME_NAME="$1"
+                shift
+                ;;
+        esac
+    done
+}
+
+# Slugify theme name: lowercase, spaces to hyphens, strip special chars
+slugify() {
+    echo "$1" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed 's/[^a-z0-9-]//g'
+}
+
+list_themes() {
+    for f in "$GHOSTTY_THEMES_DIR"/*; do
+        [[ -f "$f" ]] || continue
+        basename "$f"
+    done
+}
+
+browse_themes() {
+    if ! command -v fzf &>/dev/null; then
+        echo "error: fzf not installed - provide a theme name as argument, or use --list" >&2
+        exit 1
+    fi
+    list_themes | fzf --prompt="Select theme: "
+}
+
+import_theme() {
+    local name="$1"
+    local theme_file="$GHOSTTY_THEMES_DIR/$name"
+
+    if [[ ! -f "$theme_file" ]]; then
+        echo "error: theme '$name' not found in $GHOSTTY_THEMES_DIR" >&2
+        echo "Use --list to see available themes, or run without arguments to browse with fzf." >&2
+        exit 1
+    fi
+
+    # Parse ghostty theme file
+    declare -A colors
+    while IFS= read -r line; do
+        # Skip comments and blank lines
+        [[ "$line" =~ ^[[:space:]]*# ]] && continue
+        [[ -z "${line// /}" ]] && continue
+
+        if [[ "$line" =~ ^[[:space:]]*palette[[:space:]]*=[[:space:]]*([0-9]+)=(#[0-9a-fA-F]{6}) ]]; then
+            colors["color${BASH_REMATCH[1]}"]="${BASH_REMATCH[2]}"
+        elif [[ "$line" =~ ^[[:space:]]*background[[:space:]]*=[[:space:]]*(#[0-9a-fA-F]{6}) ]]; then
+            colors[background]="${BASH_REMATCH[1]}"
+        elif [[ "$line" =~ ^[[:space:]]*foreground[[:space:]]*=[[:space:]]*(#[0-9a-fA-F]{6}) ]]; then
+            colors[foreground]="${BASH_REMATCH[1]}"
+        elif [[ "$line" =~ ^[[:space:]]*cursor-color[[:space:]]*=[[:space:]]*(#[0-9a-fA-F]{6}) ]]; then
+            colors[cursor]="${BASH_REMATCH[1]}"
+        elif [[ "$line" =~ ^[[:space:]]*selection-background[[:space:]]*=[[:space:]]*(#[0-9a-fA-F]{6}) ]]; then
+            colors[selection_background]="${BASH_REMATCH[1]}"
+        elif [[ "$line" =~ ^[[:space:]]*selection-foreground[[:space:]]*=[[:space:]]*(#[0-9a-fA-F]{6}) ]]; then
+            colors[selection_foreground]="${BASH_REMATCH[1]}"
+        fi
+        # cursor-text is intentionally skipped
+    done < "$theme_file"
+
+    # Default accent to color4 value
+    colors[accent]="${colors[color4]:-#6c99bb}"
+
+    # Generate slug and output path
+    local slug
+    slug="$(slugify "$name")"
+    local output_file="$PALETTES_DIR/${slug}.toml"
+
+    # Check for existing file
+    if [[ -f "$output_file" ]] && [[ "$FORCE" != true ]]; then
+        echo "error: palette '$slug' already exists at $output_file" >&2
+        echo "Use --force to overwrite." >&2
+        exit 1
+    fi
+
+    # Write palette file
+    mkdir -p "$PALETTES_DIR"
+    {
+        echo "# Imported from ghostty theme: $name"
+        echo ""
+        echo "accent = \"${colors[accent]}\""
+        echo "cursor = \"${colors[cursor]:-${colors[foreground]:-#ffffff}}\""
+        echo "foreground = \"${colors[foreground]:-#ffffff}\""
+        echo "background = \"${colors[background]:-#000000}\""
+        echo "selection_foreground = \"${colors[selection_foreground]:-${colors[foreground]:-#ffffff}}\""
+        echo "selection_background = \"${colors[selection_background]:-${colors[background]:-#000000}}\""
+        echo ""
+        for i in $(seq 0 15); do
+            echo "color${i} = \"${colors[color${i}]:-#000000}\""
+        done
+    } > "$output_file"
+
+    echo "Imported '$name' -> $output_file"
+    echo ""
+    echo "Note: no neovim colorscheme metadata was created."
+    echo "If a matching nvim plugin exists, add it manually at:"
+    echo "  $THEMES_DIR/apps/$slug/neovim.lua"
+
+    # Activate if requested
+    if [[ "$APPLY" == true ]]; then
+        echo ""
+        "$THEMES_DIR/bin/theme-set" "$slug"
+    fi
+}
+
+main() {
+    parse_args "$@"
+
+    # Validate ghostty themes directory
+    if [[ ! -d "$GHOSTTY_THEMES_DIR" ]]; then
+        echo "error: ghostty themes directory not found at $GHOSTTY_THEMES_DIR" >&2
+        echo "Install ghostty to get bundled themes." >&2
+        exit 1
+    fi
+
+    if [[ "$LIST" == true ]]; then
+        list_themes
+        exit 0
+    fi
+
+    # If no theme name given, browse with fzf
+    if [[ -z "$THEME_NAME" ]]; then
+        THEME_NAME="$(browse_themes)"
+        # fzf returns empty on cancel
+        if [[ -z "$THEME_NAME" ]]; then
+            exit 0
+        fi
+    fi
+
+    import_theme "$THEME_NAME"
+}
+
+main "$@"
