@@ -13,6 +13,7 @@ THEME_APPLY="$THEMES_DIR/bin/theme-apply"
 # Neovim colorscheme plugin location
 NVIM_COLORSCHEME="$HOME/.config/nvim/lua/plugins/colorscheme.lua"
 
+
 usage() {
     cat <<'EOF'
 Usage: theme-set [options] [<palette>]
@@ -36,6 +37,7 @@ What it does:
   2. Runs theme-apply to render all templates
   3. Copies neovim metadata from apps/<name>/ if present
   4. Sends reload signals to ghostty, waybar, and mako
+  5. Updates wallpaper if the palette defines one
 EOF
 }
 
@@ -64,6 +66,40 @@ set_neovim() {
     cp "$nvim_src" "$NVIM_COLORSCHEME"
     echo "Neovim colorscheme updated for '$palette'."
     echo "Restart neovim to pick up the new colorscheme."
+}
+
+set_wallpaper() {
+    local palette_file="$1"
+    local wallpaper=""
+
+    # Extract optional wallpaper field from palette
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^[[:space:]]*wallpaper[[:space:]]*=[[:space:]]*\"([^\"]+)\" ]]; then
+            wallpaper="${BASH_REMATCH[1]}"
+            break
+        fi
+    done < "$palette_file"
+
+    [[ -z "$wallpaper" ]] && return 0
+
+    local expanded="${wallpaper/#\~/$HOME}"
+
+    if [[ ! -f "$expanded" ]]; then
+        echo "warning: wallpaper not found: $wallpaper" >&2
+        return 0
+    fi
+
+    # Apply instantly via hyprctl IPC
+    if command -v hyprctl &>/dev/null; then
+        local monitors
+        monitors="$(hyprctl monitors -j 2>/dev/null | jq -r '.[].name' 2>/dev/null)"
+        while IFS= read -r monitor; do
+            [[ -z "$monitor" ]] && continue
+            hyprctl hyprpaper wallpaper "$monitor, $expanded" 2>/dev/null
+        done <<< "$monitors"
+    fi
+
+    echo "Wallpaper: $wallpaper"
 }
 
 list_palettes() {
@@ -136,6 +172,9 @@ main() {
     killall -SIGUSR2 ghostty 2>/dev/null || true
     killall -SIGUSR2 waybar 2>/dev/null || true
     makoctl reload 2>/dev/null || true
+
+    # Set wallpaper if palette defines one
+    set_wallpaper "$palette_file"
 
     echo ""
     echo "Restart yazi, lazygit, btop, and neovim to pick up new theme."

@@ -4,7 +4,7 @@ A bash+sed template engine that provides centralized color management for all de
 
 ## colors.toml Format
 
-22 keys defining the full color palette:
+22 color keys defining the full palette, plus an optional wallpaper path:
 
 ```toml
 accent = "#89b4fa"
@@ -14,7 +14,11 @@ background = "#1e1e2e"
 selection_foreground = "#1e1e2e"
 selection_background = "#f5e0dc"
 color0 = "#45475a"     # through color15
+
+wallpaper = "~/pics/wallpapers/foo.jpg"  # optional
 ```
+
+The `wallpaper` field is optional. When present, `theme-set` applies the wallpaper via `hyprctl` IPC. Palettes without it skip the wallpaper step entirely.
 
 ## Template Variable Syntax
 
@@ -69,6 +73,7 @@ Switch the active palette and apply it:
 2. Runs `theme-apply`
 3. Copies neovim metadata from `apps/<name>/`
 4. Sends SIGUSR2 to ghostty, reloads mako
+5. Updates wallpaper if the palette defines one (via `hyprctl` IPC)
 
 ### theme-apply
 Process all templates using the current `colors.toml`:
@@ -127,8 +132,9 @@ Runtime output (not in git): `~/.config/themes/current/`
 ## Adding a New Palette
 
 1. Create `palettes/<name>.toml` with all 22 color keys
-2. Optionally add `apps/<name>/neovim.lua` with a LazyVim colorscheme spec
-3. Test: `theme-set <name>`
+2. Optionally add `wallpaper = "~/pics/wallpapers/foo.jpg"` to the palette
+3. Optionally add `apps/<name>/neovim.lua` with a LazyVim colorscheme spec
+4. Test: `theme-set <name>`
 
 ## Adding a New App
 
@@ -170,6 +176,7 @@ Determine which pattern fits:
 | Yazi | No | Restart manually |
 | Starship | Yes (per-invocation) | - |
 | Lazygit | No | Restart manually |
+| Hyprpaper | No | hyprctl IPC (instant) |
 | Neovim | No | Restart manually |
 
 ## Bootstrap
@@ -193,7 +200,6 @@ Hyprland's `source` directive errors when the target file doesn't exist, and `ex
 ## Future Enhancements
 
 - **TUI palette previewer** - interactive terminal UI for browsing palettes, previewing colors.toml files, and fine-tuning individual color values before applying
-- **Wallpaper support** - optional `wallpaper = "/path/to/image.jpg"` field in palette files; theme-set updates hyprpaper.conf
 - **GTK/Qt theme** - set dark/light mode + accent color via gsettings
 - **Cursor theme** - set cursor theme per palette
 - **Palette from wallpaper** - extract dominant colors from an image into a colors.toml
