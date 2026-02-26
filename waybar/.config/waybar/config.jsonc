@@ -13,6 +13,8 @@
     "modules-right": [
         "tray",
         "custom/vpn",
+        "custom/netspeed",
+        "custom/network",
         "pulseaudio",
         "cpu",
         "memory",
@@ -50,8 +52,9 @@
     },
     "clock": {
         "interval": 1,
-        "format": "{:%a %b %d %H:%M:%S}",
-        "format-alt": "{:%H:%M}", "tooltip-format": "<tt><small>{calendar}</small></tt>",
+        "format": "{:%d-%m-%y %H:%M:%S}",
+        "format-alt": "{:%H:%M}",
+        "tooltip-format": "<tt><small>{calendar}</small></tt>",
         "calendar": {
             "mode": "year",
             "mode-mon-col": 3,
@@ -74,15 +77,18 @@
     "cpu": {
         "interval": 10,
         "format": "󰻠 {usage}%",
-        "tooltip": true 
+        "tooltip": true,
+        "on-click": "ghostty -e btop"
     },
     "memory": {
         "interval": 30,
-        "format": "󰍛 {}%"
+        "format": "󰍛 {}%",
+        "on-click": "ghostty -e btop"
     },
     "temperature": {
         "critical-threshold": 80,
-        "format": "󰔏{temperatureC}°C"
+        "format": "󰔏{temperatureC}°C",
+        "on-click": "ghostty -e btop"
     },
     "backlight": {
         "format": "{icon} {percent}%",
@@ -101,16 +107,19 @@
         "format-alt": "{time} {icon}",
         "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"]
     },
-    "network": {
-        "interval": 1,
-        "format-wifi": "󰇚{bandwidthDownBytes}",
-        "format-ethernet": "󰇚{bandwidthDownBytes}",
-        "format-linked": "No IP",
-        "format-disconnected": "Disconnected",
-        "tooltip-format": "{ifname}: {ipaddr}/{cidr}\nGateway: {gwaddr}\nSignal: {signalStrength}%"
+    "custom/network": {
+        "exec": "~/.config/waybar/network-status.sh",
+        "return-type": "json",
+        "interval": 10,
+        "on-click": "nm-connection-editor"
+    },
+    "custom/netspeed": {
+        "exec": "~/.config/waybar/netspeed.sh",
+        "return-type": "json",
+        "interval": 2
     },
     "pulseaudio": {
-        "format": "{icon} {volume}%",
+        "format": "󰕾 {volume}%",
         "format-bluetooth": "{icon} {volume}%",
         "format-bluetooth-muted": "󰝟 {icon}",
         "format-muted": "󰝟 Muted",
@@ -123,12 +132,16 @@
             "car": "",
             "default": ["󰕿", "󰖀", "󰕾"]
         },
-        "on-click": "pavucontrol"
+        "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "on-click-right": "pavucontrol",
+        "on-scroll-up": "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%+",
+        "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-"
     },
     "hyprland/language": {
         "format": "{}",
-        "format-en":"EN",
-        "format-da":"DA"
+        "format-en": "EN",
+        "format-da": "DA",
+        "on-click": "hyprctl switchxkblayout all next"
     },
     "custom/vpn": {
         "exec": "if ip link show wg0 &>/dev/null || ip link show dappnode-local &>/dev/null || ip link show dappnode-remote &>/dev/null; then echo '󰌾'; else echo ''; fi",
