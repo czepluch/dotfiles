@@ -51,7 +51,7 @@ CSS file uses `@import` for color definitions; structural CSS stays in stow pack
 
 ### C - Full Template
 Entire config is a template. Stow package has symlink pointing to generated output.
-- **Apps**: mako, hyprtoolkit, fuzzel, yazi
+- **Apps**: mako, fuzzel, yazi
 - **Templates**: `templates/*.tpl` -> `~/.config/themes/current/*`
 - **Yazi note**: we generate a full `theme.toml` rather than using yazi's "flavor" system. Flavors are distribution packages requiring 6 boilerplate files in a hardcoded path (`~/.config/yazi/flavors/`). Generating `theme.toml` directly from our palette is simpler, gives full control, and is the same approach that catppuccin/yazi uses internally to build its flavor files.
 
@@ -109,7 +109,6 @@ themes/
     btop.theme.tpl
     waybar-colors.css.tpl
     mako.conf.tpl
-    hyprtoolkit.conf.tpl
     fuzzel.ini.tpl
     yazi-theme.toml.tpl
   markers/                 # Pattern D templates
@@ -171,7 +170,6 @@ Determine which pattern fits:
 | Btop | No | Restart manually |
 | Waybar | No (inotify only watches main CSS, not imports) | SIGUSR2 |
 | Mako | No | makoctl reload |
-| Hyprtoolkit | Yes (inotify) | - |
 | Fuzzel | Yes (per-invocation) | - |
 | Yazi | No | Restart manually |
 | Starship | Yes (per-invocation) | - |
