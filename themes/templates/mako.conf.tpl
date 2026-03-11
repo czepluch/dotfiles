@@ -1,13 +1,14 @@
 text-color={foreground}
 border-color={magenta}
-background-color={background}
-width=420
-height=110
-padding=10
+background-color=#{background.strip}60
+width=450
+height=130
+padding=12
 border-size=2
-font=Liberation Sans 11
+border-radius=12
+font=JetBrainsMono Nerd Font 12
 anchor=top-right
-outer-margin=20
+outer-margin=10,14
 default-timeout=5000
 max-icon-size=32
 
