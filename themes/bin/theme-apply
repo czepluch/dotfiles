@@ -25,9 +25,11 @@ What it does:
   4. Replaces marker sections in starship and lazygit configs
 
 Template variable formats:
-  {accent}         #89b4fa          Full hex with #
-  {accent.strip}   89b4fa           Hex without #
-  {accent.rgb}     137, 180, 250    Decimal RGB
+  {accent}             #89b4fa          Full hex with #
+  {accent.strip}       89b4fa           Hex without #
+  {accent.rgb}         137, 180, 250    Decimal RGB
+  {accent.vivid}       #5999ff          Saturation-boosted hex with #
+  {accent.vivid_strip} 5999ff           Saturation-boosted hex without #
 EOF
 }
 
@@ -87,6 +89,49 @@ hex_to_rgb() {
     printf "%d, %d, %d" "0x${hex:0:2}" "0x${hex:2:2}" "0x${hex:4:2}"
 }
 
+# Boost color saturation by pushing each RGB channel away from the mean
+hex_to_vivid() {
+    local hex="${1#\#}"
+    local r=$((16#${hex:0:2}))
+    local g=$((16#${hex:2:2}))
+    local b=$((16#${hex:4:2}))
+    local avg=$(( (r + g + b) / 3 ))
+    local boost=50
+
+    r=$(( r + (r - avg) * boost / 100 ))
+    g=$(( g + (g - avg) * boost / 100 ))
+    b=$(( b + (b - avg) * boost / 100 ))
+
+    (( r < 0 )) && r=0; (( r > 255 )) && r=255
+    (( g < 0 )) && g=0; (( g > 255 )) && g=255
+    (( b < 0 )) && b=0; (( b > 255 )) && b=255
+
+    printf "#%02x%02x%02x" "$r" "$g" "$b"
+}
+
+# Linearly interpolate between two hex colors at a given ratio (0-100)
+hex_lerp() {
+    local hex_a="${1#\#}" hex_b="${2#\#}" ratio="$3"
+    local ra=$((16#${hex_a:0:2})) ga=$((16#${hex_a:2:2})) ba=$((16#${hex_a:4:2}))
+    local rb=$((16#${hex_b:0:2})) gb=$((16#${hex_b:2:2})) bb=$((16#${hex_b:4:2}))
+    local r=$(( ra + (rb - ra) * ratio / 100 ))
+    local g=$(( ga + (gb - ga) * ratio / 100 ))
+    local b=$(( ba + (bb - ba) * ratio / 100 ))
+    printf "#%02x%02x%02x" "$r" "$g" "$b"
+}
+
+# Derive gradient colors (accent -> magenta in 9 steps)
+derive_gradients() {
+    if [[ -n "${COLORS[accent]:-}" && -n "${COLORS[magenta]:-}" ]]; then
+        local from="${COLORS[accent]}" to="${COLORS[magenta]}"
+        local i
+        for i in 1 2 3 4 5 6 7 8 9; do
+            local ratio=$(( (i - 1) * 100 / 8 ))
+            COLORS["gradient${i}"]="$(hex_lerp "$from" "$to" "$ratio")"
+        done
+    fi
+}
+
 # Build sed substitution file
 build_sed_file() {
     local sed_file="$1"
@@ -104,6 +149,14 @@ build_sed_file() {
         echo "s|{${key}.strip}|${stripped}|g" >> "$sed_file"
         # {key.rgb} -> r, g, b
         echo "s|{${key}.rgb}|${rgb}|g" >> "$sed_file"
+
+        # {key.vivid} -> #hex with boosted saturation
+        local vivid
+        vivid="$(hex_to_vivid "$val")"
+        local vivid_stripped="${vivid#\#}"
+        echo "s|{${key}.vivid}|${vivid}|g" >> "$sed_file"
+        # {key.vivid_strip} -> hex without # with boosted saturation
+        echo "s|{${key}.vivid_strip}|${vivid_stripped}|g" >> "$sed_file"
     done
 }
 
@@ -214,8 +267,9 @@ main() {
     # Create output directory
     mkdir -p "$OUTPUT_DIR"
 
-    # Parse colors
+    # Parse colors and derive gradients
     parse_colors
+    derive_gradients
 
     # Build sed substitution file
     SED_FILE="$(mktemp)"

@@ -51,7 +51,7 @@ CSS file uses `@import` for color definitions; structural CSS stays in stow pack
 
 ### C - Full Template
 Entire config is a template. Stow package has symlink pointing to generated output.
-- **Apps**: mako, fuzzel, yazi
+- **Apps**: mako, fuzzel, yazi, fastfetch
 - **Templates**: `templates/*.tpl` -> `~/.config/themes/current/*`
 - **Yazi note**: we generate a full `theme.toml` rather than using yazi's "flavor" system. Flavors are distribution packages requiring 6 boilerplate files in a hardcoded path (`~/.config/yazi/flavors/`). Generating `theme.toml` directly from our palette is simpler, gives full control, and is the same approach that catppuccin/yazi uses internally to build its flavor files.
 
@@ -111,6 +111,7 @@ themes/
     mako.conf.tpl
     fuzzel.ini.tpl
     yazi-theme.toml.tpl
+    fastfetch.jsonc.tpl
   markers/                 # Pattern D templates
     starship-palette.tpl
     lazygit-theme.tpl
@@ -172,6 +173,7 @@ Determine which pattern fits:
 | Mako | No | makoctl reload |
 | Fuzzel | Yes (per-invocation) | - |
 | Yazi | No | Restart manually |
+| Fastfetch | Yes (per-invocation) | - |
 | Starship | Yes (per-invocation) | - |
 | Lazygit | No | Restart manually |
 | Hyprpaper | No | hyprctl IPC (instant) |
