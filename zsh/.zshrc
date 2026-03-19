@@ -42,6 +42,31 @@ fi
 autoload -Uz compinit
 compinit
 
+# Completion styling
+zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion:*' squeeze-slashes true
+zstyle ':completion:*:descriptions' format '[%d]'
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/.zcompcache"
+zstyle ':completion:*' completer _extensions _complete _approximate
+zstyle ':completion:*' menu no
+
+# fzf-tab (must be loaded after compinit, before autosuggestions/syntax-highlighting)
+if [[ "$OS_TYPE" == "Darwin" ]]; then
+  [[ -f /opt/homebrew/share/zsh-fzf-tab/fzf-tab.plugin.zsh ]] && source /opt/homebrew/share/zsh-fzf-tab/fzf-tab.plugin.zsh
+else
+  source /usr/share/zsh/plugins/fzf-tab-git/fzf-tab.plugin.zsh
+fi
+
+# fzf-tab config
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always --icons $realpath'
+zstyle ':fzf-tab:complete:z:*' fzf-preview 'eza -1 --color=always --icons $realpath'
+zstyle ':fzf-tab:complete:*:*' fzf-preview 'bat --color=always --style=numbers --line-range=:500 ${realpath} 2>/dev/null || eza -1 --color=always --icons ${realpath} 2>/dev/null'
+zstyle ':fzf-tab:*' continuous-trigger '/'
+zstyle ':fzf-tab:*' switch-group F1 F2
+
 # Plugins
 if [[ "$OS_TYPE" == "Darwin" ]]; then
   # macOS (Homebrew paths)
@@ -157,11 +182,9 @@ alias vpn-remote='sudo wg-quick up dappnode-remote'
 alias vpn-down='sudo wg-quick down dappnode-local 2>/dev/null; sudo wg-quick down dappnode-remote 2>/dev/null'
 alias vpn-status='sudo wg show'
 
-# Zoxide aliases (smart cd replacement)
-# After sourcing zoxide below, 'z' and 'zi' will be available
-# z <directory> - jump to directory
-# zi - interactive directory picker with fzf
-alias cd='z'  # Use zoxide instead of cd
+# Zoxide is initialized below with --cmd cd, replacing cd with zoxide
+# cd <directory> - jump to directory (uses zoxide frecency)
+# cdi - interactive directory picker with fzf
 
 # Yazi - change directory on exit
 function ya() {
@@ -185,8 +208,8 @@ fi
 # Mise (version manager)
 eval "$(mise activate zsh)"
 
-# Zoxide (smart cd)
-eval "$(zoxide init zsh)"
+# Zoxide (smart cd) - replaces cd with zoxide, adds cdi for interactive
+eval "$(zoxide init --cmd cd zsh)"
 
 # Starship prompt
 eval "$(starship init zsh)"
