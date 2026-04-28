@@ -2,6 +2,7 @@
   "extras": [
     "lazyvim.plugins.extras.coding.yanky",
     "lazyvim.plugins.extras.editor.dial",
+    "lazyvim.plugins.extras.editor.illuminate",
     "lazyvim.plugins.extras.formatting.prettier",
     "lazyvim.plugins.extras.lang.gleam",
     "lazyvim.plugins.extras.lang.markdown",
@@ -9,6 +10,7 @@
     "lazyvim.plugins.extras.lang.solidity",
     "lazyvim.plugins.extras.lang.zig",
     "lazyvim.plugins.extras.test.core",
+    "lazyvim.plugins.extras.ui.treesitter-context",
     "lazyvim.plugins.extras.util.dot",
     "lazyvim.plugins.extras.util.mini-hipatterns"
   ],

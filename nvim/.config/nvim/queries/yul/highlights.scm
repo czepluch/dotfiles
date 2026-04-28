@@ -1,0 +1,1 @@
+/home/jstcz/dev/argot/tree-sitter-yul/queries/highlights.scm
