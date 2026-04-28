@@ -182,6 +182,26 @@ alias vpn-remote='sudo wg-quick up dappnode-remote'
 alias vpn-down='sudo wg-quick down dappnode-local 2>/dev/null; sudo wg-quick down dappnode-remote 2>/dev/null'
 alias vpn-status='sudo wg show'
 
+# Rescan WiFi and connect to home SSID (fixes wrong-SSID after suspend)
+squirrels() {
+  local ssid="squirrels_rule_the_world"
+  local timeout=10
+  echo "Rescanning for $ssid..."
+  nmcli device wifi rescan >/dev/null 2>&1
+  local i=0
+  while (( i < timeout )); do
+    if nmcli -t -f SSID device wifi list 2>/dev/null | grep -Fxq "$ssid"; then
+      echo "Found $ssid, connecting..."
+      nmcli device wifi connect "$ssid"
+      return $?
+    fi
+    sleep 1
+    ((i++))
+  done
+  echo "Timed out after ${timeout}s - $ssid not found"
+  return 1
+}
+
 # Zoxide is initialized below with --cmd cd, replacing cd with zoxide
 # cd <directory> - jump to directory (uses zoxide frecency)
 # cdi - interactive directory picker with fzf
