@@ -28,4 +28,4 @@ else
     display="${rate} B/s"
 fi
 
-printf '{"text": "󰇚%s", "tooltip": "Download speed", "class": "speed"}\n' "$display"
+printf '{"text": "󰇚 %s", "tooltip": "Download speed", "class": "speed"}\n' "$display"
