@@ -11,9 +11,10 @@
     "reload_style_on_change": true,
 
     "modules-left": [
-        "hyprland/workspaces"
+        "hyprland/workspaces",
+        "custom/hn-left"
     ],
-    "modules-center": [],
+    "modules-center": ["custom/hn-center"],
     "modules-right": [
         "tray",
         "custom/vpn",
@@ -152,5 +153,17 @@
         "interval": 5,
         "tooltip-exec": "wg show 2>/dev/null | head -5 || echo 'VPN disconnected'",
         "on-click": "if ip link show dappnode-local &>/dev/null || ip link show dappnode-remote &>/dev/null; then sudo wg-quick down dappnode-local 2>/dev/null; sudo wg-quick down dappnode-remote 2>/dev/null; else sudo wg-quick up dappnode-remote; fi"
+    },
+    "custom/hn-center": {
+        "exec": "~/.config/waybar/hn.sh center",
+        "return-type": "json",
+        "interval": 60,
+        "on-click": "xdg-open \"$(cat ~/.cache/waybar/hn-url 2>/dev/null)\""
+    },
+    "custom/hn-left": {
+        "exec": "~/.config/waybar/hn.sh left",
+        "return-type": "json",
+        "interval": 60,
+        "on-click": "xdg-open \"$(cat ~/.cache/waybar/hn-url 2>/dev/null)\""
     }
 }

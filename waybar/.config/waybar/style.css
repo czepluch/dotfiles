@@ -171,6 +171,30 @@ window#waybar {
     padding: 0 10px;
 }
 
+#custom-hn-center,
+#custom-hn-left {
+    color: @yellow;
+    padding: 0 10px;
+    margin: 4px 1px;
+}
+
+#custom-hn-left {
+    margin-left: 8px;
+}
+
+#custom-hn-center:hover,
+#custom-hn-left:hover {
+    background: alpha(@bright-black, 0.5);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.hidden {
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+}
+
 /* Power Profiles */
 #power-profiles-daemon {
     color: @green;
