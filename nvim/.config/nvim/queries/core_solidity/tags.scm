@@ -1,1 +1,0 @@
-/home/jstcz/dev/argot/tree-sitter-core-solidity/queries/tags.scm
