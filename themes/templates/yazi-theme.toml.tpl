@@ -107,32 +107,32 @@ rules = [
 
   # Documents
   { mime = "application/pdf", fg = "{yellow}" },
-  { name = "*.md", fg = "{blue}" },
+  { url = "*.md", fg = "{blue}" },
 
   # Code
-  { name = "*.{js,ts,jsx,tsx}", fg = "{cyan}" },
-  { name = "*.{py,pyc}", fg = "{green}" },
-  { name = "*.{rs,toml}", fg = "{red}" },
-  { name = "*.{sol,gleam}", fg = "{blue}" },
+  { url = "*.{js,ts,jsx,tsx}", fg = "{cyan}" },
+  { url = "*.{py,pyc}", fg = "{green}" },
+  { url = "*.{rs,toml}", fg = "{red}" },
+  { url = "*.{sol,gleam}", fg = "{blue}" },
 
   # Directories
-  { name = "*/", fg = "{blue}" },
+  { url = "*/", fg = "{blue}" },
 
   # Fallback
-  { name = "*", fg = "{color7}" },
+  { url = "*", fg = "{color7}" },
 ]
 
 [icon]
 rules = [
-  { name = "*/", text = "" },
-  { name = "*.rs", text = "" },
-  { name = "*.py", text = "" },
-  { name = "*.js", text = "" },
-  { name = "*.ts", text = "" },
-  { name = "*.sol", text = "󰞻" },
-  { name = "*.md", text = "" },
-  { name = "*.json", text = "" },
-  { name = "*.toml", text = "" },
-  { name = "*.yaml", text = "" },
-  { name = "*.yml", text = "" },
+  { url = "*/", text = "" },
+  { url = "*.rs", text = "" },
+  { url = "*.py", text = "" },
+  { url = "*.js", text = "" },
+  { url = "*.ts", text = "" },
+  { url = "*.sol", text = "󰞻" },
+  { url = "*.md", text = "" },
+  { url = "*.json", text = "" },
+  { url = "*.toml", text = "" },
+  { url = "*.yaml", text = "" },
+  { url = "*.yml", text = "" },
 ]

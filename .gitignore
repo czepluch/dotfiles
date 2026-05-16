@@ -18,6 +18,10 @@ Thumbs.db
 *.local
 *_local
 
+# But keep the bin stow package, whose layout requires bin/.local/bin/
+!bin/.local/
+!bin/.local/**
+
 # Ignore AI agent guidance files (private)
 AGENTS.md
 CLAUDE.md

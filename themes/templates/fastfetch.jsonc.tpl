@@ -47,7 +47,11 @@
     "memory",
     "disk",
     "localip",
-    "battery",
+    {
+      "type": "command",
+      "key": "Battery",
+      "text": "battery -1"
+    },
     "poweradapter",
     "break",
     "colors"

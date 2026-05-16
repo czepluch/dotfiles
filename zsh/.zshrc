@@ -228,9 +228,6 @@ fi
 # Mise (version manager)
 eval "$(mise activate zsh)"
 
-# Zoxide (smart cd) - replaces cd with zoxide, adds cdi for interactive
-eval "$(zoxide init --cmd cd zsh)"
-
 # Starship prompt
 eval "$(starship init zsh)"
 
@@ -296,3 +293,7 @@ fkill() {
     echo "Killed process $pid"
   fi
 }
+
+# Zoxide (smart cd) - replaces cd with zoxide, adds cdi for interactive.
+# Must be last so its precmd hook isn't shadowed by anything below.
+eval "$(zoxide init --cmd cd zsh)"

@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+#
+# battery - print battery status from /sys/class/power_supply
+#
+set -euo pipefail
+
+usage() {
+    cat <<'EOF'
+Usage: battery [-1|--one-line] [-h|--help]
+
+Print battery status, runtime estimate, health, and cycle count.
+
+Options:
+  -1, --one-line   Single-line summary (for fastfetch / status bars)
+  -h, --help       Show this help
+
+Reads /sys/class/power_supply/BAT? directly. No external deps.
+EOF
+}
+
+ONE_LINE=0
+for arg in "$@"; do
+    case "$arg" in
+        -1|--one-line) ONE_LINE=1 ;;
+        -h|--help)     usage; exit 0 ;;
+        *)             usage >&2; exit 2 ;;
+    esac
+done
+
+BAT=$(find /sys/class/power_supply -maxdepth 1 -name 'BAT*' -print -quit)
+[ -n "$BAT" ] || { echo "No battery found" >&2; exit 1; }
+
+read -r capacity        < "$BAT/capacity"
+read -r status          < "$BAT/status"
+read -r energy_now      < "$BAT/energy_now"
+read -r energy_full     < "$BAT/energy_full"
+read -r energy_design   < "$BAT/energy_full_design"
+read -r cycles          < "$BAT/cycle_count"
+read -r power_now       < "$BAT/power_now"
+
+# Time remaining string. power_now=0 -> idle/full -> "N/A".
+if [ "$power_now" -gt 0 ]; then
+    case "$status" in
+        Discharging) remaining=$energy_now ;;
+        Charging)    remaining=$((energy_full - energy_now)) ;;
+        *)           remaining=0 ;;
+    esac
+    if [ "$remaining" -gt 0 ]; then
+        secs=$(( remaining * 3600 / power_now ))
+        time_str=$(printf '%dh%02dm' $((secs / 3600)) $(((secs % 3600) / 60)))
+        [ "$status" = "Charging" ] && time_str="$time_str to full"
+    else
+        time_str="N/A"
+    fi
+else
+    time_str="N/A"
+fi
+
+power_w=$(awk "BEGIN { printf \"%.2f\", $power_now / 1000000 }")
+energy_full_wh=$(awk "BEGIN { printf \"%.2f\", $energy_full / 1000000 }")
+energy_design_wh=$(awk "BEGIN { printf \"%.2f\", $energy_design / 1000000 }")
+health=$(awk "BEGIN { printf \"%.0f\", ($energy_full / $energy_design) * 100 }")
+
+if [ "$ONE_LINE" -eq 1 ]; then
+    printf '%d%% %s - %s - %d cycles\n' "$capacity" "$status" "$time_str" "$cycles"
+else
+    printf '%-10s %d%%  %s\n'              'Battery' "$capacity" "$status"
+    printf '%-10s ~%s  @ %sW\n'            'Runtime' "$time_str" "$power_w"
+    printf '%-10s %s%%  (%s / %s Wh)\n'    'Health'  "$health" "$energy_full_wh" "$energy_design_wh"
+    printf '%-10s %d\n'                    'Cycles'  "$cycles"
+fi
