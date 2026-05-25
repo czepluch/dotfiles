@@ -40,9 +40,10 @@ Named aliases are derived automatically from numbered colors:
 
 ### A - Import Fragment
 Config file adds one `source`/`config-file` line pointing to generated output.
-- **Apps**: ghostty, hyprland, hyprlock, btop
+- **Apps**: ghostty, hyprland, hyprlock, btop, newt
 - **Templates**: `templates/*.tpl` -> `~/.config/themes/current/*`
 - **Hyprland/Hyprlock note**: wrap source lines with `# hyprlang noerror true` / `# hyprlang noerror false` so a missing file (before first `theme-set`) doesn't produce a config error. This is a standard hyprlang feature used by major dotfile repos.
+- **Newt note**: newt (nmtui, whiptail) has no config file - the "import line" is `export NEWT_COLORS_FILE="$HOME/.config/themes/current/newt-colors"` in `zsh/.zshrc`. newt re-reads that file on every launch and silently ignores a missing path, so there is no reload step and no first-boot error. libnewt >= 0.52.25 accepts `#rrggbb` hex values, so the template uses palette colors directly.
 
 ### B - CSS Import
 CSS file uses `@import` for color definitions; structural CSS stays in stow package.
@@ -112,6 +113,7 @@ themes/
     fuzzel.ini.tpl
     yazi-theme.toml.tpl
     fastfetch.jsonc.tpl
+    newt-colors.tpl
   markers/                 # Pattern D templates
     starship-palette.tpl
     lazygit-theme.tpl
@@ -178,6 +180,7 @@ Determine which pattern fits:
 | Lazygit | No | Restart manually |
 | Hyprpaper | No | hyprctl IPC (instant) |
 | Neovim | No | Restart manually |
+| Newt/nmtui | Yes (per-invocation) | - |
 
 ## Bootstrap
 
