@@ -87,12 +87,21 @@ window#waybar {
 #clock,
 #tray,
 #language,
-#power-profiles-daemon {
+#power-profiles-daemon,
+#custom-ppd {
     background: transparent;
     padding: 0 8px;
     margin: 4px 1px;
     color: @fg;
 }
+
+/* Power-profiles-daemon module - color tracks the active profile.
+   Sits next to #battery (which is blue); these colors are distinct from it
+   on purpose so the bar reads at a glance: red=running hot, yellow=normal,
+   green=saving. */
+#custom-ppd.performance { color: @red; }
+#custom-ppd.balanced    { color: @yellow; }
+#custom-ppd.power-saver { color: @green; }
 
 #clock {
     color: @cyan;
