@@ -49,7 +49,7 @@ if [ "$width" -ge 3840 ]; then
 elif [ "$width" -ge 2560 ]; then
     max_len=70
 else
-    max_len=35
+    max_len=60
 fi
 
 # Refresh cache if missing or stale.
