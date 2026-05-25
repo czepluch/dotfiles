@@ -61,11 +61,46 @@ energy_full_wh=$(awk "BEGIN { printf \"%.2f\", $energy_full / 1000000 }")
 energy_design_wh=$(awk "BEGIN { printf \"%.2f\", $energy_design / 1000000 }")
 health=$(awk "BEGIN { printf \"%.0f\", ($energy_full / $energy_design) * 100 }")
 
+# --- Discharge-since tracking ----------------------------------------------
+# Lazy detection: state is written each invocation. If the script doesn't run
+# while AC unplugs, the recorded "since" timestamp will be when the script
+# next noticed, not the actual unplug. Good enough for casual use (the script
+# runs from fastfetch at terminal startup and on demand). For exact tracking,
+# a udev rule on /sys/class/power_supply/AC*/online would be the upgrade.
+STATE_DIR="${XDG_RUNTIME_DIR:-/tmp}/battery"
+mkdir -p "$STATE_DIR"
+prev_status=$(cat "$STATE_DIR/last-status" 2>/dev/null || true)
+
+if [ "$status" = "Discharging" ] && [ "$prev_status" != "Discharging" ]; then
+    date +%s > "$STATE_DIR/discharge-since"
+    echo "$capacity" > "$STATE_DIR/discharge-since-pct"
+elif [ "$status" != "Discharging" ] && [ "$prev_status" = "Discharging" ]; then
+    rm -f "$STATE_DIR/discharge-since" "$STATE_DIR/discharge-since-pct"
+fi
+echo "$status" > "$STATE_DIR/last-status"
+
+since_str=""
+if [ "$status" = "Discharging" ] && [ -s "$STATE_DIR/discharge-since" ]; then
+    started=$(cat "$STATE_DIR/discharge-since")
+    start_pct=$(cat "$STATE_DIR/discharge-since-pct" 2>/dev/null || echo "?")
+    elapsed=$(( $(date +%s) - started ))
+    if [ "$elapsed" -ge 3600 ]; then
+        since_str=$(printf '%dh%02dm' $((elapsed / 3600)) $(((elapsed % 3600) / 60)))
+    else
+        since_str=$(printf '%dm' $((elapsed / 60)))
+    fi
+fi
+
 if [ "$ONE_LINE" -eq 1 ]; then
-    printf '%d%% %s - %s - %d cycles\n' "$capacity" "$status" "$time_str" "$cycles"
+    if [ -n "$since_str" ]; then
+        printf '%d%% %s - %s - on battery %s\n' "$capacity" "$status" "$time_str" "$since_str"
+    else
+        printf '%d%% %s - %s - %d cycles\n' "$capacity" "$status" "$time_str" "$cycles"
+    fi
 else
     printf '%-10s %d%%  %s\n'              'Battery' "$capacity" "$status"
     printf '%-10s ~%s  @ %sW\n'            'Runtime' "$time_str" "$power_w"
     printf '%-10s %s%%  (%s / %s Wh)\n'    'Health'  "$health" "$energy_full_wh" "$energy_design_wh"
     printf '%-10s %d\n'                    'Cycles'  "$cycles"
+    [ -n "$since_str" ] && printf '%-10s %s  (from %s%%)\n' 'On batt'  "$since_str" "$start_pct"
 fi
