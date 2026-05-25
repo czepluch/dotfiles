@@ -299,4 +299,9 @@ fkill() {
 
 # Zoxide (smart cd) - replaces cd with zoxide, adds cdi for interactive.
 # Must be last so its precmd hook isn't shadowed by anything below.
-eval "$(zoxide init --cmd cd zsh)"
+# Interactive-only guard: non-interactive shells (scripts, Claude Code's
+# bash subprocesses) have no prompt loop, so zoxide's hooks are useless
+# there and its doctor check false-positives. See zoxide#1208.
+if [[ $- == *i* ]]; then
+  eval "$(zoxide init --cmd cd zsh)"
+fi
