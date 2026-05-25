@@ -23,7 +23,7 @@ Uses Insert-based shortcuts that work everywhere including terminals!
 
 | Keybinding | Action | Description |
 |------------|--------|-------------|
-| `SUPER + Return` | Launch Terminal | Opens kitty terminal |
+| `SUPER + Return` | Launch Terminal | Opens ghostty terminal |
 | `SUPER + Q` | Kill Active | Close focused window |
 | `SUPER + M` | Exit Hyprland | Exit/logout |
 | `SUPER + F` | Toggle Floating | Toggle window floating mode |
