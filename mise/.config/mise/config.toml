@@ -4,6 +4,7 @@ foundry = "latest"
 gleam = "latest"
 node = "lts"
 solidity = "latest"
+yarn = "1.22.22"
 zig = "master"
 
 [settings]
