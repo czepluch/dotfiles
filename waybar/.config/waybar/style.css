@@ -88,7 +88,8 @@ window#waybar {
 #tray,
 #language,
 #power-profiles-daemon,
-#custom-ppd {
+#custom-ppd,
+#custom-dnd {
     background: transparent;
     padding: 0 8px;
     margin: 4px 1px;
@@ -102,6 +103,10 @@ window#waybar {
 #custom-ppd.performance { color: @red; }
 #custom-ppd.balanced    { color: @yellow; }
 #custom-ppd.power-saver { color: @green; }
+
+/* Do-not-disturb toggle - red when notifications are silenced. */
+#custom-dnd.active   { color: @red; }
+#custom-dnd.inactive { color: @fg; }
 
 #clock {
     color: @cyan;
@@ -276,6 +281,7 @@ window#waybar {
 #battery:hover,
 #custom-network:hover,
 #network:hover,
+#custom-dnd:hover,
 #language:hover {
     background: alpha(@bright-black, 0.5);
     border-radius: 8px;
