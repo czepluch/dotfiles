@@ -36,7 +36,7 @@ What it does:
   1. Copies palettes/<name>.toml to colors.toml
   2. Runs theme-apply to render all templates
   3. Copies neovim metadata from apps/<name>/ if present
-  4. Sends reload signals to ghostty, waybar, and mako
+  4. Sends reload signals to ghostty, waybar, mako, and Hyprland
   5. Updates wallpaper if the palette defines one
 EOF
 }
@@ -178,6 +178,8 @@ main() {
     killall -SIGUSR2 ghostty 2>/dev/null || true
     killall -SIGUSR2 waybar 2>/dev/null || true
     makoctl reload 2>/dev/null || true
+    # Hyprland (Lua config) re-reads hypr-colors.lua on reload; deterministic repaint.
+    hyprctl reload 2>/dev/null || true
 
     # Set wallpaper if palette defines one
     set_wallpaper "$palette_file"
