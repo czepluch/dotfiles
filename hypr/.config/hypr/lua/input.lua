@@ -3,8 +3,9 @@
 hl.config({
   input = {
     kb_layout  = "us,dk",
-    kb_options = "grp:alt_shift_toggle",
-    kb_variant = "",
+    -- altgr-intl: US base unchanged; RAlt+z/w/l = ae/aa/oe, Shift+RAlt = Compose
+    kb_options = "grp:alt_shift_toggle,lv3:ralt_switch_multikey",
+    kb_variant = "altgr-intl,",
     kb_model   = "",
     kb_rules   = "",
 
@@ -22,7 +23,15 @@ hl.config({
 hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 
 -- Laptop keyboard: Caps handled by keyd (tap=Esc, hold=Ctrl)
-hl.device({ name = "at-translated-set-2-keyboard", kb_options = "grp:alt_shift_toggle" })
+hl.device({
+  name       = "at-translated-set-2-keyboard",
+  kb_variant = "altgr-intl,",
+  kb_options = "grp:alt_shift_toggle,lv3:ralt_switch_multikey",
+})
 
 -- ZSA Voyager: firmware already remaps
-hl.device({ name = "zsa-technology-labs-voyager-keyboard", kb_options = "grp:alt_shift_toggle" })
+hl.device({
+  name       = "zsa-technology-labs-voyager-keyboard",
+  kb_variant = "altgr-intl,",
+  kb_options = "grp:alt_shift_toggle,lv3:ralt_switch_multikey",
+})
