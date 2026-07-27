@@ -209,14 +209,14 @@ squirrels() {
 # cd <directory> - jump to directory (uses zoxide frecency)
 # cdi - interactive directory picker with fzf
 
-# Yazi - change directory on exit
-function ya() {
-  local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
-  yazi "$@" --cwd-file="$tmp"
-  if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
-    cd -- "$cwd"
-  fi
-  rm -f -- "$tmp"
+# Yazi - change directory on exit. Named y (not ya) so it doesn't shadow
+# yazi's own `ya` CLI, which is needed for plugin management (ya pkg ...).
+function y() {
+  local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+  command yazi "$@" --cwd-file="$tmp"
+  IFS= read -r -d '' cwd < "$tmp"
+  [ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && builtin cd -- "$cwd"
+  command rm -f -- "$tmp"
 }
 
 # SSH agent - Linux only (macOS handles this automatically)

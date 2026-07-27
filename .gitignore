@@ -29,6 +29,12 @@ CLAUDE.md
 # Theme system - active palette is a copy of the selected palette file
 themes/colors.toml
 
+# Yazi plugins are third-party content installed by `ya pkg install` from the
+# tracked package.toml manifest; only our own local plugins are kept in git
+yazi/.config/yazi/plugins/*
+!yazi/.config/yazi/plugins/folder-rules.yazi/
+!yazi/.config/yazi/plugins/folder-rules.yazi/**
+
 # Keep this file
 !.gitignore
 hypr/.config/hypr/shaders/
