@@ -25,7 +25,7 @@ Uses Insert-based shortcuts that work everywhere including terminals!
 |------------|--------|-------------|
 | `SUPER + Return` | Launch Terminal | Opens ghostty terminal |
 | `SUPER + Q` | Kill Active | Close focused window |
-| `SUPER + M` | Exit Hyprland | Exit/logout |
+| `SUPER + M` | Session Menu | Fuzzel menu: lock/logout/suspend/reboot/poweroff |
 | `SUPER + F` | Toggle Floating | Toggle window floating mode |
 | `SUPER + P` | Pseudo Tile | Dwindle pseudo-tiling |
 | `SUPER + J` | Toggle Split | Toggle split direction |

@@ -1,7 +1,7 @@
 -- Keybindings. Migrated from hyprland.conf.
 -- Native-Lua upgrades vs the old config: workspace binds are a loop, SUPER+M is now a
--- session/power submap, and dispatchers are native (no `exec, hyprctl dispatch ...`
--- except the clipboard sendshortcut, see note).
+-- fuzzel session menu (scripts/power-menu.sh), and dispatchers are native
+-- (no `exec, hyprctl dispatch ...` except the clipboard sendshortcut, see note).
 
 local mainMod = "SUPER"
 
@@ -104,29 +104,7 @@ hl.bind("SHIFT + Print", hl.dsp.exec_cmd([[grim - | tee ~/pics/scrots/$(date +'%
 hl.bind("ALT + Print",   hl.dsp.exec_cmd([[grim -g "$(hyprctl activewindow -j | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"')" - | tee ~/pics/scrots/$(date +'%Y-%m-%d_%H-%M-%S.png') | wl-copy]]))
 
 --------------------------------------------------------------------------------
--- Session / power submap (replaces the old SUPER+M = exit).
--- The "reset" second arg auto-closes the submap back to the global keymap after ANY
--- action fires, so e.g. lock returns you to normal mode on unlock. Escape/catchall also
--- reset explicitly so a stray key can never strand you inside the submap.
+-- Session / power menu (replaces the old SUPER+M = exit). Fuzzel dmenu, themed
+-- by the theme system; entries execute immediately, Escape cancels.
 --------------------------------------------------------------------------------
-hl.define_submap("session", "reset", function()
-  hl.bind("l", hl.dsp.exec_cmd("hyprlock"))           -- lock
-  hl.bind("e", hl.dsp.exit())                         -- exit Hyprland (logout)
-  hl.bind("s", hl.dsp.exec_cmd("systemctl suspend"))  -- suspend
-  hl.bind("r", hl.dsp.exec_cmd("systemctl reboot"))   -- reboot
-  hl.bind("p", hl.dsp.exec_cmd("systemctl poweroff")) -- poweroff
-  hl.bind("Escape",   hl.dsp.submap("reset"))         -- leave
-  hl.bind("catchall", hl.dsp.submap("reset"))         -- any other key leaves
-end)
-hl.bind(mainMod .. " + M", hl.dsp.submap("session"), { description = "Session menu" })
-
--- Native notification when a non-global submap is entered.
-hl.on("keybinds.submap", function(name)
-  if name and name ~= "" then
-    hl.notification.create({
-      text     = "session: [l] lock  [e] logout  [s] suspend  [r] reboot  [p] poweroff  [esc] cancel",
-      timeout  = 5000,
-      icon     = "info",
-    })
-  end
-end)
+hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("~/.config/hypr/scripts/power-menu.sh"), { description = "Session menu" })
