@@ -13,24 +13,24 @@ hooks.location=~/.config/task/hooks
 # color4=blue color5=magenta color6=cyan color7=white color8=bright-black
 
 # UI chrome
-color.label=bold color7
-color.label.sort=bold color7
+color.label=bold color4
+color.label.sort=bold underline color4
 color.alternate=on color0
-color.header=color4
-color.footnote=color4
+color.header=color6
+color.footnote=color8
 color.warning=bold color3
-color.error=bold white on color1
+color.error=bold color1
 color.debug=color8
 
 # Task states
 color.completed=color8
 color.deleted=color8
-color.active=bold color6
+color.active=bold color2
 color.recurring=color5
 color.scheduled=color4
 color.until=color8
-color.blocked=color7 on color8
-color.blocking=bold color4
+color.blocked=color8
+color.blocking=bold color5
 
 # Priority
 color.uda.priority.H=bold color1
@@ -40,7 +40,7 @@ color.uda.priority.L=color8
 # Tags
 color.tag.next=bold color3
 color.tag.none=
-color.tagged=color6
+color.tagged=
 color.project.none=
 
 # Due dates
