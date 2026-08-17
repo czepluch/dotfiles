@@ -1,0 +1,58 @@
+# matugen configuration for the theme engine.
+#
+# Colors come from palette.json (written by bin/palette-to-json), imported
+# verbatim via import_json_files: no Material You harmonization.
+# input_path is repo-relative: invocations must cd to themes/ first.
+# output_path targets the staging dir; theme-apply mv's each rendered file
+# into ~/.config/themes/current/ after a successful run (atomic swap).
+
+[config]
+import_json_files = ["~/.config/themes/current/palette.json"]
+
+[templates.ghostty]
+input_path = "templates/ghostty.conf.tera"
+output_path = "~/.config/themes/.staging/ghostty.conf"
+
+[templates.waybar]
+input_path = "templates/waybar-colors.css.tera"
+output_path = "~/.config/themes/.staging/waybar-colors.css"
+
+[templates.mako]
+input_path = "templates/mako.conf.tera"
+output_path = "~/.config/themes/.staging/mako.conf"
+
+[templates.fuzzel]
+input_path = "templates/fuzzel.ini.tera"
+output_path = "~/.config/themes/.staging/fuzzel.ini"
+
+[templates.yazi]
+input_path = "templates/yazi-theme.toml.tera"
+output_path = "~/.config/themes/.staging/yazi-theme.toml"
+
+[templates.fastfetch]
+input_path = "templates/fastfetch.jsonc.tera"
+output_path = "~/.config/themes/.staging/fastfetch.jsonc"
+
+[templates.btop]
+input_path = "templates/btop.theme.tera"
+output_path = "~/.config/themes/.staging/btop.theme"
+
+[templates.newt]
+input_path = "templates/newt-colors.tera"
+output_path = "~/.config/themes/.staging/newt-colors"
+
+[templates.hypr_colors]
+input_path = "templates/hypr-colors.lua.tera"
+output_path = "~/.config/themes/.staging/hypr-colors.lua"
+
+[templates.hyprlock]
+input_path = "templates/hyprlock.conf.tera"
+output_path = "~/.config/themes/.staging/hyprlock.conf"
+
+[templates.starship]
+input_path = "templates/starship.toml.tera"
+output_path = "~/.config/themes/.staging/starship.toml"
+
+[templates.lazygit]
+input_path = "templates/lazygit-config.yml.tera"
+output_path = "~/.config/themes/.staging/lazygit-config.yml"

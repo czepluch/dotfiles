@@ -1,0 +1,178 @@
+#!/usr/bin/env python3
+#
+# palette-to-json - Convert a palette TOML into matugen import JSON
+#
+# Usage:
+#   palette-to-json <palette.toml> [out.json]   Write matugen colors JSON
+#                                               (stdout if out.json omitted)
+#   palette-to-json --wallpaper <palette.toml>  Print the raw wallpaper value
+#                                               (empty output if unset)
+#
+# Precomputes every derived color the old bash engine produced (aliases,
+# gradient1..9, <key>_vivid for all keys) with bash-identical integer math:
+# bash $(( )) truncates toward zero, Python // floors, so all signed
+# divisions go through tdiv().
+#
+# Output shape (consumed via matugen import_json_files):
+#   {"colors": {"<name>": {"default": {"color": "#rrggbb"}}}}
+
+import json
+import re
+import sys
+import tomllib
+
+REQUIRED_KEYS = [
+    "accent",
+    "cursor",
+    "foreground",
+    "background",
+    "selection_foreground",
+    "selection_background",
+] + [f"color{i}" for i in range(16)]
+
+# Named aliases: map color numbers to friendly names (NO black/bright_white)
+ALIASES = [
+    ("red", "color1"),
+    ("green", "color2"),
+    ("yellow", "color3"),
+    ("blue", "color4"),
+    ("magenta", "color5"),
+    ("cyan", "color6"),
+    ("white", "color7"),
+    ("bright_red", "color9"),
+    ("bright_green", "color10"),
+    ("bright_yellow", "color11"),
+    ("bright_blue", "color12"),
+    ("bright_magenta", "color13"),
+    ("bright_cyan", "color14"),
+]
+
+HEX_RE = re.compile(r"^#[0-9a-f]{6}$")
+
+
+def die(msg):
+    print(f"error: {msg}", file=sys.stderr)
+    sys.exit(1)
+
+
+def tdiv(a, b):
+    """Integer division truncating toward zero (bash $(( )) semantics)."""
+    q = abs(a) // abs(b)
+    return q if (a >= 0) == (b >= 0) else -q
+
+
+def hex_to_channels(hexval):
+    h = hexval.lstrip("#")
+    return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+
+
+def channels_to_hex(r, g, b):
+    return f"#{r:02x}{g:02x}{b:02x}"
+
+
+def clamp(c):
+    return 0 if c < 0 else 255 if c > 255 else c
+
+
+def vivid(hexval):
+    """Boost saturation by pushing each RGB channel away from the mean."""
+    r, g, b = hex_to_channels(hexval)
+    avg = (r + g + b) // 3
+    boost = 50
+    r = clamp(r + tdiv((r - avg) * boost, 100))
+    g = clamp(g + tdiv((g - avg) * boost, 100))
+    b = clamp(b + tdiv((b - avg) * boost, 100))
+    return channels_to_hex(r, g, b)
+
+
+def lerp(hex_a, hex_b, ratio):
+    """Linear interpolation between two hex colors at ratio 0-100."""
+    ra, ga, ba = hex_to_channels(hex_a)
+    rb, gb, bb = hex_to_channels(hex_b)
+    r = ra + tdiv((rb - ra) * ratio, 100)
+    g = ga + tdiv((gb - ga) * ratio, 100)
+    b = ba + tdiv((bb - ba) * ratio, 100)
+    return channels_to_hex(r, g, b)
+
+
+def load_palette(path):
+    try:
+        with open(path, "rb") as f:
+            return tomllib.load(f)
+    except FileNotFoundError:
+        die(f"palette file not found: {path}")
+    except tomllib.TOMLDecodeError as e:
+        die(f"invalid TOML in {path}: {e}")
+
+
+def build_colors(palette):
+    colors = {}
+    for key, val in palette.items():
+        if key == "wallpaper":
+            continue
+        if not isinstance(val, str) or not val.startswith("#"):
+            continue
+        if not HEX_RE.match(val):
+            die(f"key '{key}' is not a lowercase #rrggbb color: {val!r}")
+        colors[key] = val
+
+    missing = [k for k in REQUIRED_KEYS if k not in colors]
+    if missing:
+        die(f"palette missing required keys: {', '.join(missing)}")
+
+    # Derive named aliases
+    for alias, source in ALIASES:
+        colors[alias] = colors[source]
+
+    # Derive gradient colors (accent -> magenta in 9 steps)
+    for i in range(1, 10):
+        ratio = (i - 1) * 100 // 8
+        colors[f"gradient{i}"] = lerp(colors["accent"], colors["magenta"], ratio)
+
+    # Derive <key>_vivid for every key (incl. aliases and gradients)
+    for key in list(colors):
+        colors[f"{key}_vivid"] = vivid(colors[key])
+
+    return colors
+
+
+def main(argv):
+    args = [a for a in argv if a != "--wallpaper"]
+    wallpaper_mode = len(args) != len(argv)
+
+    if len(args) < 1 or len(args) > 2 or (wallpaper_mode and len(args) != 1):
+        print(__doc__ or "", file=sys.stderr)
+        print(
+            "usage: palette-to-json <palette.toml> [out.json]\n"
+            "       palette-to-json --wallpaper <palette.toml>",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    palette = load_palette(args[0])
+
+    if wallpaper_mode:
+        wallpaper = palette.get("wallpaper", "")
+        if not isinstance(wallpaper, str):
+            die(f"wallpaper is not a string: {wallpaper!r}")
+        if wallpaper:
+            print(wallpaper)
+        return
+
+    colors = build_colors(palette)
+    doc = {
+        "colors": {
+            name: {"default": {"color": value}} for name, value in colors.items()
+        }
+    }
+    out = json.dumps(doc, indent=2) + "\n"
+
+    if len(args) == 2:
+        with open(args[1], "w") as f:
+            f.write(out)
+    else:
+        sys.stdout.write(out)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

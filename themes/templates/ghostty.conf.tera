@@ -1,0 +1,26 @@
+# Background and foreground colors
+background = {{ colors.background.default.hex }}
+foreground = {{ colors.foreground.default.hex }}
+cursor-color = {{ colors.cursor.default.hex }}
+selection-foreground = {{ colors.selection_foreground.default.hex }}
+selection-background = {{ colors.selection_background.default.hex }}
+
+# Standard colors
+palette = 0={{ colors.color0.default.hex }}
+palette = 1={{ colors.color1.default.hex }}
+palette = 2={{ colors.color2.default.hex }}
+palette = 3={{ colors.color3.default.hex }}
+palette = 4={{ colors.color4.default.hex }}
+palette = 5={{ colors.color5.default.hex }}
+palette = 6={{ colors.color6.default.hex }}
+palette = 7={{ colors.color7.default.hex }}
+
+# Bright colors
+palette = 8={{ colors.color8.default.hex }}
+palette = 9={{ colors.color9.default.hex }}
+palette = 10={{ colors.color10.default.hex }}
+palette = 11={{ colors.color11.default.hex }}
+palette = 12={{ colors.color12.default.hex }}
+palette = 13={{ colors.color13.default.hex }}
+palette = 14={{ colors.color14.default.hex }}
+palette = 15={{ colors.color15.default.hex }}

@@ -1,0 +1,21 @@
+[main]
+font=JetBrainsMono Nerd Font:size=10
+dpi-aware=yes
+width=40
+horizontal-pad=15
+vertical-pad=10
+inner-pad=10
+icons-enabled=no
+
+[colors]
+background={{ colors.background.default.hex_stripped }}bf
+text={{ colors.foreground.default.hex_stripped }}ff
+match={{ colors.cyan.default.hex_stripped }}ff
+selection={{ colors.magenta.default.hex_stripped }}80
+selection-text={{ colors.background.default.hex_stripped }}ff
+selection-match={{ colors.cyan.default.hex_stripped }}ff
+border={{ colors.magenta.default.hex_stripped }}ff
+
+[border]
+width=2
+radius=12

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/master/doc/json_schema.json",
+  "logo": {
+    "type": "file",
+    "source": "~/.config/fastfetch/logo.txt",
+    "color": {
+      "1": "{{ colors.gradient1.default.hex }}",
+      "2": "{{ colors.gradient2.default.hex }}",
+      "3": "{{ colors.gradient3.default.hex }}",
+      "4": "{{ colors.gradient4.default.hex }}",
+      "5": "{{ colors.gradient5.default.hex }}",
+      "6": "{{ colors.gradient6.default.hex }}",
+      "7": "{{ colors.gradient7.default.hex }}",
+      "8": "{{ colors.gradient8.default.hex }}",
+      "9": "{{ colors.gradient9.default.hex }}"
+    },
+    "padding": {
+      "top": 0,
+      "left": 0,
+      "right": 4
+    }
+  },
+  "display": {
+    "color": {
+      "keys": "{{ colors.accent.default.hex }}",
+      "title": "{{ colors.accent.default.hex }}",
+      "output": "{{ colors.magenta.default.hex }}",
+      "separator": "{{ colors.accent.default.hex }}"
+    }
+  },
+  "modules": [
+    "title",
+    "separator",
+    "os",
+    "host",
+    "kernel",
+    "uptime",
+    "packages",
+    "shell",
+    "editor",
+    "display",
+    "wm",
+    "terminal",
+    "terminalfont",
+    "cpu",
+    "gpu",
+    "memory",
+    "disk",
+    "localip",
+    {
+      "type": "command",
+      "key": "Battery",
+      "text": "battery -1"
+    },
+    "poweradapter",
+    "break",
+    "colors"
+  ]
+}

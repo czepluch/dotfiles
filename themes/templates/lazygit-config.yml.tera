@@ -1,0 +1,25 @@
+# ### THEME-START ###
+gui:
+  theme:
+    activeBorderColor:
+      - '{{ colors.accent.default.hex }}'
+      - bold
+    inactiveBorderColor:
+      - '{{ colors.color15.default.hex }}'
+    optionsTextColor:
+      - '{{ colors.accent.default.hex }}'
+    selectedLineBgColor:
+      - '{{ colors.color0.default.hex }}'
+    cherryPickedCommitBgColor:
+      - '{{ colors.color8.default.hex }}'
+    cherryPickedCommitFgColor:
+      - '{{ colors.color15.default.hex }}'
+    unstagedChangesColor:
+      - '{{ colors.red.default.hex }}'
+    stagedChangesColor:
+      - '{{ colors.green.default.hex }}'
+    defaultFgColor:
+      - '{{ colors.foreground.default.hex }}'
+    selectedRangeBgColor:
+      - '{{ colors.color8.default.hex }}'
+# ### THEME-END ###
