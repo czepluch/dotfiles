@@ -138,9 +138,12 @@ Lists palettes, marking the active one (byte-diff against `colors.toml`).
 Updates only the neovim colorscheme; prints a how-to and exits 1 when the
 palette has no `apps/<palette>/neovim.lua`.
 
-### theme-wallpaper [--save] [\<path\>]
-Switch the wallpaper without switching palettes. No path: fuzzel picker over
-`~/pics/wallpapers/` (bound to SUPER+W). Applies via hyprctl IPC and persists
+### theme-wallpaper [--browse] [--save] [\<path\>]
+Switch the wallpaper without switching palettes. No path: fuzzel name picker
+over `~/pics/wallpapers/`. `--browse` (bound to SUPER+W): floating yazi
+window with full image previews - Enter applies, q cancels; uses yazi's
+`--chooser-file` mode and a `wallpaper.browser` window rule.
+Applies via hyprctl IPC and persists
 to the generated hyprpaper.conf. The quick switch survives logins and lasts
 until the next `theme-set` of a wallpaper-bearing palette. `--save`
 additionally writes the wallpaper into the active palette's TOML - the one

@@ -12,7 +12,7 @@ HYPRPAPER_CONF="$HOME/.config/themes/current/hyprpaper.conf"
 
 usage() {
     cat <<'EOF'
-Usage: theme-wallpaper [--save] [<path>]
+Usage: theme-wallpaper [--browse] [--save] [<path>]
 
 Switch the wallpaper. With no <path>, opens a fuzzel picker over
 ~/pics/wallpapers/. Applies instantly via hyprctl IPC and persists to the
@@ -22,6 +22,8 @@ The quick switch lasts until the next `theme-set` of a palette that
 declares its own wallpaper.
 
 Options:
+  --browse      Visual picker: floating yazi window with image previews
+                (bound to SUPER+W). Enter applies, q cancels.
   --save        Also write the wallpaper into the active palette file,
                 making it that theme's permanent wallpaper. This edits the
                 git-tracked palettes/<active>.toml - commit it deliberately.
@@ -58,12 +60,14 @@ save_to_palette() {
 }
 
 SAVE=0
+BROWSE=0
 WALLPAPER=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -h|--help) usage; exit 0 ;;
         --save) SAVE=1; shift ;;
+        --browse) BROWSE=1; shift ;;
         -*)
             echo "error: unknown option '$1'" >&2
             echo "Run 'theme-wallpaper --help' for usage." >&2
@@ -72,6 +76,23 @@ while [[ $# -gt 0 ]]; do
         *) WALLPAPER="$1"; shift ;;
     esac
 done
+
+# Visual picker: floating yazi (window rule floats/centers the class) writes
+# the chosen file to a chooser file on open; quitting without opening cancels
+if [[ $BROWSE -eq 1 && -z "$WALLPAPER" ]]; then
+    if [[ ! -d "$WALLPAPER_DIR" ]]; then
+        echo "error: $WALLPAPER_DIR does not exist" >&2
+        exit 1
+    fi
+    chooser="$(mktemp "${XDG_RUNTIME_DIR:-/tmp}/wallpaper-pick.XXXXXX")"
+    ghostty --class=wallpaper.browser -e yazi "$WALLPAPER_DIR" --chooser-file="$chooser" || true
+    if [[ ! -s "$chooser" ]]; then
+        rm -f "$chooser"
+        exit 0
+    fi
+    WALLPAPER="$(head -n1 "$chooser")"
+    rm -f "$chooser"
+fi
 
 # No path given: fuzzel picker over the wallpaper directory
 if [[ -z "$WALLPAPER" ]]; then

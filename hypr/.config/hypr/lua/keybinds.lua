@@ -21,7 +21,7 @@ hl.bind(mainMod .. " + F",      hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + P",      hl.dsp.window.pseudo())              -- dwindle
 hl.bind(mainMod .. " + T",      hl.dsp.layout("togglesplit"))        -- dwindle
 hl.bind(mainMod .. " + Space",  hl.dsp.exec_cmd(menu))
-hl.bind(mainMod .. " + W",      hl.dsp.exec_cmd("~/dotfiles/themes/bin/theme-wallpaper"), { description = "Wallpaper picker" })
+hl.bind(mainMod .. " + W",      hl.dsp.exec_cmd("~/dotfiles/themes/bin/theme-wallpaper --browse"), { description = "Wallpaper browser" })
 hl.bind(mainMod .. " + N",      hl.dsp.exec_cmd("~/.config/waybar/dnd.sh toggle")) -- DND (script toasts state)
 
 --------------------------------------------------------------------------------

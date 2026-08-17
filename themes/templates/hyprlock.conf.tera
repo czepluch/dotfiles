@@ -15,3 +15,7 @@ $fg_dimmer    = rgba({{ colors.foreground.default.red }}, {{ colors.foreground.d
 $bg_input     = rgba(0, 0, 0, 0.55)
 $chrom_red    = rgba({{ colors.color1.default.red }}, {{ colors.color1.default.green }}, {{ colors.color1.default.blue }}, 0.7)
 $chrom_cyan   = rgba({{ colors.cyan.default.red }}, {{ colors.cyan.default.green }}, {{ colors.cyan.default.blue }}, 0.7)
+
+# Pango-safe hex forms for use inside label markup (## = escaped literal #)
+$accent_pango = ##{{ colors.accent.default.hex_stripped }}
+$red_pango    = ##{{ colors.red.default.hex_stripped }}
