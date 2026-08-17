@@ -1,10 +1,47 @@
 # Theme System Specification
 
-A bash+sed template engine that provides centralized color management for all desktop applications. Single source of truth for colors, applied via `theme-set` and `theme-apply`.
+Centralized color management for all desktop applications: one palette file
+in, every app's colors out. Rendered by matugen (Tera templates), orchestrated
+by `theme-set` / `theme-apply`.
+
+Core guarantee: **switching palettes never touches a git-tracked file.**
+Everything a switch writes lands under `~/.config/themes/`. Acceptance test:
+`theme-set <a> && theme-set <b>` must leave `git -C ~/dotfiles status` exactly
+as it was. (One documented exception: nvim's `lazy-lock.json` changes the
+first time a palette introduces a colorscheme plugin that was never installed
+before - a one-time event per plugin, not per switch.)
+
+## Pipeline
+
+```
+palettes/<name>.toml
+    | theme-set: cp to colors.toml
+    v
+colors.toml  --bin/palette-to-json-->  ~/.config/themes/current/palette.json
+    | matugen --config matugen.toml json palette.json
+    v
+templates/*.tera  --render-->  ~/.config/themes/.staging/
+    | theme-apply: mv -f per file (atomic rename)
+    v
+~/.config/themes/current/*  <--symlinks/imports-- apps
+```
+
+- **palette-to-json** validates the 22 color keys, then derives everything
+  the templates may reference: 13 named aliases, `gradient1..gradient9`
+  (accent to magenta lerp), and a `<key>_vivid` variant for every key
+  (saturation push away from the channel mean). All integer math matches the
+  retired bash engine bit-for-bit (division truncates toward zero).
+- **matugen** (pinned expectation: 4.1.0, Arch `extra`) imports the palette
+  verbatim via `import_json_files` - no Material You harmonization. Rendering
+  is all-or-nothing: any template error aborts the run with a precise message
+  and the staging never reaches `current/`, so a broken edit can never leave
+  a half-applied theme.
+- **Atomic swap**: staging and `current/` share a filesystem, so each `mv` is
+  a `rename(2)` - no app can ever observe a half-written file.
 
 ## colors.toml Format
 
-22 color keys defining the full palette, plus an optional wallpaper path:
+22 color keys plus an optional wallpaper path:
 
 ```toml
 accent = "#89b4fa"
@@ -18,192 +55,185 @@ color0 = "#45475a"     # through color15
 wallpaper = "~/pics/wallpapers/foo.jpg"  # optional
 ```
 
-The `wallpaper` field is optional. When present, `theme-set` applies the wallpaper via `hyprctl` IPC. Palettes without it skip the wallpaper step entirely.
+## Template Variable Syntax (Tera)
 
-## Template Variable Syntax
+| Syntax | Output |
+|--------|--------|
+| `{{ colors.accent.default.hex }}` | `#89b4fa` |
+| `{{ colors.accent.default.hex_stripped }}` | `89b4fa` |
+| `{{ colors.accent.default.red }}` (also `.green`, `.blue`) | `137` (decimal) |
+| `{{ colors.accent_vivid.default.hex }}` | saturation-boosted variant |
 
-Three formats available for each color key:
+Alpha is literal text after the placeholder: `#{{ ...hex_stripped }}60`.
+Bare `r, g, b` values are built from the three channel accessors (matugen's
+own `.rgb` renders wrapped as `rgb(r, g, b)` - not used).
 
-| Syntax | Output | Example |
-|--------|--------|---------|
-| `{key}` | `#hex` | `{accent}` -> `#89b4fa` |
-| `{key.strip}` | `hex` (no #) | `{accent.strip}` -> `89b4fa` |
-| `{key.rgb}` | `r, g, b` decimal | `{accent.rgb}` -> `137, 180, 250` |
+Named aliases (derived by palette-to-json, usable as `colors.red...` etc.):
+red=color1, green=color2, yellow=color3, blue=color4, magenta=color5,
+cyan=color6, white=color7, bright_red=color9 through bright_cyan=color14.
 
-Named aliases are derived automatically from numbered colors:
-- `red`=color1, `green`=color2, `yellow`=color3, `blue`=color4
-- `magenta`=color5, `cyan`=color6, `white`=color7
-- `bright_red`=color9, `bright_green`=color10, `bright_yellow`=color11
-- `bright_blue`=color12, `bright_magenta`=color13, `bright_cyan`=color14
+**Backslash rule**: matugen's Tera collapses `\\` to `\` in raw template
+text. Any literal backslash in a template must be written doubled. This
+matters mainly in `starship.toml.tera` (format-block line continuations and
+`\\[ \\]` escapes) - when editing prompt config there, write `\\` for every
+`\` you want in the output.
 
 ## Consumption Patterns
 
 ### A - Import Fragment
-Config file adds one `source`/`config-file` line pointing to generated output.
-- **Apps**: ghostty, hyprland, hyprlock, btop, newt
-- **Templates**: `templates/*.tpl` -> `~/.config/themes/current/*`
-- **Hyprland/Hyprlock note**: wrap source lines with `# hyprlang noerror true` / `# hyprlang noerror false` so a missing file (before first `theme-set`) doesn't produce a config error. This is a standard hyprlang feature used by major dotfile repos.
-- **Newt note**: newt (nmtui, whiptail) has no config file - the "import line" is `export NEWT_COLORS_FILE="$HOME/.config/themes/current/newt-colors"` in `zsh/.zshrc`. newt re-reads that file on every launch and silently ignores a missing path, so there is no reload step and no first-boot error. libnewt >= 0.52.25 accepts `#rrggbb` hex values, so the template uses palette colors directly.
+App config adds one source/import line pointing at generated output.
+- **ghostty**: `config-file = ~/.config/themes/current/ghostty.conf`
+- **hyprland**: `hyprland.lua` does `pcall(dofile, ".../hypr-colors.lua")`
+  with an inline fallback; the generated file returns a Lua table
+- **hyprlock**: `source = ...` under `# hyprlang noerror true/false`; the
+  generated file defines every `$var` the lockscreen body consumes
+- **btop**: `color_theme` points at `~/.config/btop/themes/current.theme`,
+  a committed symlink into `themes/current/`
+- **newt** (nmtui/whiptail): `NEWT_COLORS_FILE` env var in `.zshrc`
 
 ### B - CSS Import
-CSS file uses `@import` for color definitions; structural CSS stays in stow package.
-- **Apps**: waybar
-- **Template**: `templates/waybar-colors.css.tpl` -> `~/.config/themes/current/waybar-colors.css`
+- **waybar**: `@import url("colors.css")`; the repo's `colors.css` is a
+  symlink to `~/.config/themes/current/waybar-colors.css`
 
 ### C - Full Template
-Entire config is a template. Stow package has symlink pointing to generated output.
-- **Apps**: mako, fuzzel, yazi, fastfetch
-- **Templates**: `templates/*.tpl` -> `~/.config/themes/current/*`
-- **Yazi note**: we generate a full `theme.toml` rather than using yazi's "flavor" system. Flavors are distribution packages requiring 6 boilerplate files in a hardcoded path (`~/.config/yazi/flavors/`). Generating `theme.toml` directly from our palette is simpler, gives full control, and is the same approach that catppuccin/yazi uses internally to build its flavor files.
-
-### D - In-Place Markers
-Config stays in stow package. Lines between `### THEME-START ###` and `### THEME-END ###` markers are replaced in-place by theme-apply.
-- **Apps**: starship, lazygit
-- **Marker templates**: `markers/*.tpl`
+The whole config is generated; the stow package ships a symlink.
+- **mako, fuzzel, yazi, fastfetch, starship, lazygit**
+- starship and lazygit moved here 2026-08-17 (the old in-place marker
+  rewriting - Pattern D - is retired). Structural edits to those two apps
+  now happen in `templates/starship.toml.tera` /
+  `templates/lazygit-config.yml.tera`, applied with `theme-apply`.
+- **hyprpaper** is a special case: `hypr/.config/hypr/hyprpaper.conf` is a
+  committed symlink to `~/.config/themes/current/hyprpaper.conf`, but that
+  file is written by `theme-set`'s wallpaper step (not a matugen template),
+  because palettes without a `wallpaper` key must leave the previous
+  wallpaper in place.
 
 ### E - Per-Palette Metadata
-Each palette ships app-specific config (not color templates). Copied to target location by theme-set.
-- **Apps**: neovim
-- **Files**: `apps/<palette>/neovim.lua` -> `~/.config/nvim/lua/plugins/colorscheme.lua`
+- **neovim**: `apps/<palette>/neovim.lua` is copied by theme-set to
+  `~/.config/themes/current/nvim-colorscheme.lua`. The committed
+  `nvim/lua/plugins/colorscheme.lua` is a stub that `dofile`s it with a
+  catppuccin fallback, so palette switches never touch the repo.
 
 ## Commands
 
 ### theme-set \<palette\>
-Switch the active palette and apply it:
-1. Copies `palettes/<name>.toml` to `colors.toml`
-2. Runs `theme-apply`
-3. Copies neovim metadata from `apps/<name>/`
-4. Sends SIGUSR2 to ghostty, reloads mako
-5. Updates wallpaper if the palette defines one (via `hyprctl` IPC)
+1. Copies `palettes/<name>.toml` to `colors.toml` (gitignored)
+2. Runs `theme-apply` (render + atomic swap; aborts untouched on error)
+3. Copies `apps/<name>/neovim.lua` if present
+4. Reloads: SIGUSR2 to ghostty and waybar, `makoctl reload`, `hyprctl reload`
+5. Wallpaper, if the palette defines one: instant per-monitor `hyprctl
+   hyprpaper wallpaper` IPC, and regenerates
+   `~/.config/themes/current/hyprpaper.conf` (single empty-monitor block =
+   applies to every output) for the next login
 
 ### theme-apply
-Process all templates using the current `colors.toml`:
-1. Parses colors.toml into variables
-2. Processes `templates/*.tpl` -> `~/.config/themes/current/`
-3. Processes `markers/*.tpl` -> replaces marker sections in target configs
-
-### theme-import [theme-name]
-Import a ghostty theme into the palette format:
-1. Reads theme from `/usr/share/ghostty/themes/`
-2. Maps ghostty keys to palette keys (cursor-color -> cursor, palette N -> colorN, etc.)
-3. Sets `accent` to the value of `color4`
-4. Writes `palettes/<slug>.toml` with slugified name (lowercase, spaces to hyphens)
-5. If `--apply`, runs `theme-set <slug>` after writing
-
-Flags: `--list` (list available themes), `--apply` (activate after import), `--force` (overwrite existing palette). With no arguments and fzf installed, opens an interactive theme browser.
+Render-only path (steps 1-2 above); auto-defaults `colors.toml` to
+catppuccin-mocha when missing. Writes a wallpaperless `hyprpaper.conf` stub
+if none exists so the stowed symlink never dangles.
 
 ### theme-set (no args)
-Lists available palettes, marking the active one.
+Lists palettes, marking the active one (byte-diff against `colors.toml`).
+
+### theme-set --neovim \<palette\>
+Updates only the neovim colorscheme; prints a how-to and exits 1 when the
+palette has no `apps/<palette>/neovim.lua`.
+
+### theme-import [theme-name]
+Imports a ghostty theme into a palette TOML (unchanged from the old engine;
+`--list`, `--apply`, `--force`, fzf browser with no args).
 
 ## Directory Structure
 
 ```
 themes/
-  colors.toml              # Active palette (written by theme-set)
-  palettes/                # Available palettes
-    catppuccin-mocha.toml
-    tokyo-night.toml
-  templates/               # Pattern A/B/C templates
-    ghostty.conf.tpl
-    hyprland.conf.tpl
-    hyprlock.conf.tpl
-    btop.theme.tpl
-    waybar-colors.css.tpl
-    mako.conf.tpl
-    fuzzel.ini.tpl
-    yazi-theme.toml.tpl
-    fastfetch.jsonc.tpl
-    newt-colors.tpl
-  markers/                 # Pattern D templates
-    starship-palette.tpl
-    lazygit-theme.tpl
-  apps/                    # Pattern E metadata
-    catppuccin-mocha/
-      neovim.lua
-    tokyo-night/
-      neovim.lua
+  colors.toml              # Active palette (gitignored, written by theme-set)
+  matugen.toml             # matugen config: template list + staging outputs
+  palettes/                # 9 palettes
+  templates/               # 12 *.tera templates (Pattern A/B/C)
+  apps/                    # Pattern E metadata (catppuccin-mocha, tokyo-night)
   bin/
     theme-set
     theme-apply
+    palette-to-json        # TOML -> matugen JSON + derived colors; --wallpaper
     theme-import
   SPEC.md
 ```
 
-Runtime output (not in git): `~/.config/themes/current/`
+Runtime output (not in git): `~/.config/themes/current/` plus the transient
+`~/.config/themes/.staging/`. The file `current/hyprland.conf` is an orphan
+kept for the legacy `hypr/.config/hypr/hyprland.conf` rollback config; delete
+both together when the Hyprland Lua cutover is finalized.
 
 ## Adding a New Palette
 
-1. Create `palettes/<name>.toml` with all 22 color keys
-2. Optionally add `wallpaper = "~/pics/wallpapers/foo.jpg"` to the palette
-3. Optionally add `apps/<name>/neovim.lua` with a LazyVim colorscheme spec
-4. Test: `theme-set <name>`
+1. `palettes/<name>.toml` with all 22 keys (or `theme-import` a ghostty theme)
+2. Optional `wallpaper = "~/..."` line
+3. Optional `apps/<name>/neovim.lua` (copy TEMPLATE-neovim.lua)
+4. `theme-set <name>`
 
 ## Adding a New App
 
-Determine which pattern fits:
-
-**Pattern A** (app supports sourcing/importing external file):
-1. Create `templates/<app>.conf.tpl` with `{variable}` placeholders
-2. Add a `source`/`config-file`/`include` line to the app's main config pointing to `~/.config/themes/current/<app>.conf`
-
-**Pattern B** (CSS with @import):
-1. Create `templates/<app>-colors.css.tpl` with color definitions
-2. Add `@import` to the app's main CSS
-
-**Pattern C** (entire config is theme-dependent):
-1. Create `templates/<app>.conf.tpl` with the full config
-2. Replace the stow package's config file with a symlink to `~/.config/themes/current/<app>.conf`
-
-**Pattern D** (config has both theme and non-theme parts):
-1. Create `markers/<app>-theme.tpl` with just the theme section
-2. Add `# ### THEME-START ###` and `# ### THEME-END ###` markers in the app's config
-3. Add a case in `theme-apply` to map the marker file to the target config path
-
-**Pattern E** (per-palette metadata, not templated):
-1. Add files under `apps/<palette>/` for each palette
-2. Add copy logic in `theme-set`
+1. Create `templates/<app>.<ext>.tera` (full config for Pattern C, fragment
+   for Pattern A/B)
+2. Add a `[templates.<app>]` stanza to `matugen.toml`: repo-relative
+   `input_path`, `output_path = "~/.config/themes/.staging/<final-name>"`
+3. Wire the app: source/import line (A/B) or replace its stow-package config
+   with a relative symlink into `~/.config/themes/current/` (C)
+4. If the app needs a reload signal, add it to theme-set's reload block
 
 ## Reload Behavior
 
 | App | Auto-reloads? | theme-set action |
 |-----|--------------|------------------|
 | Ghostty | No | SIGUSR2 |
-| Hyprland | Yes (inotify) | - |
+| Hyprland | No | hyprctl reload (re-reads hypr-colors.lua) |
 | Hyprlock | Yes (per-invocation) | - |
 | Btop | No | Restart manually |
-| Waybar | No (inotify only watches main CSS, not imports) | SIGUSR2 |
+| Waybar | No (inotify misses imports) | SIGUSR2 |
 | Mako | No | makoctl reload |
 | Fuzzel | Yes (per-invocation) | - |
 | Yazi | No | Restart manually |
 | Fastfetch | Yes (per-invocation) | - |
-| Starship | Yes (per-invocation) | - |
+| Starship | Yes (per-prompt) | - |
 | Lazygit | No | Restart manually |
 | Hyprpaper | No | hyprctl IPC (instant) |
 | Neovim | No | Restart manually |
 | Newt/nmtui | Yes (per-invocation) | - |
 
-## Bootstrap
+## Bootstrap (fresh clone)
 
-On a fresh clone, run `theme-set catppuccin-mocha` (or any palette) once after stowing packages. Hyprland and hyprlock configs use `# hyprlang noerror true` to gracefully handle the case where generated files don't exist yet, so there's no hard failure on first boot.
+1. Install matugen (`paru -S matugen`; python3 is in base)
+2. `stow` all packages - the Pattern C symlinks dangle harmlessly until step 3
+3. `theme-set <palette>` once - renders everything, seeds hyprpaper.conf
+   (stub if the palette has no wallpaper), copies the nvim spec
 
-`theme-apply` also auto-defaults to catppuccin-mocha if `colors.toml` doesn't exist, so running `theme-apply` alone on a fresh setup will work.
+Before step 3: hyprland/hyprlock tolerate the missing files (`noerror` guard
+and the Lua fallback table), nvim falls back to catppuccin via the stub, newt
+ignores a missing `NEWT_COLORS_FILE`.
 
 ## Design Decisions
 
-### Why theme.toml over yazi flavors
-
-Yazi "flavors" are pre-packaged distributable themes stored in `~/.config/yazi/flavors/<name>.yazi/`. They require 6 files (flavor.toml, tmtheme.xml, README.md, preview.png, LICENSE, LICENSE-tmtheme) and the path is hardcoded - no custom paths accepted. Yazi's three-layer merge (preset -> flavor -> theme.toml) adds complexity.
-
-Generating a full `theme.toml` is simpler: one file, one symlink, full control over every property, no boilerplate. This is the same approach catppuccin/yazi uses to build its own flavor files from Tera templates.
-
-### Why hyprlang noerror over exec-once bootstrap
-
-Hyprland's `source` directive errors when the target file doesn't exist, and `exec-once` runs after config parsing - so a bootstrap script can't create the files in time for the initial load. The `# hyprlang noerror true` directive is a first-class hyprlang feature that suppresses parse errors for the wrapped lines. This is the standard approach used by prasanthrangan/hyprdots.
+- **matugen over the old bash+sed engine** (2026-08-17): maintained Tera
+  engine instead of ~500 lines of custom sed; all-or-nothing rendering plus
+  the staging swap makes failed renders harmless. The cutover was gated on a
+  parity harness proving byte-identical output for all 9 palettes x 12 files.
+- **Derived colors precomputed in palette-to-json, not matugen filters**: the
+  vivid/gradient math stays bit-identical to the original engine and
+  templates stay pure interpolation.
+- **Per-file atomic swap over a directory swap** (idea borrowed from
+  Omarchy): `current/` also holds files matugen does not render
+  (hyprpaper.conf, nvim-colorscheme.lua, palette.json) that must survive.
+- **theme.toml over yazi flavors**: flavors need 6 boilerplate files in a
+  hardcoded path; generating `theme.toml` is one file and full control.
+- **hyprlang noerror over exec-once bootstrap**: `source` errors on missing
+  files and `exec-once` runs after parsing, so a bootstrap script cannot win
+  that race.
 
 ## Future Enhancements
 
-- **TUI palette previewer** - interactive terminal UI for browsing palettes, previewing colors.toml files, and fine-tuning individual color values before applying
-- **GTK/Qt theme** - set dark/light mode + accent color via gsettings
-- **Cursor theme** - set cursor theme per palette
-- **Palette from wallpaper** - extract dominant colors from an image into a colors.toml
-- **Additional palettes** - gruvbox, rose-pine, nord, kanagawa, everforest
+- **TUI palette previewer** - browse palettes with live preview
+- **GTK/Qt theme** - dark/light mode + accent via gsettings
+- **Cursor theme** - per palette
+- **Palette from wallpaper** - matugen's native `image` mode outputs Material
+  You color names; would need a mapping shim into the 22-key palette format
+  (the infrastructure - templates, converter, wrapper - carries over)
