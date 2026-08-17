@@ -2,6 +2,7 @@
 erlang = "latest"
 foundry = "latest"
 gleam = "latest"
+herdr = "latest"
 node = "lts"
 solidity = "latest"
 yarn = "1.22.22"
