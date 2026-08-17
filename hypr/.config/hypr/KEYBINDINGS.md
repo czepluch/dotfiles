@@ -39,6 +39,7 @@ Uses Insert-based shortcuts that work everywhere including terminals!
 | `SUPER + E` | File Manager | Opens dolphin |
 | `SUPER + R` | App Launcher | Opens wofi |
 | `SUPER + D` | App Launcher | Opens fuzzel |
+| `SUPER + W` | Wallpaper Picker | Fuzzel menu over ~/pics/wallpapers |
 
 ---
 

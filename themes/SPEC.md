@@ -138,6 +138,15 @@ Lists palettes, marking the active one (byte-diff against `colors.toml`).
 Updates only the neovim colorscheme; prints a how-to and exits 1 when the
 palette has no `apps/<palette>/neovim.lua`.
 
+### theme-wallpaper [--save] [\<path\>]
+Switch the wallpaper without switching palettes. No path: fuzzel picker over
+`~/pics/wallpapers/` (bound to SUPER+W). Applies via hyprctl IPC and persists
+to the generated hyprpaper.conf. The quick switch survives logins and lasts
+until the next `theme-set` of a wallpaper-bearing palette. `--save`
+additionally writes the wallpaper into the active palette's TOML - the one
+deliberate git-tracked edit in the system; commit it when ready. theme-set
+delegates its wallpaper step to this script.
+
 ### theme-import [theme-name]
 Imports a ghostty theme into a palette TOML (unchanged from the old engine;
 `--list`, `--apply`, `--force`, fzf browser with no args).
@@ -154,6 +163,7 @@ themes/
   bin/
     theme-set
     theme-apply
+    theme-wallpaper        # wallpaper picker/switcher (SUPER+W)
     palette-to-json        # TOML -> matugen JSON + derived colors; --wallpaper
     theme-import
   SPEC.md
@@ -234,6 +244,15 @@ ignores a missing `NEWT_COLORS_FILE`.
 - **TUI palette previewer** - browse palettes with live preview
 - **GTK/Qt theme** - dark/light mode + accent via gsettings
 - **Cursor theme** - per palette
-- **Palette from wallpaper** - matugen's native `image` mode outputs Material
-  You color names; would need a mapping shim into the 22-key palette format
-  (the infrastructure - templates, converter, wrapper - carries over)
+- **Palette from wallpaper** (`wallpaper-theme <image>`, planned 2026-08-17):
+  build it as a palette PRODUCER, symmetric with theme-import - extract
+  colors, write `palettes/wallpaper-<name>.toml` (22 keys + wallpaper line),
+  then `theme-set` it; the engine stays untouched. Extraction: matugen's
+  `image` mode with `--json --dry-run` supplies the Material You scheme for
+  accent/background/foreground; a small python shim (colorsys) synthesizes
+  the ANSI color0-15 ramp from standard hues tinted with the wallpaper's
+  saturation/lightness, since M3 has no terminal ramp and legibility (diffs,
+  syntax, taskwarrior) depends on distinguishable red/green/yellow/blue.
+  Fallback extractor if ramp quality disappoints: wallust (AUR). Generated
+  palettes get no neovim spec (previous colorscheme persists) and live under
+  the `wallpaper-` prefix so curated palettes stay first-class.
