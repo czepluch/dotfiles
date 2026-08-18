@@ -29,6 +29,10 @@ CLAUDE.md
 # Theme system - active palette is a copy of the selected palette file
 themes/colors.toml
 
+# Theme system - wallpaper-derived palettes are generated output
+# (promote a keeper by renaming it to drop the wallpaper- prefix)
+themes/palettes/wallpaper-*.toml
+
 # Yazi plugins are third-party content installed by `ya pkg install` from the
 # tracked package.toml manifest; only our own local plugins are kept in git
 yazi/.config/yazi/plugins/*

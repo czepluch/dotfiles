@@ -154,6 +154,19 @@ delegates its wallpaper step to this script.
 Imports a ghostty theme into a palette TOML (unchanged from the old engine;
 `--list`, `--apply`, `--force`, fzf browser with no args).
 
+### wallpaper-theme [--browse] [--no-apply] [\<image\>]
+Derives a full palette from a wallpaper and applies it - the second palette
+producer. Extraction: wallust with the `ansidark16` palette + `lchansi`
+colorspace (tty-like semantic color order - color1 stays reddish, color2
+greenish - tinted by the image; legibility for diffs/syntax/taskwarrior is
+preserved by construction). wallust supplies 19 keys; accent = color4,
+selection_foreground = background, selection_background = cursor complete
+the 22. Output: `palettes/wallpaper-<slug>.toml` (gitignored; promote a
+keeper by renaming it without the prefix), then `theme-set` unless
+`--no-apply`. `--browse` picks the image via the floating yazi browser.
+Requires wallust (currently a cargo install; AUR package pending a
+checksum fix).
+
 ## Directory Structure
 
 ```
@@ -167,6 +180,7 @@ themes/
     theme-set
     theme-apply
     theme-wallpaper        # wallpaper picker/switcher (SUPER+W)
+    wallpaper-theme        # palette-from-wallpaper producer (wallust)
     palette-to-json        # TOML -> matugen JSON + derived colors; --wallpaper
     theme-import
   SPEC.md
@@ -247,15 +261,6 @@ ignores a missing `NEWT_COLORS_FILE`.
 - **TUI palette previewer** - browse palettes with live preview
 - **GTK/Qt theme** - dark/light mode + accent via gsettings
 - **Cursor theme** - per palette
-- **Palette from wallpaper** (`wallpaper-theme <image>`, planned 2026-08-17):
-  build it as a palette PRODUCER, symmetric with theme-import - extract
-  colors, write `palettes/wallpaper-<name>.toml` (22 keys + wallpaper line),
-  then `theme-set` it; the engine stays untouched. Extraction: matugen's
-  `image` mode with `--json --dry-run` supplies the Material You scheme for
-  accent/background/foreground; a small python shim (colorsys) synthesizes
-  the ANSI color0-15 ramp from standard hues tinted with the wallpaper's
-  saturation/lightness, since M3 has no terminal ramp and legibility (diffs,
-  syntax, taskwarrior) depends on distinguishable red/green/yellow/blue.
-  Fallback extractor if ramp quality disappoints: wallust (AUR). Generated
-  palettes get no neovim spec (previous colorscheme persists) and live under
-  the `wallpaper-` prefix so curated palettes stay first-class.
+- **wallpaper-theme tuning knobs** - expose wallust's backend/palette-style
+  flags (e.g. `harddark16` for punchier accents at the cost of the tty-order
+  guarantee) if the ansidark16 default proves too tame on some wallpapers
