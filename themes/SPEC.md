@@ -162,7 +162,9 @@ the page). Handles both colors.toml dialects: basecamp's named colors
 (red/bright_*/muted, mapped with fallback chains) and the aether-generated
 flat format (which is exactly our 22-key schema - passthrough). Downloads
 the theme's primary background into `~/pics/wallpapers/` by default and
-sets it as the palette wallpaper.
+sets it as the palette wallpaper; `--all-wallpapers` grabs the theme's
+whole background set (typically 1-8 images, a few MB) for SUPER+W
+switching.
 
 ### wallpaper-theme [--browse] [--no-apply] [--legible] [--saturation N] [\<image\>]
 Derives a full palette from a wallpaper and applies it - the second palette
