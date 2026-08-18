@@ -154,6 +154,16 @@ delegates its wallpaper step to this script.
 Imports a ghostty theme into a palette TOML (unchanged from the old engine;
 `--list`, `--apply`, `--force`, fzf browser with no args).
 
+### omarchy-import [--list] [--apply] [--no-wallpaper] [--force] [--dry-run] \<theme\>
+Imports an Omarchy theme (MIT) as a tracked palette. Accepts a built-in
+theme name (fetched from basecamp/omarchy via `gh api`), a community theme
+git URL, or an omarchythemes.com page URL (the repo link is resolved from
+the page). Handles both colors.toml dialects: basecamp's named colors
+(red/bright_*/muted, mapped with fallback chains) and the aether-generated
+flat format (which is exactly our 22-key schema - passthrough). Downloads
+the theme's primary background into `~/pics/wallpapers/` by default and
+sets it as the palette wallpaper.
+
 ### wallpaper-theme [--browse] [--no-apply] [--legible] [--saturation N] [\<image\>]
 Derives a full palette from a wallpaper and applies it - the second palette
 producer. Default extraction is image-faithful (wallust `dark16` palette +
@@ -184,6 +194,7 @@ themes/
     theme-apply
     theme-wallpaper        # wallpaper picker/switcher (SUPER+W)
     wallpaper-theme        # palette-from-wallpaper producer (wallust)
+    omarchy-import         # Omarchy theme importer (built-ins + community)
     palette-to-json        # TOML -> matugen JSON + derived colors; --wallpaper
     theme-import
   SPEC.md
