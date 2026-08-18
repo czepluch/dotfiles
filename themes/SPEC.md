@@ -154,12 +154,15 @@ delegates its wallpaper step to this script.
 Imports a ghostty theme into a palette TOML (unchanged from the old engine;
 `--list`, `--apply`, `--force`, fzf browser with no args).
 
-### wallpaper-theme [--browse] [--no-apply] [\<image\>]
+### wallpaper-theme [--browse] [--no-apply] [--legible] [--saturation N] [\<image\>]
 Derives a full palette from a wallpaper and applies it - the second palette
-producer. Extraction: wallust with the `ansidark16` palette + `lchansi`
-colorspace (tty-like semantic color order - color1 stays reddish, color2
-greenish - tinted by the image; legibility for diffs/syntax/taskwarrior is
-preserved by construction). wallust supplies 19 keys; accent = color4,
+producer. Default extraction is image-faithful (wallust `dark16` palette +
+`labmixed` colorspace): the theme carries the wallpaper's actual hues -
+chosen deliberately for the eye-candy use case, accepting that ANSI slots
+lose semantic meaning (a green image's "red" may be brownish in diffs).
+`--legible` switches to `ansidark16` + `lchansi` for tty-like color order
+with stock-looking accents. `--saturation 1-100` lifts chroma if a result
+feels muted. wallust supplies 19 keys; accent = color4,
 selection_foreground = background, selection_background = cursor complete
 the 22. Output: `palettes/wallpaper-<slug>.toml` (gitignored; promote a
 keeper by renaming it without the prefix), then `theme-set` unless
