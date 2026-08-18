@@ -41,6 +41,21 @@ What it does:
 
 Everything is written to ~/.config/themes/ - no git-tracked file is
 ever touched by a palette switch.
+
+The theme toolkit (each command has its own --help):
+  theme-set <palette>         Switch the active palette (this command)
+  theme-apply                 Re-render current palette (after template edits)
+  theme-wallpaper             Switch wallpaper only: fuzzel picker by name,
+                              --browse for the yazi previewer (SUPER+W),
+                              --save makes it the theme's permanent wallpaper
+  wallpaper-theme <image>     Generate a palette FROM a wallpaper (wallust);
+                              --browse to pick visually, --legible for
+                              tty-safe colors
+  theme-import [name]         Import a ghostty theme as a new palette
+  omarchy-import <name|url>   Import an Omarchy theme: built-in name,
+                              community git URL, or omarchythemes.com link
+
+Full reference: themes/SPEC.md
 EOF
 }
 
@@ -96,6 +111,8 @@ list_palettes() {
             echo "  $name"
         fi
     done
+    echo ""
+    echo "Toolkit overview: theme-set --help"
 }
 
 main() {
