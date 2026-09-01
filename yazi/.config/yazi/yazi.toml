@@ -35,13 +35,11 @@ prepend_rules = [
 
 # Git status signs in the file list (git.yazi)
 [[plugin.prepend_fetchers]]
-id = "git"
 url = "*"
 run = "git"
 group = "git"
 
 [[plugin.prepend_fetchers]]
-id = "git"
 url = "*/"
 run = "git"
 group = "git"

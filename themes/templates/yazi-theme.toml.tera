@@ -91,6 +91,16 @@ desc = { fg = "{{ colors.color7.default.hex }}" }
 hovered = { bg = "{{ colors.blue.default.hex }}", bold = true }
 footer = { fg = "{{ colors.background.default.hex }}", bg = "{{ colors.color7.default.hex }}" }
 
+# git.yazi status signs in the file list
+[git]
+unstaged  = { fg = "{{ colors.yellow.default.hex }}" }
+staged    = { fg = "{{ colors.green.default.hex }}" }
+added     = { fg = "{{ colors.green.default.hex }}" }
+untracked = { fg = "{{ colors.magenta.default.hex }}" }
+deleted   = { fg = "{{ colors.red.default.hex }}" }
+updated   = { fg = "{{ colors.yellow.default.hex }}" }
+ignored   = { fg = "{{ colors.color8.default.hex }}" }
+
 [filetype]
 rules = [
   # Images
