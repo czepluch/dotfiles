@@ -53,7 +53,9 @@ The theme toolkit (each command has its own --help):
                               tty-safe colors
   theme-import [name]         Import a ghostty theme as a new palette
   omarchy-import <name|url>   Import an Omarchy theme: built-in name,
-                              community git URL, or omarchythemes.com link
+                              community git URL, or omarchythemes.com link;
+                              --list shows preview URLs, --browse picks one
+                              from the screenshots in the yazi previewer
 
 Full reference: themes/SPEC.md
 EOF

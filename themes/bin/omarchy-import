@@ -8,7 +8,12 @@
 # ~/pics/wallpapers/ by default and wired up as the palette's wallpaper.
 #
 # Usage:
-#   omarchy-import --list                    List built-in Omarchy themes
+#   omarchy-import --list                    List built-in themes with a
+#                                            preview screenshot URL each
+#   omarchy-import --browse                  Pick a theme visually: floating
+#                                            yazi over the preview screenshots
+#                                            (same window as SUPER+W); Enter
+#                                            imports, --apply also switches
 #   omarchy-import lumon                     Import a built-in theme
 #   omarchy-import <git-url>                 Import a community theme repo
 #   omarchy-import https://omarchythemes.com/themes/<name>
@@ -19,7 +24,9 @@
 
 import argparse
 import json
+import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -30,6 +37,7 @@ from pathlib import Path
 THEMES_DIR = Path(__file__).resolve().parent.parent
 PALETTES_DIR = THEMES_DIR / "palettes"
 WALLPAPER_DIR = Path.home() / "pics" / "wallpapers"
+CACHE_DIR = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "omarchy-import"
 UPSTREAM = "basecamp/omarchy"
 MIN_BACKGROUND_BYTES = 100_000  # skip logos/icons in backgrounds/
 
@@ -55,6 +63,82 @@ def gh_api(path: str, raw: bool = False) -> bytes:
 def list_builtin() -> list[str]:
     entries = json.loads(gh_api(f"repos/{UPSTREAM}/contents/themes"))
     return sorted(e["name"] for e in entries if e["type"] == "dir")
+
+
+def default_branch() -> str:
+    return json.loads(gh_api(f"repos/{UPSTREAM}"))["default_branch"]
+
+
+def slugify(name: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+
+
+def print_list() -> None:
+    """One line per built-in theme: name, a '*' when a palette of that name
+    already exists locally, and the URL of the theme's preview screenshot."""
+    themes = list_builtin()
+    branch = default_branch()
+    width = max(len(t) for t in themes)
+    for t in themes:
+        mark = "*" if (PALETTES_DIR / f"{slugify(t)}.toml").exists() else " "
+        url = f"https://github.com/{UPSTREAM}/blob/{branch}/themes/{t}/preview.png"
+        print(f"{t:<{width}}  {mark} {url}")
+    sys.stdout.flush()
+    print("\n* a palette of that name already exists (import needs --force)",
+          file=sys.stderr)
+
+
+def fetch_preview(name: str) -> Path | None:
+    """Download themes/<name>/preview.png into the cache; None if the theme
+    ships no preview."""
+    dest = CACHE_DIR / f"{name}.png"
+    if dest.exists():
+        return dest
+    result = subprocess.run(
+        ["gh", "api", "-H", "Accept: application/vnd.github.raw",
+         f"repos/{UPSTREAM}/contents/themes/{name}/preview.png"],
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        return None
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    dest.write_bytes(result.stdout)
+    return dest
+
+
+def browse() -> str | None:
+    """Floating yazi over the cached preview screenshots (the SUPER+W window,
+    via the wallpaper.browser class). Returns the picked theme name, or None
+    when the window is closed without opening a file."""
+    for tool in ("ghostty", "yazi"):
+        if shutil.which(tool) is None:
+            die(f"{tool} is required for --browse")
+    themes = list_builtin()
+    missing = [t for t in themes if not (CACHE_DIR / f"{t}.png").exists()]
+    if missing:
+        print(f"Fetching {len(missing)} preview screenshot"
+              f"{'s' if len(missing) != 1 else ''}...", flush=True)
+    for t in themes:
+        if fetch_preview(t) is None:
+            print(f"note: '{t}' ships no preview.png, not shown", file=sys.stderr)
+    runtime = Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp"))
+    fd, chooser = tempfile.mkstemp(prefix="omarchy-pick.", dir=runtime)
+    os.close(fd)
+    chooser = Path(chooser)
+    try:
+        subprocess.run(["ghostty", "--class=wallpaper.browser", "-e", "yazi",
+                        str(CACHE_DIR), f"--chooser-file={chooser}"])
+        picked = chooser.read_text().splitlines()
+    finally:
+        chooser.unlink(missing_ok=True)
+    if not picked:
+        print("No theme picked.")
+        return None
+    name = Path(picked[0]).stem
+    if name not in themes:
+        die(f"'{picked[0]}' is not a built-in Omarchy theme "
+            f"(stale file in {CACHE_DIR}?)")
+    return name
 
 
 def pick(colors: dict, *keys: str, required: bool = False, label: str = "") -> str | None:
@@ -214,34 +298,10 @@ def load_repo(url: str) -> tuple[dict, str, "BackgroundSource", str]:
     return colors, name, fetch_background, source
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        prog="omarchy-import",
-        description="Import an Omarchy theme (built-in name, git URL, or "
-                    "omarchythemes.com page) as a palette.",
-    )
-    parser.add_argument("theme", nargs="?", help="theme name or URL")
-    parser.add_argument("--list", action="store_true", help="list built-in themes")
-    parser.add_argument("--apply", action="store_true", help="theme-set after import")
-    parser.add_argument("--no-wallpaper", action="store_true",
-                        help="skip downloading the theme background")
-    parser.add_argument("--all-wallpapers", action="store_true",
-                        help="download every background the theme ships "
-                             "(first one becomes the palette wallpaper; the "
-                             "rest are available via SUPER+W)")
-    parser.add_argument("--force", action="store_true",
-                        help="overwrite an existing palette of the same name")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="print the palette instead of writing anything")
-    args = parser.parse_args()
-
-    if args.list:
-        print("\n".join(list_builtin()))
-        return
-    if not args.theme:
-        parser.error("provide a theme name/URL or use --list")
-
-    ref = args.theme
+def import_theme(ref: str, args: argparse.Namespace,
+                 skip_existing: bool = False) -> str:
+    """Import one theme; returns the palette slug. With skip_existing, an
+    existing palette of the same name is kept instead of being an error."""
     if "omarchythemes.com" in ref:
         ref = resolve_repo_from_page(ref)
     if ref.startswith(("http://", "https://", "git@")):
@@ -254,7 +314,7 @@ def main() -> None:
               "dark-assumed and untested in light mode", file=sys.stderr)
 
     palette = map_palette(colors)
-    slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+    slug = slugify(name)
     target = PALETTES_DIR / f"{slug}.toml"
 
     lines = [f"# {name} - imported from Omarchy: {source}", ""]
@@ -268,9 +328,12 @@ def main() -> None:
         print("\n".join(lines))
         print(f"\n(dry run: would write {target}"
               f"{'' if args.no_wallpaper else ' and download the background'})")
-        return
+        return slug
 
     if target.exists() and not args.force:
+        if skip_existing:
+            print(f"Palette '{slug}' already exists; keeping it (use --force to re-import)")
+            return slug
         die(f"palette '{slug}' already exists - use --force to overwrite")
 
     wallpapers = []
@@ -291,7 +354,51 @@ def main() -> None:
 
     target.write_text("\n".join(lines) + "\n")
     print(f"Palette written: palettes/{slug}.toml")
+    return slug
 
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        prog="omarchy-import",
+        description="Import an Omarchy theme (built-in name, git URL, or "
+                    "omarchythemes.com page) as a palette.",
+    )
+    parser.add_argument("theme", nargs="*", help="theme name or URL")
+    parser.add_argument("--list", action="store_true",
+                        help="list built-in themes with preview screenshot URLs")
+    parser.add_argument("--browse", action="store_true",
+                        help="pick a built-in theme visually in the floating "
+                             "yazi preview browser (Enter imports, q cancels)")
+    parser.add_argument("--apply", action="store_true", help="theme-set after import")
+    parser.add_argument("--no-wallpaper", action="store_true",
+                        help="skip downloading the theme background")
+    parser.add_argument("--all-wallpapers", action="store_true",
+                        help="download every background the theme ships "
+                             "(first one becomes the palette wallpaper; the "
+                             "rest are available via SUPER+W)")
+    parser.add_argument("--force", action="store_true",
+                        help="overwrite an existing palette of the same name")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="print the palette instead of writing anything")
+    args = parser.parse_args()
+
+    if args.list:
+        print_list()
+        return
+    if args.browse:
+        if args.theme:
+            parser.error("--browse takes no theme argument")
+        name = browse()
+        if name is None:
+            return
+        slug = import_theme(name, args, skip_existing=True)
+    else:
+        if len(args.theme) != 1:
+            parser.error("provide exactly one theme name/URL, or use --list / --browse")
+        slug = import_theme(args.theme[0], args)
+
+    if args.dry_run:
+        return
     if args.apply:
         subprocess.run([str(THEMES_DIR / "bin" / "theme-set"), slug], check=True)
     else:

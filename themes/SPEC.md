@@ -154,8 +154,15 @@ delegates its wallpaper step to this script.
 Imports a ghostty theme into a palette TOML (unchanged from the old engine;
 `--list`, `--apply`, `--force`, fzf browser with no args).
 
-### omarchy-import [--list] [--apply] [--no-wallpaper] [--force] [--dry-run] \<theme\>
-Imports an Omarchy theme (MIT) as a tracked palette. Accepts a built-in
+### omarchy-import [--list] [--browse] [--apply] [--no-wallpaper] [--force] [--dry-run] \<theme\>
+Imports an Omarchy theme (MIT) as a tracked palette. `--list` prints every
+built-in theme with the URL of its upstream preview screenshot and marks
+names that already exist as local palettes. `--browse` downloads those
+screenshots into `~/.cache/omarchy-import/` (once) and opens the floating
+yazi browser over them, the same window SUPER+W uses, so themes can be
+compared side by side; Enter imports the pick (an existing palette is kept
+as is), `--browse --apply` also switches to it, q cancels.
+Accepts a built-in
 theme name (fetched from basecamp/omarchy via `gh api`), a community theme
 git URL, or an omarchythemes.com page URL (the repo link is resolved from
 the page). Handles both colors.toml dialects: basecamp's named colors
