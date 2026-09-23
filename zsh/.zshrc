@@ -61,9 +61,9 @@ else
 fi
 
 # fzf-tab config
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always --icons $realpath'
-zstyle ':fzf-tab:complete:z:*' fzf-preview 'eza -1 --color=always --icons $realpath'
-zstyle ':fzf-tab:complete:*:*' fzf-preview 'bat --color=always --style=numbers --line-range=:500 ${realpath} 2>/dev/null || eza -1 --color=always --icons ${realpath} 2>/dev/null'
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always --icons=always $realpath'
+zstyle ':fzf-tab:complete:z:*' fzf-preview 'eza -1 --color=always --icons=always $realpath'
+zstyle ':fzf-tab:complete:*:*' fzf-preview 'bat --color=always --style=numbers --line-range=:500 ${realpath} 2>/dev/null || eza -1 --color=always --icons=always ${realpath} 2>/dev/null'
 zstyle ':fzf-tab:*' continuous-trigger '/'
 zstyle ':fzf-tab:*' switch-group F1 F2
 
@@ -86,11 +86,11 @@ export VISUAL=nvim
 export NEWT_COLORS_FILE="$HOME/.config/themes/current/newt-colors"
 
 # Modern CLI tool replacements
-alias ls='eza --icons'
-alias ll='eza -la --icons'
-alias la='eza -a --icons'
-alias lt='eza --tree --level=2 --icons'
-alias l='eza -lah --icons'
+alias ls='eza --icons=auto'
+alias ll='eza -la --icons=auto'
+alias la='eza -a --icons=auto'
+alias lt='eza --tree --level=2 --icons=auto'
+alias l='eza -lah --icons=auto'
 alias cat='bat'
 alias batp='bat --paging=always'
 alias find='fd'
@@ -100,8 +100,8 @@ alias vim='nvim'
 alias v='nvim'
 
 # Eza with git status
-alias lsg='eza -la --icons --git'
-alias lsgg='eza -la --icons --git --git-ignore'
+alias lsg='eza -la --icons=auto --git'
+alias lsgg='eza -la --icons=auto --git --git-ignore'
 
 # Git aliases
 alias g='git'
