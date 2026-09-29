@@ -56,3 +56,11 @@ output_path = "~/.config/themes/.staging/starship.toml"
 [templates.lazygit]
 input_path = "templates/lazygit-config.yml.tera"
 output_path = "~/.config/themes/.staging/lazygit-config.yml"
+
+[templates.eza]
+input_path = "templates/eza-theme.yml.tera"
+output_path = "~/.config/themes/.staging/eza-theme.yml"
+
+[templates.ls_colors]
+input_path = "templates/ls-colors.zsh.tera"
+output_path = "~/.config/themes/.staging/ls-colors.zsh"

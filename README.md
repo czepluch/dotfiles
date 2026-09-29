@@ -40,6 +40,7 @@ Each directory is a "stow package" that contains configs symlinked to `~/`:
 - **starship** - Custom prompt theme (Base2Tone Field Dark)
 - **nvim** - Neovim/LazyVim configuration with Avante & Supermaven
 - **yazi** - Terminal file manager configuration
+- **eza** - ls replacement theme (symlink into the theme system output)
 - **mise** - Version manager for development tools
 - **ghostty** - Terminal emulator theme (macOS)
 - **kitty** - Terminal emulator theme (Linux)

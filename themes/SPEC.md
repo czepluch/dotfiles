@@ -90,6 +90,9 @@ App config adds one source/import line pointing at generated output.
 - **btop**: `color_theme` points at `~/.config/btop/themes/current.theme`,
   a committed symlink into `themes/current/`
 - **newt** (nmtui/whiptail): `NEWT_COLORS_FILE` env var in `.zshrc`
+- **LS_COLORS**: `.zshrc` sources `ls-colors.zsh` before compinit and fzf-tab
+  load, since both read the variable once at startup. Truecolor SGR entries
+  (`38;2;r;g;b`); zsh's completion list and fzf-tab pass them through verbatim
 
 ### B - CSS Import
 - **waybar**: `@import url("colors.css")`; the repo's `colors.css` is a
@@ -97,7 +100,11 @@ App config adds one source/import line pointing at generated output.
 
 ### C - Full Template
 The whole config is generated; the stow package ships a symlink.
-- **mako, fuzzel, yazi, fastfetch, starship, lazygit**
+- **mako, fuzzel, yazi, fastfetch, starship, lazygit, eza**
+- eza reads `~/.config/eza/theme.yml`, a stowed symlink to
+  `eza-theme.yml`. Keys left out of the template keep eza's built-in style,
+  so the template only sets the roles that should follow the palette.
+  `ls-colors.zsh` mirrors the same roles for zsh completion
 - starship and lazygit moved here 2026-08-17 (the old in-place marker
   rewriting - Pattern D - is retired). Structural edits to those two apps
   now happen in `templates/starship.toml.tera` /
@@ -195,8 +202,8 @@ checksum fix).
 themes/
   colors.toml              # Active palette (gitignored, written by theme-set)
   matugen.toml             # matugen config: template list + staging outputs
-  palettes/                # 9 palettes
-  templates/               # 12 *.tera templates (Pattern A/B/C)
+  palettes/                # 13 palettes
+  templates/               # 14 *.tera templates (Pattern A/B/C)
   apps/                    # Pattern E metadata (catppuccin-mocha, tokyo-night)
   bin/
     theme-set
@@ -246,6 +253,8 @@ both together when the Hyprland Lua cutover is finalized.
 | Fastfetch | Yes (per-invocation) | - |
 | Starship | Yes (per-prompt) | - |
 | Lazygit | No | Restart manually |
+| Eza | Yes (per-invocation) | - |
+| LS_COLORS | No (read at shell start) | New shell or `source ~/.zshrc` |
 | Hyprpaper | No | hyprctl IPC (instant) |
 | Neovim | No | Restart manually |
 | Newt/nmtui | Yes (per-invocation) | - |
