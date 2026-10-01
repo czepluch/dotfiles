@@ -28,7 +28,8 @@ templates/*.tera  --render-->  ~/.config/themes/.staging/
 
 - **palette-to-json** validates the 22 color keys, then derives everything
   the templates may reference: 13 named aliases, `gradient1..gradient9`
-  (accent to magenta lerp), and a `<key>_vivid` variant for every key
+  (accent to magenta lerp), `tone1..tone9` (background to foreground lerp,
+  10% to 90%), and a `<key>_vivid` variant for every key
   (saturation push away from the channel mean). All integer math matches the
   retired bash engine bit-for-bit (division truncates toward zero).
 - **matugen** (pinned expectation: 4.1.0, Arch `extra`) imports the palette
@@ -72,6 +73,9 @@ Named aliases (derived by palette-to-json, usable as `colors.red...` etc.):
 red=color1, green=color2, yellow=color3, blue=color4, magenta=color5,
 cyan=color6, white=color7, bright_red=color9 through bright_cyan=color14.
 
+Neutral ramp: `colors.tone1` (background with 10% foreground) through `colors.tone9` (90% foreground).
+Low tones suit raised surfaces and selection rows, high tones suit muted text.
+
 **Backslash rule**: matugen's Tera collapses `\\` to `\` in raw template
 text. Any literal backslash in a template must be written doubled. This
 matters mainly in `starship.toml.tera` (format-block line continuations and
@@ -100,7 +104,13 @@ App config adds one source/import line pointing at generated output.
 
 ### C - Full Template
 The whole config is generated; the stow package ships a symlink.
-- **mako, fuzzel, yazi, fastfetch, starship, lazygit, eza**
+- **mako, fuzzel, yazi, fastfetch, starship, lazygit, eza, herdr**
+- herdr reads `~/.config/herdr/config.toml`, a stowed symlink to
+  `herdr-config.toml`. The template holds the whole herdr config (keys, UI,
+  theme) on the `terminal` base theme, with the neutral `[theme.custom]`
+  tokens taken from `tone1..tone9`. herdr's settings menu writes through the
+  symlink into the generated file, so those changes last only until the next
+  `theme-apply`; durable edits go in the template
 - eza reads `~/.config/eza/theme.yml`, a stowed symlink to
   `eza-theme.yml`. Keys left out of the template keep eza's built-in style,
   so the template only sets the roles that should follow the palette.
@@ -127,7 +137,8 @@ The whole config is generated; the stow package ships a symlink.
 1. Copies `palettes/<name>.toml` to `colors.toml` (gitignored)
 2. Runs `theme-apply` (render + atomic swap; aborts untouched on error)
 3. Copies `apps/<name>/neovim.lua` if present
-4. Reloads: SIGUSR2 to ghostty and waybar, `makoctl reload`, `hyprctl reload`
+4. Reloads: SIGUSR2 to ghostty and waybar, `makoctl reload`, `hyprctl reload`,
+   `herdr server reload-config`
 5. Wallpaper, if the palette defines one: instant per-monitor `hyprctl
    hyprpaper wallpaper` IPC, and regenerates
    `~/.config/themes/current/hyprpaper.conf` (single empty-monitor block =
@@ -203,7 +214,7 @@ themes/
   colors.toml              # Active palette (gitignored, written by theme-set)
   matugen.toml             # matugen config: template list + staging outputs
   palettes/                # 13 palettes
-  templates/               # 14 *.tera templates (Pattern A/B/C)
+  templates/               # 15 *.tera templates (Pattern A/B/C)
   apps/                    # Pattern E metadata (catppuccin-mocha, tokyo-night)
   bin/
     theme-set
@@ -254,6 +265,7 @@ both together when the Hyprland Lua cutover is finalized.
 | Starship | Yes (per-prompt) | - |
 | Lazygit | No | Restart manually |
 | Eza | Yes (per-invocation) | - |
+| Herdr | No | herdr server reload-config |
 | LS_COLORS | No (read at shell start) | New shell or `source ~/.zshrc` |
 | Hyprpaper | No | hyprctl IPC (instant) |
 | Neovim | No | Restart manually |

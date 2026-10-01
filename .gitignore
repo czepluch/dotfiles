@@ -39,6 +39,10 @@ yazi/.config/yazi/plugins/*
 !yazi/.config/yazi/plugins/folder-rules.yazi/
 !yazi/.config/yazi/plugins/folder-rules.yazi/**
 
+# herdr keeps its sockets, logs, and session state next to config.toml
+herdr/.config/herdr/*
+!herdr/.config/herdr/config.toml
+
 # Keep this file
 !.gitignore
 hypr/.config/hypr/shaders/

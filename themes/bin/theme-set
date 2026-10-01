@@ -36,7 +36,7 @@ What it does:
   1. Copies palettes/<name>.toml to colors.toml
   2. Runs theme-apply (matugen renders all templates, atomic swap)
   3. Copies neovim metadata from apps/<name>/ if present
-  4. Sends reload signals to ghostty, waybar, mako, and Hyprland
+  4. Sends reload signals to ghostty, waybar, mako, Hyprland, and herdr
   5. Updates wallpaper if the palette defines one
 
 Everything is written to ~/.config/themes/ - no git-tracked file is
@@ -175,6 +175,7 @@ main() {
     makoctl reload 2>/dev/null || true
     # Hyprland (Lua config) re-reads hypr-colors.lua on reload; deterministic repaint.
     hyprctl reload 2>/dev/null || true
+    herdr server reload-config &>/dev/null || true
 
     # Set wallpaper if palette defines one
     set_wallpaper "$palette_file"

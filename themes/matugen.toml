@@ -64,3 +64,7 @@ output_path = "~/.config/themes/.staging/eza-theme.yml"
 [templates.ls_colors]
 input_path = "templates/ls-colors.zsh.tera"
 output_path = "~/.config/themes/.staging/ls-colors.zsh"
+
+[templates.herdr]
+input_path = "templates/herdr-config.toml.tera"
+output_path = "~/.config/themes/.staging/herdr-config.toml"

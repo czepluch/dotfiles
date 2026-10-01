@@ -11,7 +11,8 @@
 # Precomputes every derived color the old bash engine produced (aliases,
 # gradient1..9, <key>_vivid for all keys) with bash-identical integer math:
 # bash $(( )) truncates toward zero, Python // floors, so all signed
-# divisions go through tdiv().
+# divisions go through tdiv(). Also derives tone1..9, a background to
+# foreground ramp for neutral surfaces and muted text.
 #
 # Output shape (consumed via matugen import_json_files):
 #   {"colors": {"<name>": {"default": {"color": "#rrggbb"}}}}
@@ -129,7 +130,11 @@ def build_colors(palette):
         ratio = (i - 1) * 100 // 8
         colors[f"gradient{i}"] = lerp(colors["accent"], colors["magenta"], ratio)
 
-    # Derive <key>_vivid for every key (incl. aliases and gradients)
+    # Derive tone colors (background -> foreground, 10% to 90% in 9 steps)
+    for i in range(1, 10):
+        colors[f"tone{i}"] = lerp(colors["background"], colors["foreground"], i * 10)
+
+    # Derive <key>_vivid for every key (incl. aliases, gradients, and tones)
     for key in list(colors):
         colors[f"{key}_vivid"] = vivid(colors[key])
 
