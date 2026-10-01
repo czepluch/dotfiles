@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+#
+# herdr-refresh - rewrite the files herdr installs outside its own binary
+#
+set -euo pipefail
+
+usage() {
+    cat <<'EOF'
+Usage: herdr-refresh [-h|--help] [<herdr-binary>]
+
+Bring the files that herdr writes into other tools' config in line with the
+installed herdr version. Runs as the mise postinstall hook for herdr, so a
+herdr upgrade refreshes them without a manual step.
+
+What it does:
+  1. Writes the agent skill bundled in the binary to
+     ~/.claude/skills/herdr/SKILL.md (skipped when ~/.claude does not exist)
+  2. Reinstalls every agent integration that is installed but outdated
+
+<herdr-binary> defaults to the herdr on PATH.
+EOF
+}
+
+case "${1:-}" in
+    -h|--help) usage; exit 0 ;;
+    -*)
+        echo "error: unknown option '$1'" >&2
+        echo "Run 'herdr-refresh --help' for usage." >&2
+        exit 1
+        ;;
+esac
+
+herdr="${1:-herdr}"
+
+if ! command -v "$herdr" &>/dev/null; then
+    echo "error: herdr not found: $herdr" >&2
+    exit 1
+fi
+
+if [[ -d "$HOME/.claude" ]]; then
+    skill="$HOME/.claude/skills/herdr/SKILL.md"
+    mkdir -p "$(dirname "$skill")"
+    # Write to a temp file first so a failed run never leaves a truncated skill.
+    "$herdr" --skill > "$skill.tmp"
+    mv -f "$skill.tmp" "$skill"
+    echo "herdr skill: $("$herdr" --version)"
+fi
+
+# Status lines look like "claude: outdated (v7 < v10) (<path>)".
+"$herdr" integration status | while IFS= read -r line; do
+    if [[ "$line" =~ ^([a-z-]+)[^:]*:\ outdated ]]; then
+        "$herdr" integration install "${BASH_REMATCH[1]}" >/dev/null
+        echo "herdr integration updated: ${BASH_REMATCH[1]}"
+    fi
+done

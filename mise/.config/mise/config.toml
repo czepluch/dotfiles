@@ -2,12 +2,18 @@
 erlang = "latest"
 foundry = "latest"
 gleam = "latest"
-herdr = "latest"
 node = "lts"
 solidity = "latest"
 uv = "0.11.19"
 yarn = "1.22.22"
 zig = "master"
+
+# herdr-refresh rewrites the agent skill and agent integrations to match the
+# herdr version that was just installed. `mise install herdr` runs it on demand.
+# A failing hook fails the install, so the command always exits 0.
+[tools.herdr]
+version = "latest"
+postinstall = { run = 'r="$HOME/.local/bin/herdr-refresh"; [ ! -x "$r" ] || "$r" "$MISE_TOOL_INSTALL_PATH/herdr" || echo "herdr-refresh failed" >&2', when = "always" }
 
 [settings]
 idiomatic_version_file_enable_tools = ["node"]
