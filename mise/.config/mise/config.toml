@@ -5,6 +5,7 @@ gleam = "latest"
 herdr = "latest"
 node = "lts"
 solidity = "latest"
+uv = "0.11.19"
 yarn = "1.22.22"
 zig = "master"
 
