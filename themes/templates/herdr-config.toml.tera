@@ -13,17 +13,26 @@ name = "terminal"
 
 # Color names are not validated: an unknown name renders as cyan and
 # `herdr config check` still passes. Use hex values.
+# sidebar_bg, active_row_bg, and selection_bg need herdr 0.9 or newer.
 [theme.custom]
-# Active pane border, active tab, mode badge, key hints, modal borders
+# Active pane border, active tab, selected menu row, mode badge, key hints,
+# modal borders
 accent = "{{ colors.accent.default.hex }}"
 # Modal and status bar background, and the text drawn on top of accent
 panel_bg = "{{ colors.background.default.hex }}"
-# Focused sidebar row, sidebar dividers
+# Sidebar background. Set explicitly so the terminal's background opacity
+# does not apply to it.
+sidebar_bg = "{{ colors.background.default.hex }}"
+# Focused sidebar row
+active_row_bg = "{{ colors.tone1.default.hex }}"
+# Navigate-mode cursor row
+selection_bg = "{{ colors.tone2.default.hex }}"
+# Sidebar dividers
 surface_dim = "{{ colors.tone1.default.hex }}"
-# Navigate-mode cursor row, selected menu row, secondary buttons
-surface0 = "{{ colors.tone2.default.hex }}"
+# Inactive tabs, secondary buttons, modal separators
+surface0 = "{{ colors.tone1.default.hex }}"
 surface1 = "{{ colors.tone3.default.hex }}"
-# Sidebar labels, inactive pane borders, hints
+# Sidebar labels, inactive tab labels, inactive pane borders, hints
 overlay0 = "{{ colors.tone6.default.hex }}"
 # Secondary text, scrollbar thumb
 overlay1 = "{{ colors.tone7.default.hex }}"
