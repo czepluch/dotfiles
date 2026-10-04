@@ -1,0 +1,41 @@
+#!/bin/bash
+# Open a fullscreen ghostty screensaver on every monitor.
+#
+# Usage: screensaver [logo.txt | logo-dir]
+# Reads logos/ and ghostty.conf from ~/.config/screensaver (or $SCREENSAVER_DIR).
+# Each monitor gets its own fullscreen window (ghostty.conf sets fullscreen).
+# The font size is monitor width / 200, which gives a grid of about 250
+# columns on every monitor, so logos are sized in columns of that grid.
+# (A JetBrains Mono cell is about 0.79 * font size pixels wide.)
+
+dir=${SCREENSAVER_DIR:-$HOME/.config/screensaver}
+logo=${1:-$dir/logos}
+config=$dir/ghostty.conf
+class=local.screensaver
+run=$(dirname "$(realpath "$0")")/screensaver-run
+
+[[ -e $logo ]] || { echo "No logo at $logo" >&2; exit 1; }
+
+windows() {
+  hyprctl clients -j | jq --arg c "$class" '[.[] | select(.class == $c)] | length'
+}
+
+(($(windows) > 0)) && exit 0
+pgrep -x hyprlock >/dev/null && exit 0
+
+focused=$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name')
+
+while read -r name width; do
+  before=$(windows)
+  printf -v command '%q ' ghostty --class="$class" --config-file="$config" \
+    --font-size="$((width / 200))" -e "$run" "$logo"
+  hyprctl dispatch "hl.dsp.focus({ monitor = \"$name\" })" >/dev/null
+  hyprctl dispatch "hl.dsp.exec_cmd([[$command]])" >/dev/null
+  # Let the window map on this monitor before focus moves to the next one.
+  for _ in $(seq 50); do
+    (($(windows) > before)) && break
+    sleep 0.1
+  done
+done < <(hyprctl monitors -j | jq -r '.[] | "\(.name) \(.width)"')
+
+hyprctl dispatch "hl.dsp.focus({ monitor = \"$focused\" })" >/dev/null

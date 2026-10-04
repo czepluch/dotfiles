@@ -53,6 +53,7 @@ Each directory is a "stow package" that contains configs symlinked to `~/`:
 - **fuzzel** - Application launcher
 - **btop** - System monitor
 - **podman** - Container runtime configuration
+- **screensaver** - Terminal screensaver: logo text art animated by `ttfx`, run manually with `screensaver`
 
 ### Not Managed (Use System Configs)
 - **git** - Use your own git config

@@ -1,0 +1,56 @@
+#!/bin/bash
+# Animate text-art logos with random ttfx effects, inside the terminal this
+# runs in, until a key is pressed or the window loses focus.
+#
+# Usage: screensaver-run [logo.txt | logo-dir]
+# With a directory, a random *.txt from it is used for every effect cycle.
+# Started by `screensaver`; run it directly in any terminal to preview.
+
+logo=${1:-$HOME/.config/screensaver/logos}
+class=local.screensaver
+
+quit() {
+  hyprctl eval 'hl.config({ cursor = { invisible = false } })' >/dev/null 2>&1
+  pkill -t "${tty#/dev/}" -x ttfx 2>/dev/null
+  exit 0
+}
+trap quit INT TERM HUP QUIT
+
+# hyprlock is a lock surface, not a window, so the active window stays ours
+# while the session is locked; check for it explicitly.
+in_focus() {
+  ! pgrep -x hyprlock >/dev/null &&
+    hyprctl activewindow -j 2>/dev/null | jq -e --arg c "$class" '.class == $c' >/dev/null
+}
+
+pick_logo() {
+  if [[ -d $logo ]]; then
+    find "$logo" -maxdepth 1 -name '*.txt' | shuf -n 1
+  else
+    echo "$logo"
+  fi
+}
+
+[[ -n $(pick_logo) ]] || { echo "No logo at $logo" >&2; exit 1; }
+
+tty=$(tty)
+printf '\033]11;rgb:1b/18/18\007' # background: brand ink
+hyprctl eval 'hl.config({ cursor = { invisible = true } })' >/dev/null 2>&1
+
+# The pty starts at 80x24 and is resized once the compositor sizes the window.
+# ttfx measures the terminal once at startup, so wait for the real size.
+deadline=$((SECONDS + 2))
+while ((SECONDS < deadline)) && [[ $(stty size 2>/dev/null) == "24 80" ]]; do
+  sleep 0.02
+done
+
+while true; do
+  ttfx -i "$(pick_logo)" --frame-rate 120 --canvas-width 0 --canvas-height 0 --reuse-canvas \
+    --anchor-canvas c --anchor-text c --random-effect --no-eol --no-restore-cursor &
+
+  while pgrep -t "${tty#/dev/}" -x ttfx >/dev/null; do
+    if read -rsn1 -t 1 || ! in_focus; then
+      quit
+    fi
+  done
+done
