@@ -18,9 +18,11 @@ Thumbs.db
 *.local
 *_local
 
-# But keep the bin stow package, whose layout requires bin/.local/bin/
+# But keep the stow packages whose layout requires <pkg>/.local/bin/
 !bin/.local/
 !bin/.local/**
+!screensaver/.local/
+!screensaver/.local/**
 
 # Ignore AI agent guidance files (private)
 AGENTS.md
