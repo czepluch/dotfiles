@@ -132,6 +132,15 @@ alias gcb='git checkout -b'
 alias gb='git branch'
 alias glog='git log --oneline --graph --decorate'
 alias glg='lazygit'
+alias gdv='nvim "+DiffviewOpen main...HEAD"'
+
+# Pick a worktree of the current repo with fzf and jump to it
+gwt() {
+  local dir
+  dir=$(git worktree list --porcelain | awk '/^worktree /{print substr($0, 10)}' \
+    | fzf --height 40% --reverse --prompt='worktree> ') || return
+  cd "$dir"
+}
 
 # Config editing
 alias zrc='nvim ~/.zshrc'
