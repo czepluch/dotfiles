@@ -23,3 +23,12 @@ gui:
     selectedRangeBgColor:
       - '{{ colors.color8.default.hex }}'
 # ### THEME-END ###
+
+git:
+  diffRenderers:
+    - command: delta --dark --paging=never --line-numbers --syntax-theme=ansi --minus-style='syntax auto'
+    - type: rawGit
+      name: default
+
+# Return straight to the UI after an external command such as the difftool.
+promptToReturnFromSubprocess: false

@@ -20,3 +20,7 @@
 	gpgsign = true
 [gpg "ssh"]
 	allowedSignersFile = /home/jacob/.ssh/allowed_signers
+[diff]
+	tool = nvimdiff
+[difftool]
+	prompt = false
