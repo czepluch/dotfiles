@@ -27,11 +27,13 @@ hl.bind(mainMod .. " + A",      hl.dsp.exec_cmd("~/.local/bin/husk-capture"), { 
 
 --------------------------------------------------------------------------------
 -- Universal clipboard via Insert shortcuts (works in terminals). SUPER+C/V/X.
--- Native send_shortcut dispatcher; window defaults to the active window.
+-- Runs send_shortcut through hyprctl, outside the bind handler. Called directly,
+-- it leaves the key logically held in the client, so the client auto-repeats it
+-- and holding Shift afterwards repeats the paste.
 --------------------------------------------------------------------------------
-hl.bind(mainMod .. " + C", hl.dsp.send_shortcut({ mods = "CTRL",  key = "Insert" }))
-hl.bind(mainMod .. " + V", hl.dsp.send_shortcut({ mods = "SHIFT", key = "Insert" }))
-hl.bind(mainMod .. " + X", hl.dsp.send_shortcut({ mods = "CTRL",  key = "X" }))
+hl.bind(mainMod .. " + C", hl.dsp.exec_cmd([[hyprctl dispatch 'hl.dsp.send_shortcut({ mods = "CTRL", key = "Insert" })']]))
+hl.bind(mainMod .. " + V", hl.dsp.exec_cmd([[hyprctl dispatch 'hl.dsp.send_shortcut({ mods = "SHIFT", key = "Insert" })']]))
+hl.bind(mainMod .. " + X", hl.dsp.exec_cmd([[hyprctl dispatch 'hl.dsp.send_shortcut({ mods = "CTRL", key = "X" })']]))
 
 -- Clipboard manager
 hl.bind(mainMod .. " + CTRL + V", hl.dsp.exec_cmd("cliphist list | fuzzel --dmenu | cliphist decode | wl-copy"))
