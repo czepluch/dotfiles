@@ -59,6 +59,11 @@ next_agent = "prefix+a"
 previous_agent = "prefix+shift+a"
 # Toggle between the two most recently focused panes
 last_pane = "prefix+space"
+# Move the focused pane, same keys as moving a window in Hyprland
+swap_pane_left = "prefix+shift+h"
+swap_pane_down = "prefix+shift+j"
+swap_pane_up = "prefix+shift+k"
+swap_pane_right = "prefix+shift+l"
 
 # Opens in the focused pane's working directory
 [[keys.command]]
