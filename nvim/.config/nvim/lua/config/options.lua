@@ -7,3 +7,7 @@ vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt.softtabstop = 4
 vim.opt.expandtab = true
+
+-- Diff mode turns wrap off by itself; keep each buffer's own wrap setting so
+-- one-sentence-per-line prose stays readable in vimdiff.
+vim.opt.diffopt:append("followwrap")
