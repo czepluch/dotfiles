@@ -1,6 +1,6 @@
 
 # Added by Radicle.
-export PATH="$PATH:/home/jacob/.radicle/bin"
+export PATH="$PATH:$HOME/.radicle/bin"
 
 # elan (Lean toolchain). Must live here, not .zprofile: .zprofile does
 # `exec start-hyprland` before reaching its PATH exports, so anything set after
