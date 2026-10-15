@@ -28,6 +28,7 @@ Thumbs.db
 AGENTS.md
 CLAUDE.md
 !claude/.claude/CLAUDE.md
+/.claude/
 
 # Theme system - active palette is a copy of the selected palette file
 themes/colors.toml
