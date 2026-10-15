@@ -27,6 +27,7 @@ Thumbs.db
 # Ignore AI agent guidance files (private)
 AGENTS.md
 CLAUDE.md
+!claude/.claude/CLAUDE.md
 
 # Theme system - active palette is a copy of the selected palette file
 themes/colors.toml
