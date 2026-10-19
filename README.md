@@ -12,14 +12,14 @@ My cross-platform dotfiles for Arch Linux and macOS, managed with GNU Stow.
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 # Install GNU Stow and essential tools
-brew install stow eza bat fd ripgrep fzf starship zoxide yazi lazygit mise neovim \
+brew install stow eza bat fd ripgrep fzf starship zoxide yazi lazygit mise direnv neovim \
   zsh-autosuggestions zsh-syntax-highlighting
 ```
 
 **Arch Linux:**
 ```bash
 # Install with your preferred AUR helper (e.g., paru)
-paru -S stow eza bat fd ripgrep fzf starship zoxide yazi lazygit mise neovim \
+paru -S stow eza bat fd ripgrep fzf starship zoxide yazi lazygit mise direnv neovim \
   zsh-autosuggestions zsh-syntax-highlighting keychain
 ```
 
@@ -43,6 +43,7 @@ Each directory is a "stow package" that contains configs symlinked to `~/`:
 - **eza** - ls replacement theme (symlink into the theme system output)
 - **herdr** - Terminal workspace manager for AI coding agents (symlink into the theme system output)
 - **mise** - Version manager for development tools
+- **direnv** - Loads per-directory environments, such as Nix flake dev shells
 - **ghostty** - Terminal emulator theme (macOS)
 - **kitty** - Terminal emulator theme (Linux)
 
