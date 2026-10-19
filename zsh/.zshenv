@@ -14,3 +14,6 @@ fi
 if [ -f "$HOME/.fe/env" ]; then
   . "$HOME/.fe/env"
 fi
+
+# Default locale for shells that never read /etc/locale.conf, such as SSH commands.
+export LANG="${LANG:-en_US.UTF-8}"
