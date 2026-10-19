@@ -24,7 +24,8 @@
 
 - Use `rg` instead of `grep`, `fd` instead of `find`, `eza` instead of `ls`, and `zoxide` instead of `cd`. `grep`, `find` and `cd` are aliased to `rg`, `fd` and `zoxide`, so use them with those tools' syntax.
 - Use `fzf` and other modern CLI tools where they help.
-- Use `mise` for language and tool versions (node, erlang, gleam and so on). Use `rustup` directly for Rust, because mise and rustup do not mix well. Never suggest `mise use rust`.
+- Use `mise` for language and tool versions (node, erlang, gleam and so on). Use `rustup` directly for Rust and `elan` directly for Lean, because mise does not mix well with them. Never suggest `mise use rust`.
+- If a requested tool is not the usual way to do a job, say so and name the usual way. If it cannot do the job at all, stop and ask instead of picking a workaround.
 - Before writing infrastructure code (argument parsing, HTTP routing, config parsing), search the package ecosystem for a library that does it.
 
 ## Git
