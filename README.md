@@ -38,7 +38,7 @@ Each directory is a "stow package" that contains configs symlinked to `~/`:
 ### Cross-Platform (macOS & Linux)
 - **zsh** - Shell configuration with modern CLI tools (OS-aware)
 - **starship** - Custom prompt theme (Base2Tone Field Dark)
-- **nvim** - Neovim/LazyVim configuration with Avante
+- **nvim** - Neovim/LazyVim configuration
 - **yazi** - Terminal file manager configuration
 - **eza** - ls replacement theme (symlink into the theme system output)
 - **herdr** - Terminal workspace manager for AI coding agents (symlink into the theme system output)
@@ -91,7 +91,6 @@ stow -R -t ~ nvim
 - Auto-suggestions and syntax highlighting
 
 ### Editor (Neovim/LazyVim)
-- Avante integration with OpenCode ACP provider
 - Language support: Rust, Gleam, Solidity
 - Custom keymaps and settings
 
