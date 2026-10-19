@@ -252,6 +252,9 @@ eval "$(mise activate zsh)"
 # Starship prompt
 eval "$(starship init zsh)"
 
+# direnv (per-directory environments)
+eval "$(direnv hook zsh)"
+
 # Add cargo binaries to PATH
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
