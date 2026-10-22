@@ -55,6 +55,7 @@ Each directory is a "stow package" that contains configs symlinked to `~/`:
 - **btop** - System monitor
 - **podman** - Container runtime configuration
 - **screensaver** - Terminal screensaver: logo text art animated by `ttfx`, run manually with `screensaver`
+- **xdg** - Default applications for `xdg-open` under Hyprland: text files in Neovim (new Ghostty window), images in imv
 
 ### Not Managed (Use System Configs)
 - **git** - Use your own git config
@@ -71,7 +72,7 @@ stow -t ~ zsh nvim starship yazi mise
 stow -t ~ ghostty
 
 # Linux: Install kitty and Wayland packages
-stow -t ~ kitty hypr waybar mako fuzzel btop podman
+stow -t ~ kitty hypr waybar mako fuzzel btop podman xdg
 
 # Uninstall a package
 stow -D -t ~ zsh

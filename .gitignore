@@ -23,6 +23,12 @@ Thumbs.db
 !bin/.local/**
 !screensaver/.local/
 !screensaver/.local/**
+!xdg/.local/
+!xdg/.local/**
+
+# Other apps drop desktop entries and mimeinfo.cache next to ours
+xdg/.local/share/applications/*
+!xdg/.local/share/applications/nvim-ghostty.desktop
 
 # Ignore AI agent guidance files (private)
 AGENTS.md
