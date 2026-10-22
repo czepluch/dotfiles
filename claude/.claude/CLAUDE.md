@@ -83,7 +83,7 @@
 - Approving a rule or decision covers the case under discussion, not a bulk sweep of other cases.
 - When one tool call is declined, continue with the other independent work.
 - When the user says they changed something and it shows no effect, first ask whether it was saved or applied.
-- Never report a step as done while any part of it is open. Report what is finished and what is still open.
+- Never report a step as done while any part of it is open. Report what is finished and what is still open, with a recommended action for each open item: fix it now, open an issue, or leave it, with the reason.
 - Before adding a cross-cutting feature (a global flag, a shared option), check every code path it touches.
 
 ### Commands for the user
