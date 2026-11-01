@@ -35,7 +35,10 @@
     "host",
     "kernel",
     "uptime",
-    "packages",
+    {
+      "type": "packages",
+      "disabled": ["nix"]
+    },
     "shell",
     "editor",
     "display",
