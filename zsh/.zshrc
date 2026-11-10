@@ -262,6 +262,10 @@ export PATH="$HOME/.local/bin:$PATH"
 # Dotfiles theme scripts
 export PATH="$HOME/dotfiles/themes/bin:$PATH"
 
+# Solcore release (compiler, formatter and language server)
+export SOLCORE_PATH="$HOME/.local/opt/solcore/current/solcore"
+export PATH="$HOME/.local/opt/solcore/current:$PATH"
+
 # Improved history search (Ctrl+R with fzf)
 export FZF_CTRL_R_OPTS="
   --preview 'echo {}' --preview-window up:3:hidden:wrap
