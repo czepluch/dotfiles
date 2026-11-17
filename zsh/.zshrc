@@ -148,7 +148,7 @@ alias zsrc='source ~/.zshrc'
 alias nvimconf='cd ~/.config/nvim && nvim'
 # Linux-specific config aliases
 if [[ "$OS_TYPE" != "Darwin" ]]; then
-  alias hyprconf='nvim ~/.config/hypr/hyprland.conf'
+  alias hyprconf='nvim ~/.config/hypr/hyprland.lua'
 fi
 
 # Quick directory jumps (customize to your frequent dirs)

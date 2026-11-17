@@ -3,7 +3,7 @@
 # Hyprland is launched without uwsm, so there is no systemd-managed
 # graphical-session.target to bind to (the packaged unit's
 # Requisite=graphical-session.target would block a standalone start).
-# Started from hyprland.conf via: exec-once = systemctl --user start --no-block waybar.service
+# Started from hypr/.config/hypr/lua/autostart.lua on the hyprland.start event.
 Description=Waybar (standalone; Hyprland launched without uwsm)
 Documentation=https://github.com/Alexays/Waybar/wiki/
 ConditionEnvironment=WAYLAND_DISPLAY

@@ -1,7 +1,4 @@
--- Keybindings. Migrated from hyprland.conf.
--- Native-Lua upgrades vs the old config: workspace binds are a loop, SUPER+M is now a
--- fuzzel session menu (scripts/power-menu.sh), and dispatchers are native
--- (no `exec, hyprctl dispatch ...` except the clipboard sendshortcut, see note).
+-- Keybindings.
 
 local mainMod = "SUPER"
 

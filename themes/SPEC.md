@@ -228,9 +228,7 @@ themes/
 ```
 
 Runtime output (not in git): `~/.config/themes/current/` plus the transient
-`~/.config/themes/.staging/`. The file `current/hyprland.conf` is an orphan
-kept for the legacy `hypr/.config/hypr/hyprland.conf` rollback config; delete
-both together when the Hyprland Lua cutover is finalized.
+`~/.config/themes/.staging/`.
 
 ## Adding a New Palette
 

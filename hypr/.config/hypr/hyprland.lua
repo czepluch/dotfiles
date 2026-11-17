@@ -1,6 +1,4 @@
 -- Hyprland configuration (Lua) - entry point.
--- Migrated from hyprland.conf (Hyprland 0.55+ Lua config). See TODO.md and the
--- migration plan for context.
 --
 -- RELOAD-CORRECTNESS: this entry chunk re-executes on `hyprctl reload`, while the
 -- require()'d modules below are cached and run once. So mutable / theme-dependent work
