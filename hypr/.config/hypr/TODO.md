@@ -38,3 +38,14 @@ Monitors currently connected: AORUS FO32U2P (HOME), Gigabyte M32U + Dell U2719DC
 Hyprland supports `switch:on:Lid Switch` binds in Lua (`hl.bind("switch:on:Lid Switch",
 ...)`). Not needed for item 1 (locking already works), but noted here as an available hook
 if lid behavior ever needs compositor-level control (e.g. per-dock DPMS toggling).
+
+## 4. Replace the lock screen
+
+Replace the custom hyprlock layout in `hyprlock.conf` with a new lock screen.
+Files that reference the current locker:
+
+- `hypridle.conf`: `lock_cmd` and the `inhibit_sleep` comment
+- `lua/keybinds.lua`: CTRL+SUPER+Q runs `hyprlock`
+- `scripts/power-menu.sh`: the Lock entry
+- `screensaver/.local/bin/screensaver` and `screensaver-run`: `pgrep -x hyprlock` checks
+- `themes/matugen.toml` and `themes/templates/hyprlock.conf.tera`: the generated palette
