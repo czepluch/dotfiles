@@ -39,13 +39,14 @@ Hyprland supports `switch:on:Lid Switch` binds in Lua (`hl.bind("switch:on:Lid S
 ...)`). Not needed for item 1 (locking already works), but noted here as an available hook
 if lid behavior ever needs compositor-level control (e.g. per-dock DPMS toggling).
 
-## 4. Replace the lock screen
+## 4. Quickshell lock screen follow-ups
 
-Replace the custom hyprlock layout in `hyprlock.conf` with a new lock screen.
-Files that reference the current locker:
+The lock screen is the Quickshell config in `quickshell/.config/quickshell/main/lock/`.
+hypridle falls back to hyprlock when Quickshell is not running.
 
-- `hypridle.conf`: `lock_cmd` and the `inhibit_sleep` comment
-- `lua/keybinds.lua`: CTRL+SUPER+Q runs `hyprlock`
-- `scripts/power-menu.sh`: the Lock entry
-- `screensaver/.local/bin/screensaver` and `screensaver-run`: `pgrep -x hyprlock` checks
-- `themes/matugen.toml` and `themes/templates/hyprlock.conf.tera`: the generated palette
+- **Retake the lock after a crash.** When Quickshell crashes while locked, Hyprland keeps the session locked behind its "lockscreen crashed" screen and systemd restarts Quickshell, but the new instance does not lock.
+  Write a marker file in `$XDG_RUNTIME_DIR` when the lock is confirmed (`secure`), delete it on unlock, and lock on startup when the marker exists (`misc.allow_session_lock_restore` is already on).
+- **Test crash recovery from a text console.** Lock, kill Quickshell from another VT, and check that the lock comes back.
+  Recovery to verify: `systemctl --user stop quickshell.service`, then `hyprctl --instance 0 eval 'hl.clear_crashed_lockscreen()'`.
+- **Check lid close and resume.** The screen must be locked before sleep, and no desktop content may show on wake (see item 1).
+- **Card styling.** Make the card less rounded and less clean.

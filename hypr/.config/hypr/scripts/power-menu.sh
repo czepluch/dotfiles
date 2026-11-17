@@ -14,7 +14,7 @@ choice=$(printf '%s\n' \
     | fuzzel --dmenu --prompt "session: " --lines 5 --width 24) || exit 0
 
 case "$choice" in
-    *Lock*)     hyprlock ;;
+    *Lock*)     loginctl lock-session ;;
     *Logout*)   hyprctl dispatch exit ;;
     *Suspend*)  systemctl suspend ;;
     *Reboot*)   systemctl reboot ;;

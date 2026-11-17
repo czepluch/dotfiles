@@ -1,0 +1,8 @@
+{
+    "background": "{{ colors.background.default.hex }}",
+    "foreground": "{{ colors.foreground.default.hex }}",
+    "accent": "{{ colors.accent.default.hex }}",
+    "red": "{{ colors.red.default.hex }}",
+    "yellow": "{{ colors.yellow.default.hex }}",
+    "green": "{{ colors.green.default.hex }}"
+}

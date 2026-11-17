@@ -71,6 +71,13 @@ hl.config({
     force_default_wallpaper = 0,     -- disable anime mascot wallpapers
     disable_hyprland_logo   = true,
     focus_on_activate       = true,  -- a window requesting attention gets focus
+
+    -- Lock screen: keep rendering the desktop behind it and blur it (the
+    -- Quickshell lock raises the blur while locked). A new lock screen can
+    -- take over the session if the running one crashes.
+    session_lock_xray          = true,
+    session_lock_blur          = true,
+    allow_session_lock_restore = true,
   },
   binds = {
     workspace_back_and_forth = true, -- tap active workspace key again to jump back

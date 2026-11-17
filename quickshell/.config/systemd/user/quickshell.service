@@ -1,0 +1,12 @@
+[Unit]
+# Hyprland is launched without uwsm, so there is no systemd-managed
+# graphical-session.target to bind to.
+# Started from hypr/.config/hypr/lua/autostart.lua on the hyprland.start event.
+Description=Quickshell (lock screen)
+Documentation=https://quickshell.org/docs/
+ConditionEnvironment=WAYLAND_DISPLAY
+
+[Service]
+ExecStart=/usr/bin/qs -c main
+Restart=on-failure
+RestartSec=1

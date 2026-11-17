@@ -12,7 +12,7 @@ local menu        = "fuzzel"
 --------------------------------------------------------------------------------
 hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + Q",      hl.dsp.window.close())
-hl.bind("CTRL + " .. mainMod .. " + Q", hl.dsp.exec_cmd("hyprlock")) -- lock screen
+hl.bind("CTRL + " .. mainMod .. " + Q", hl.dsp.exec_cmd("loginctl lock-session")) -- lock screen (hypridle runs lock_cmd)
 hl.bind(mainMod .. " + E",      hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + F",      hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + P",      hl.dsp.window.pseudo())              -- dwindle

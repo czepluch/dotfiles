@@ -91,6 +91,8 @@ App config adds one source/import line pointing at generated output.
   with an inline fallback; the generated file returns a Lua table
 - **hyprlock**: `source = ...` under `# hyprlang noerror true/false`; the
   generated file defines every `$var` the lockscreen body consumes
+- **quickshell**: `Theme.qml` reads `quickshell-colors.json` with a `FileView`
+  and watches it, with inline fallback colors until the file exists
 - **btop**: `color_theme` points at `~/.config/btop/themes/current.theme`,
   a committed symlink into `themes/current/`
 - **newt** (nmtui/whiptail): `NEWT_COLORS_FILE` env var in `.zshrc`
@@ -214,7 +216,7 @@ themes/
   colors.toml              # Active palette (gitignored, written by theme-set)
   matugen.toml             # matugen config: template list + staging outputs
   palettes/                # 13 palettes
-  templates/               # 15 *.tera templates (Pattern A/B/C)
+  templates/               # 16 *.tera templates (Pattern A/B/C)
   apps/                    # Pattern E metadata (catppuccin-mocha, tokyo-night)
   bin/
     theme-set
@@ -254,6 +256,7 @@ Runtime output (not in git): `~/.config/themes/current/` plus the transient
 | Ghostty | No | SIGUSR2 |
 | Hyprland | No | hyprctl reload (re-reads hypr-colors.lua) |
 | Hyprlock | Yes (per-invocation) | - |
+| Quickshell | Yes (FileView watches the file) | - |
 | Btop | No | Restart manually |
 | Waybar | No (inotify misses imports) | SIGUSR2 |
 | Mako | No | makoctl reload |
