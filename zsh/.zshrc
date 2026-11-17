@@ -243,6 +243,9 @@ if [[ "$OS_TYPE" != "Darwin" ]]; then
   # --nogui: prompt in terminal instead of GUI
   if command -v keychain &> /dev/null; then
     eval $(keychain --eval --nogui --quiet id_ed25519)
+    # Fixed agent path for systemd user services (environment.d)
+    mkdir -p -m 700 ~/.ssh/agent
+    ln -sfn "$SSH_AUTH_SOCK" ~/.ssh/agent/sock
   fi
 fi
 
