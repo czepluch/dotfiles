@@ -450,6 +450,7 @@ export default class Spaces extends View {
       .gap(6)
       .items_center()
       .text_size(11.5)
+      .line_height("15px")
       .text_color(t.dim)
       .when(Boolean(where), (el) => el.child(div().flex_initial().min_w(0).truncate().child(where)))
       .when(ahead, (el) => el.child(div().flex_none().text_color(t.ansi2).child(`\u2191${g.ahead}`)))
@@ -480,6 +481,7 @@ export default class Spaces extends View {
       .gap(5)
       .items_center()
       .text_size(11.5)
+      .line_height("15px")
       .text_color(t.dim)
       .children(parts.flatMap(([text, color], n) => [
         ...(n ? [div().flex_none().child("\u00b7")] : []),
@@ -499,7 +501,7 @@ export default class Spaces extends View {
       .id(`space-${w.id}`)
       .px(8)
       .py(6)
-      .gap(2)
+      .gap(1)
       .flex_none()
       .rounded(8)
       .when(on, (el) => el.bg(t.selected))
