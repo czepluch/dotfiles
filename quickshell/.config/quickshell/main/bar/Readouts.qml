@@ -1,7 +1,7 @@
 // CPU usage, CPU temperature, memory use and battery in one raised panel with
 // thin dividers, like the workspaces panel. Numbers are right-aligned in a
-// fixed number of digits so nothing shifts. Temperature and memory invert
-// when they pass their alert thresholds, and the battery when it is low. The battery reads AC while on mains power. The CPU, TEMP and
+// fixed number of digits so nothing shifts. Values turn yellow when high and
+// red when critical (temperature, memory pressure, a low battery). The battery reads AC while on mains power. The CPU, TEMP and
 // MEM labels each have their own palette color; the battery label stays
 // dim. Clicking it opens the system panel.
 import QtQuick

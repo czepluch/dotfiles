@@ -1,7 +1,7 @@
 // One row of the system panel: an uppercase label, a value, a visual such
 // as a graph or meter, and a detail on the right. The panel sets the column
-// widths so all rows line up. In the alert state the value inverts on a
-// fill that extends past the value column into the padding.
+// widths so all rows line up. The value is yellow while high (warn) and red
+// while critical (alert).
 import QtQuick
 import qs
 import qs.components
@@ -12,7 +12,6 @@ Item {
     property string label: ""
     property string value: ""
     property string detail: ""
-    // Shown in the warning color; alert inverts instead.
     property bool warn: false
     property bool alert: false
     property int labelWidth: 0
@@ -37,25 +36,12 @@ Item {
         width: root.valueWidth
         height: parent.height
 
-        CutRect {
-            visible: root.alert
-            anchors {
-                fill: parent
-                topMargin: Style.buttonInset
-                bottomMargin: Style.buttonInset
-                leftMargin: -Style.alertPadding
-                rightMargin: -Style.alertPadding
-            }
-            cut: Style.cellCut
-            color: Theme.foreground
-        }
-
         Label {
             anchors.right: parent.right
             height: parent.height
             text: root.value
             size: Style.smallSize
-            color: root.alert ? Theme.background : root.warn ? Theme.warn : Theme.foreground
+            color: root.alert ? Theme.bad : root.warn ? Theme.warn : Theme.foreground
         }
     }
 

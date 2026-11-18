@@ -56,8 +56,7 @@ Singleton {
     // one CPU (as top shows it) and resident memory in bytes.
     property var processes: []
 
-    // Elevated levels, shown in the warning color, and alert levels, shown
-    // inverted.
+    // Elevated levels, shown in yellow, and critical levels, shown in red.
     readonly property real cpuWarnLevel: 0.7
     readonly property real tempWarnLevel: tempMax - 20
     readonly property real tempAlertLevel: tempMax - 10
