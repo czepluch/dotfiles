@@ -42,6 +42,7 @@ Each directory is a "stow package" that contains configs symlinked to `~/`:
 - **yazi** - Terminal file manager configuration
 - **eza** - ls replacement theme (symlink into the theme system output)
 - **herdr** - Terminal workspace manager for AI coding agents (symlink into the theme system output)
+- **herdr-app** - Herdr desktop app key bindings (`keys.json`) and settings (`settings.json`); the app writes zoom and Settings changes back into `settings.json`
 - **mise** - Version manager for development tools
 - **direnv** - Loads per-directory environments, such as Nix flake dev shells
 - **ghostty** - Terminal emulator theme (macOS)
