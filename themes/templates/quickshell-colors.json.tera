@@ -4,5 +4,11 @@
     "accent": "{{ colors.accent.default.hex }}",
     "red": "{{ colors.red.default.hex }}",
     "yellow": "{{ colors.yellow.default.hex }}",
-    "green": "{{ colors.green.default.hex }}"
+    "green": "{{ colors.green.default.hex }}",
+    "blue": "{{ colors.color4.default.hex }}",
+    "magenta": "{{ colors.color5.default.hex }}",
+    "cyan": "{{ colors.color6.default.hex }}",
+    "brightBlack": "{{ colors.color8.default.hex }}",
+    "brightGreen": "{{ colors.color10.default.hex }}",
+    "brightCyan": "{{ colors.color14.default.hex }}"
 }

@@ -1,17 +1,24 @@
 // Shows the lock screen UI in a normal window without locking the session.
-// A correct password closes the window.
-// Run with: qs -p ~/.config/quickshell/main/test.qml
+// A correct password or closing the window ends the test; the raised blur
+// is restored first.
+// Run with: qs -p ~/.config/quickshell/main/lock-test.qml
 import QtQuick
 import Quickshell
 import qs.lock
 
 ShellRoot {
+    id: root
+
+    function finish() {
+        lockContext.active = false;
+        Qt.callLater(Qt.quit);
+    }
+
     LockContext {
         id: lockContext
 
         active: true
-        onUnlocked: Qt.quit()
-        Component.onCompleted: refreshKeyboard()
+        onUnlocked: root.finish()
     }
 
     FloatingWindow {
@@ -29,7 +36,7 @@ ShellRoot {
         target: Quickshell
 
         function onLastWindowClosed() {
-            Qt.quit();
+            root.finish();
         }
     }
 }

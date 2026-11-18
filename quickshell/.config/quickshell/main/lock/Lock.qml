@@ -1,9 +1,11 @@
-// Session lock. Shows LockSurface on every monitor while locked.
+// Session lock. Shows LockSurface on every monitor while locked, and tells
+// Session while the lock is up.
 // Lock from a shell with: qs -c main ipc call lock lock
 import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
+import qs.services
 
 Scope {
     id: root
@@ -12,7 +14,7 @@ Scope {
         if (sessionLock.locked)
             return;
         lockContext.reset();
-        lockContext.refreshKeyboard();
+        Keyboard.refresh();
         sessionLock.locked = true;
     }
 
@@ -23,6 +25,12 @@ Scope {
         // Quickshell 0.3.2 does not notify `locked` changes on unlock.
         active: sessionLock.secure
         onUnlocked: sessionLock.locked = false
+    }
+
+    Binding {
+        target: Session
+        property: "locked"
+        value: sessionLock.secure
     }
 
     WlSessionLock {

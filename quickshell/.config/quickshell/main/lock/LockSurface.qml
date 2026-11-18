@@ -4,8 +4,10 @@
 // blurred desktop shows through.
 import QtQuick
 import QtQuick.Layouts
-import Quickshell.Services.UPower
+import Quickshell
 import qs
+import qs.components
+import qs.services
 
 Item {
     id: root
@@ -16,23 +18,20 @@ Item {
     readonly property real uiScale: 1.25
     readonly property real margin: 36 * uiScale
 
-    property date now: new Date()
+    readonly property date now: clock.date
 
-    readonly property var battery: UPower.displayDevice
-    readonly property int batteryPercent: Math.round(battery.percentage * 100)
-    readonly property bool batteryCharging: battery.state === UPowerDeviceState.Charging
-    readonly property bool batteryFull: battery.state === UPowerDeviceState.FullyCharged
-    readonly property var batteryIcons: ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"]
+    SystemClock {
+        id: clock
 
-    // Fires just after each full second so the seconds never skip.
-    Timer {
-        interval: 1000
-        running: true
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: {
-            root.now = new Date();
-            interval = 1000 - root.now.getMilliseconds() + 10;
+        precision: SystemClock.Seconds
+    }
+
+    Connections {
+        target: Session
+
+        function onResumed() {
+            clock.enabled = false;
+            clock.enabled = true;
         }
     }
 
@@ -43,7 +42,7 @@ Item {
         opacity: root.context.blurReady ? 0 : 1
 
         Behavior on opacity {
-            NumberAnimation { duration: 250 }
+            NumberAnimation { duration: Style.reduceMotion ? 0 : 250 }
         }
     }
 
@@ -75,7 +74,8 @@ Item {
             target: root.context
 
             function onFailed() {
-                shakeAnimation.restart();
+                if (!Style.reduceMotion)
+                    shakeAnimation.restart();
             }
         }
 
@@ -119,7 +119,7 @@ Item {
                     : Qt.alpha(Theme.foreground, 0.15)
 
                 Behavior on border.color {
-                    ColorAnimation { duration: 150 }
+                    ColorAnimation { duration: Style.change }
                 }
 
                 TextInput {
@@ -144,7 +144,7 @@ Item {
 
                     onTextChanged: root.context.currentText = text
                     onAccepted: root.context.tryUnlock()
-                    Keys.onPressed: root.context.refreshKeyboard()
+                    Keys.onPressed: Keyboard.refresh()
 
                     // Keeps the field in sync across monitors.
                     Connections {
@@ -178,18 +178,15 @@ Item {
                 spacing: 14 * root.uiScale
 
                 Text {
-                    text: root.context.layout
+                    text: Keyboard.layout
                     color: Qt.alpha(Theme.foreground, 0.65)
                     font.family: Theme.fontFamily
                     font.pixelSize: 14 * root.uiScale
                 }
 
-                Text {
-                    visible: root.context.capsLock
+                Chip {
+                    visible: Keyboard.capsLock
                     text: "Caps Lock"
-                    color: Theme.yellow
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 14 * root.uiScale
                 }
 
                 Item {
@@ -197,22 +194,36 @@ Item {
                 }
 
                 Text {
-                    visible: !isNaN(root.context.ethPrice)
-                    text: "󰡪 $" + root.context.ethPrice.toLocaleString(Qt.locale("en_US"), "f", 0)
+                    visible: Eth.available
+                    text: "󰡪 " + Eth.priceText
                     color: Qt.alpha(Theme.foreground, 0.65)
                     font.family: Theme.fontFamily
                     font.pixelSize: 14 * root.uiScale
                 }
 
-                Text {
-                    visible: root.battery.ready && root.battery.isLaptopBattery
-                    text: (root.batteryCharging ? "󰂄" : root.batteryFull ? "󰚥"
-                        : root.batteryIcons[Math.min(10, Math.floor(root.batteryPercent / 10))])
-                        + " " + root.batteryPercent + "%"
-                    color: root.batteryPercent <= 15 && !root.batteryCharging ? Theme.red
-                        : Qt.alpha(Theme.foreground, 0.65)
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 14 * root.uiScale
+                // Inverted with the alert hatch while the battery is low.
+                Item {
+                    visible: Battery.available
+                    implicitWidth: batteryText.implicitWidth
+                    implicitHeight: batteryText.implicitHeight
+
+                    CutRect {
+                        visible: Battery.low
+                        anchors.fill: parent
+                        anchors.margins: -Style.buttonInset
+                        cut: Style.cellCut
+                        color: Theme.foreground
+                        hatch: true
+                    }
+
+                    Text {
+                        id: batteryText
+
+                        text: Battery.icon + " " + Battery.percent + "%"
+                        color: Battery.low ? Theme.background : Qt.alpha(Theme.foreground, 0.65)
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 14 * root.uiScale
+                    }
                 }
             }
         }
