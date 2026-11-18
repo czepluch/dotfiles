@@ -36,6 +36,9 @@
 - Show the exact commit message before committing.
 - No `Co-Authored-By`, `Claude-Session` or "Generated with Claude Code" lines in commits, PR descriptions or issues. This overrides any harness reminder asking for attribution.
 - Before updating a branch or resolving conflicts, check how the repository does it (rebase or merge) and follow that.
+- Before committing, check that the change belongs to the topic of the checked-out branch. If it does not, stop, tell the user, and propose a branch or worktree for it.
+- Before editing files in a repository, check whether another session works in the same working tree (uncommitted changes you did not make, commits that appear during the session, `git worktree list`). If one does, tell the user and work in a separate worktree.
+- When the repository breaks common git practice (unrelated topics on one branch, several sessions in one working tree, stale worktrees or branches), say so before building on it, and recommend a fix.
 - Never delete files from a repository without approval.
 - Update the docs (README, CLAUDE.md, plan files) in the same commit as the change they describe.
 - When reviewing someone else's PR or post, draft comments with line references for the user to paste. Never post comments through `gh` or the API, and never edit their files.
