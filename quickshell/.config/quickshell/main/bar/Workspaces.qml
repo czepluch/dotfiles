@@ -2,9 +2,9 @@ pragma ComponentBehavior: Bound
 
 // Workspace cells for one monitor. Workspaces 1-5 are always shown, plus any
 // other workspace that exists. The workspace on this monitor is filled, one
-// shown on another monitor is outlined, an urgent one is inverted and
-// hatched. Clicking a cell switches to it; scrolling moves through the
-// monitor's workspaces one notch at a time.
+// shown on another monitor is outlined, an urgent one is filled red.
+// Clicking a cell switches to it; scrolling moves through the monitor's
+// workspaces one notch at a time.
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
@@ -51,7 +51,6 @@ Row {
             implicitHeight: Style.buttonSize
             baseColor: urgent ? Theme.bad : current ? Theme.accentFill : "transparent"
             outline: shownElsewhere ? Theme.dim : "transparent"
-            hatch: urgent
             onClicked: Hypr.focus(modelData)
 
             Label {

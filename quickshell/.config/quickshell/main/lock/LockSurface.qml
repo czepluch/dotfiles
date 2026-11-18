@@ -30,8 +30,9 @@ Item {
     readonly property int blockHeight: displayHeight + Style.lockGap + Style.lockFieldHeight + Style.lockGap + Style.pillHeight
     readonly property rect displayRect: Qt.rect(Math.round((width - displayWidth) / 2),
         Math.round((height - blockHeight) / 2), displayWidth, displayHeight)
-    // Where the time sits in the hub: first in a centered row with the date.
-    readonly property real hubTimeX: hubRect.x + Math.round((hubRect.width - smallTimeMetrics.advanceWidth - Style.popupSpacing - hubDate.implicitWidth) / 2)
+    // Where the time sits in the hub: first in a centered row with a divider
+    // and the date.
+    readonly property real hubTimeX: hubRect.x + Math.round((hubRect.width - smallTimeMetrics.advanceWidth - 2 * Style.popupSpacing - 1 - hubDate.implicitWidth) / 2)
 
     function mix(from, to) {
         return from + (to - from) * progress;
@@ -127,18 +128,21 @@ Item {
         }
     }
 
-    // The hub's date, fading out as the display leaves the bar.
+    // The hub's divider and date, fading out as the display leaves the bar.
+    Divider {
+        x: root.hubTimeX + Math.ceil(smallTimeMetrics.advanceWidth) + Style.popupSpacing
+        y: root.hubRect.y
+        opacity: hubDate.opacity
+    }
+
     Label {
         id: hubDate
 
-        x: root.hubTimeX + Math.ceil(smallTimeMetrics.advanceWidth) + Style.popupSpacing
+        x: root.hubTimeX + Math.ceil(smallTimeMetrics.advanceWidth) + 2 * Style.popupSpacing + 1
         y: root.hubRect.y
         height: root.hubRect.height
         opacity: Math.max(0, 1 - 4 * root.progress)
         text: Qt.formatDate(clock.date, "ddd d MMM")
-        caps: true
-        capHeight: Style.capHeight
-        color: Theme.foreground
     }
 
     // The time, drawn at the large size and scaled down to the hub's size
@@ -203,7 +207,6 @@ Item {
             height: Style.lockFieldHeight
             cut: Style.panelCut
             color: failed ? Theme.bad : Theme.barFill
-            hatch: failed
 
             CutRect {
                 visible: !slot.failed

@@ -1,7 +1,7 @@
 // One row of the system panel: an uppercase label, a value, a visual such
 // as a graph or meter, and a detail on the right. The panel sets the column
-// widths so all rows line up. In the alert state the value inverts with
-// the alert hatch, which extends past the value column into the padding.
+// widths so all rows line up. In the alert state the value inverts on a
+// fill that extends past the value column into the padding.
 import QtQuick
 import qs
 import qs.components
@@ -48,7 +48,6 @@ Item {
             }
             cut: Style.cellCut
             color: Theme.foreground
-            hatch: true
         }
 
         Label {

@@ -1,6 +1,6 @@
 // A rectangle with 45° cut corners. It can have a 1 px outline, a 1 px edge
 // that makes it look raised (light top, dark bottom) or sunken (dark top,
-// light bottom), and a diagonal hatch over the fill for alert states.
+// light bottom).
 import QtQuick
 import QtQuick.Shapes
 import qs
@@ -13,7 +13,6 @@ Item {
     property color outline: "transparent"
     // "flat", "raised" or "sunken".
     property string edge: "flat"
-    property bool hatch: false
 
     readonly property bool hasOutline: outline.a > 0
     // Strokes are centered on the path, so an outlined path runs through
@@ -27,7 +26,6 @@ Item {
 
         ShapePath {
             fillColor: root.color
-            fillGradient: root.hatch ? hatchGradient : null
             strokeColor: root.hasOutline ? root.outline : "transparent"
             strokeWidth: root.hasOutline ? 1 : -1
             joinStyle: ShapePath.MiterJoin
@@ -46,22 +44,6 @@ Item {
                 }
             }
         }
-    }
-
-    // Repeating 45° stripes: the fill, then the fill darkened toward the background.
-    LinearGradient {
-        id: hatchGradient
-
-        x1: 0
-        y1: 0
-        x2: 6
-        y2: 6
-        spread: ShapeGradient.RepeatSpread
-
-        GradientStop { position: 0; color: root.color }
-        GradientStop { position: 0.6; color: root.color }
-        GradientStop { position: 0.6; color: Theme.hatch(root.color) }
-        GradientStop { position: 1; color: Theme.hatch(root.color) }
     }
 
     // Top edge.

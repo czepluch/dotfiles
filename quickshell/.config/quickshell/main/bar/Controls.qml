@@ -1,8 +1,9 @@
 // The control icons at the right end of the bar: power mode, Wi-Fi and
 // volume, with the volume level next to its icon. Clicking any of them
 // opens the control panel. Scrolling on volume changes it; middle-clicking
-// mutes. Power mode is green in saver and yellow in performance mode,
-// Wi-Fi dims while disconnected, and volume is red while muted.
+// mutes. Power mode is green in saver, yellow in balanced and red in
+// performance mode. Wi-Fi dims while disconnected and volume is red while
+// muted.
 import QtQuick
 import qs
 import qs.components
@@ -26,7 +27,7 @@ CutRect {
 
         IconButton {
             icon: Power.icon
-            iconColor: Power.saver ? Theme.good : Power.performance ? Theme.warn : Theme.foreground
+            iconColor: Power.saver ? Theme.good : Power.performance ? Theme.bad : Theme.warn
             onClicked: root.openPanel()
         }
 

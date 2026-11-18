@@ -1,6 +1,6 @@
 // A label and value in the readouts panel. In the alert state it inverts
-// (foreground fill, background text) with a diagonal hatch. The space for
-// the alert fill is always reserved, so the panel never changes width.
+// (foreground fill, background text). The space for the alert fill is
+// always reserved, so the panel never changes width.
 import QtQuick
 import qs
 import qs.components
@@ -10,6 +10,9 @@ Item {
 
     property string label: ""
     property string value: ""
+    // Colors of the value and label while normal.
+    property color color: Theme.foreground
+    property color labelColor: Theme.dim
     // Shown in the warning color; alert inverts instead.
     property bool warn: false
     property bool alert: false
@@ -26,7 +29,6 @@ Item {
         }
         cut: Style.cellCut
         color: Theme.foreground
-        hatch: true
     }
 
     LabelValue {
@@ -35,7 +37,7 @@ Item {
         anchors.centerIn: parent
         label: root.label
         value: root.value
-        labelColor: root.alert ? Theme.background : Theme.dim
-        valueColor: root.alert ? Theme.background : root.warn ? Theme.warn : Theme.foreground
+        labelColor: root.alert ? Theme.background : root.labelColor
+        valueColor: root.alert ? Theme.background : root.warn ? Theme.warn : root.color
     }
 }

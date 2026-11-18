@@ -71,15 +71,18 @@ Singleton {
         return contrast(c, background) >= 3 ? c : foreground;
     }
 
+    // A palette color for a label: readable, and never the accent, which is
+    // kept for the clock and other current items; dim when it would match.
+    function labelHue(c) {
+        const a = accentFill;
+        const close = Math.abs(c.r - a.r) + Math.abs(c.g - a.g) + Math.abs(c.b - a.b) < 0.06;
+        return close ? dim : readable(c);
+    }
+
     // Text on top of a fill: the background or the foreground, whichever
     // stands out more.
     function textOn(fill) {
         return contrast(background, fill) >= contrast(foreground, fill) ? background : foreground;
-    }
-
-    // Stripe color for the alert hatch drawn over a fill.
-    function hatch(fill) {
-        return Qt.tint(fill, Qt.alpha(background, 0.22));
     }
 
     // WCAG relative luminance and contrast ratio.

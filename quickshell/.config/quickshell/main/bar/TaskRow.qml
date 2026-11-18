@@ -1,7 +1,7 @@
 // One task in the dashboard: when it is due, its summary and its list. The
 // due label is in the accent for today and, for an overdue task, inverted
-// on red with the alert hatch, which extends past the left edge so the text
-// lines up with the rest of the popup.
+// on a red fill, which extends past the left edge so the text lines up with
+// the rest of the popup.
 import QtQuick
 import qs
 import qs.components
@@ -41,7 +41,6 @@ Item {
             }
             cut: Style.cellCut
             color: Theme.bad
-            hatch: true
         }
 
         Label {

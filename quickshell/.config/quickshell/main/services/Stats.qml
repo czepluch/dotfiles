@@ -57,7 +57,7 @@ Singleton {
     property var processes: []
 
     // Elevated levels, shown in the warning color, and alert levels, shown
-    // inverted with the hatch.
+    // inverted.
     readonly property real cpuWarnLevel: 0.7
     readonly property real tempWarnLevel: tempMax - 20
     readonly property real tempAlertLevel: tempMax - 10

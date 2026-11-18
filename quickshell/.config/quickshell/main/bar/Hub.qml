@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 
-// The center of the bar: the time with seconds and the date in a sunken
-// display, in the middle of the screen while there is room. Short messages
+// The center of the bar: the time with seconds and, after a divider, the
+// date in a sunken display, in the middle of the screen while there is room. Short messages
 // from Osd (volume, layout, the idle lock countdown) replace the time.
 // Clicking it opens the dashboard.
 import QtQuick
@@ -20,7 +20,7 @@ Item {
     // The display, for anchoring the dashboard and placing the headline.
     readonly property Item timeItem: display
     readonly property int gap: Style.buttonInset
-    readonly property int timeWidth: 220
+    readonly property int timeWidth: 260
     // In the middle, moved aside when a group needs the room.
     readonly property real displayX: {
         const centered = Math.round(width / 2 - timeWidth / 2);
@@ -65,11 +65,10 @@ Item {
                 bold: true
             }
 
+            Divider {}
+
             Label {
                 text: Qt.formatDate(clock.date, "ddd d MMM")
-                caps: true
-                capHeight: Style.capHeight
-                color: Theme.foreground
             }
         }
 
@@ -113,7 +112,7 @@ Item {
             }
         }
 
-        // The last seconds before the idle lock, inverted with the alert hatch.
+        // The last seconds before the idle lock, inverted.
         HubView {
             anchors.fill: parent
             shown: Osd.message === "lock"
@@ -124,7 +123,6 @@ Item {
                 anchors.bottomMargin: Style.buttonInset
                 cut: Style.cellCut
                 color: Theme.foreground
-                hatch: true
             }
         }
 
