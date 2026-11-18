@@ -42,7 +42,14 @@ Each directory is a "stow package" that contains configs symlinked to `~/`:
 - **yazi** - Terminal file manager configuration
 - **eza** - ls replacement theme (symlink into the theme system output)
 - **herdr** - Terminal workspace manager for AI coding agents (symlink into the theme system output)
-- **herdr-app** - Herdr desktop app key bindings (`keys.json`), settings (`settings.json`), and the `my-main` layout, a copy of the shipped `main` whose status bar (`mods/my-status`) also shows the ETH/USD price from the Chainlink feed, read through the DappNode execution client, and whose spaces list (`mods/my-spaces`) shows each space as a card with its branch, uncommitted files, tabs and agents; the app writes zoom and Settings changes back into `settings.json`, and reloads an edited mod or layout only after `touch -h` on its symlink in `~/.config/herdr-app`; on a new machine, start herdr-app once before `stow herdr-app` (or use `stow --no-folding herdr-app`), otherwise stow links the whole `~/.config/herdr-app` folder into the repo and the app writes its state there
+- **herdr-app** - Herdr desktop app config
+  - `keys.json` and `settings.json`; the app writes zoom and Settings changes back into `settings.json`
+  - the `my-main` layout, a copy of the shipped `main` that uses 3 copied mods:
+    - `mods/my-status`: the status bar, plus the ETH/USD price from the Chainlink feed (read through the DappNode execution client) and the Claude plan usage limits that `~/.claude/statusline.sh` saves to `~/.cache/claude-statusline/`
+    - `mods/my-spaces`: each space as a card with its branch, ahead/behind, uncommitted files, pull request (through `gh`), tabs and agents
+    - `mods/my-agents`: the agents list, plus each Claude Code agent's model and effort from the same status line cache, read over herdr's connection for agents on other machines (each machine needs a status line that saves to that cache)
+  - The app reloads an edited mod or layout only after `touch -h` on its symlink in `~/.config/herdr-app`
+  - On a new machine, start herdr-app once before `stow herdr-app` (or use `stow --no-folding herdr-app`), otherwise stow links the whole `~/.config/herdr-app` folder into the repo and the app writes its state there
 - **mise** - Version manager for development tools
 - **direnv** - Loads per-directory environments, such as Nix flake dev shells
 - **ghostty** - Terminal emulator theme (macOS)

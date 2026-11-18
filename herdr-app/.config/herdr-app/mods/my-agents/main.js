@@ -2,7 +2,12 @@
 
 import { View, div, image, svg } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
-import { agents, terminals, panes, focused, spaces, run, theme, shared, setShared, setAgentOrder, openOverlay, closeOverlay, props, window, layout } from "herdr";
+import { agents, terminals, panes, focused, spaces, run, theme, shared, setShared, setAgentOrder, openOverlay, closeOverlay, props, window, layout, home, readTextFile, exec, checking } from "herdr";
+
+// Model and effort of each Claude Code agent, saved by
+// ~/.claude/statusline.sh per herdr terminal (HC_TERMINAL_ID) from its status line input.
+const CLAUDE_DIR = ".cache/claude-statusline/terminals";
+const CLAUDE_POLL_MS = 20000;
 
 function find(node, id) {
   if (node?.id === id) return node;
@@ -90,6 +95,38 @@ export default class Agents extends View {
     if (!this.pendingPins.length) localStorage.removeItem("pins");
     this.migratingPins = new Set();
     cx.timer.every(30000, (cx) => cx.notify());
+    this.claude = {}; // terminal address -> "Opus 5.5 · xhigh"
+    if (checking()) return;
+    cx.timer.every(CLAUDE_POLL_MS, (cx) => this.loadClaude(cx));
+    this.loadClaude(cx);
+  }
+
+  loadClaude(cx) {
+    cx.spawn(async (cx) => {
+      const next = {};
+      for (const a of agents()) {
+        if (a.app !== "claude-code") continue;
+        try {
+          // An agent on another machine (`vps/t1`): read its file there, from that machine's home.
+          const [machine, id] = a.address.includes("/") ? a.address.split("/") : [null, a.address];
+          let text;
+          if (machine) {
+            const r = await exec("cat", [`${CLAUDE_DIR}/${id}.json`], { on: machine, timeout: 10000 });
+            text = r.code === 0 ? r.stdout : null;
+          } else {
+            text = await readTextFile(`${home()}/${CLAUDE_DIR}/${id}.json`);
+          }
+          if (!text) continue;
+          const d = JSON.parse(text);
+          const line = [d.model?.display_name, d.effort?.level].filter(Boolean).join(" · ");
+          if (line) next[a.address] = line;
+        } catch (e) {
+          console.log(`claude model ${a.address}: ${e}`);
+        }
+      }
+      this.claude = next;
+      cx.notify();
+    });
   }
 
   // Stamps agents whose state changed. Done and idle count as one: looking at a
@@ -337,14 +374,17 @@ export default class Agents extends View {
       // Without a space header above (priority, pinned) the row names its space.
       const full = byPriority || isPinned;
       const name = full ? a.space_name || label(a) : more ?? (/^\d+$/.test(label(a)) ? a.program?.name || label(a) : label(a));
+      const model = this.claude?.[a.address];
       return h_flex()
         .id(`ag-${a.address}`)
         .px(8)
-        .h(30)
+        .min_h(30)
+        .when(Boolean(model), (el) => el.py(4))
         .flex_none()
         .rounded(8)
         .items_center()
-        .gap(9)
+        .flex_wrap()
+        .gap_x(9)
         .when(a.focused, (el) => el.bg(t.selected))
         .cursor_pointer()
         .hover((s) => s.bg(t.hover))
@@ -367,7 +407,9 @@ export default class Agents extends View {
         .when(subs.length > 0, el => el.child(fold(a, subs)))
         .when(this.hovered === a.address, el => el.child(pin))
         .when(this.hovered !== a.address && Boolean(when), el => el.child(div().flex_none().text_size(11).text_color(t.dim).child(duration(now - when))))
-        .child(this.status(t, a, byPriority && !isPinned));
+        .child(this.status(t, a, byPriority && !isPinned))
+        // Second line, wrapped under the whole row and lined up with the name: the Claude Code agent's model and effort.
+        .when(Boolean(model), el => el.child(div().min_w_full().pl(25).truncate().text_size(11).line_height("14px").text_color(t.dim).child(model)));
     };
 
     // Groups in list order: spaces (grouped) or priority sections. Agents of a

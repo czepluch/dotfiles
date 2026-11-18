@@ -31,6 +31,10 @@ const RAIL_CELL = 32;
 // Where a card's second and third lines start: under the name, past the avatar
 // (18 + gap 9) or a worktree's indent and branch icon (22 + 13 + gap 9).
 const cardIndent = (tree) => (tree ? 44 : 27);
+// How often a branch's pull request is looked up again, and how its checks read.
+const PR_EVERY = 300000;
+const PR_FAILING = new Set(["FAILURE", "ERROR", "TIMED_OUT", "CANCELLED", "ACTION_REQUIRED", "STARTUP_FAILURE"]);
+const PR_PENDING = new Set(["PENDING", "QUEUED", "IN_PROGRESS", "EXPECTED", "WAITING", "REQUESTED"]);
 // "4m", "1h 5m"; "" under a minute.
 const elapsed = (ms) => {
   const m = Math.floor(ms / 60000);
@@ -78,6 +82,8 @@ export default class Spaces extends View {
     this.ready = {}; // machine -> its layout was readable at the last look
     this.at = {}; // space -> its where() at the last look
     this.watching = new Map(); // local repos' pending folder watches
+    this.prs = {}; // [repo, branch] -> { pr, at }, pr null: the branch has no pull request
+    this.prLoading = new Set(); // [repo, branch]s being looked up
     // Spaces made while this runs wait (at most a moment) for their git, so a
     // worktree appears under its repo instead of jumping there.
     this.shown = new Set(spaces().map((s) => s.id));
@@ -269,11 +275,45 @@ export default class Spaces extends View {
       const info = { name, branch: branch.code === 0 ? branch.stdout.trim().replace(/^refs\/heads\//, "") : "(detached)", ahead, behind, changes, repo: JSON.stringify([on, repo]), linked: repo !== `${top}/.git` };
       this.git[key] = info;
       if (!on) this.watch(repo, cx);
+      if (!on) this.loadPr(info, cwd, cx);
     } catch {
       // Couldn't ask (the machine is away): keep what it showed, look again later.
       this.git[key] ??= null;
       this.unsure.add(key);
     }
+  }
+
+  // The pull request for a place's branch, through `gh` on this computer, at most
+  // once per PR_EVERY for each repo and branch. Default branches have none.
+  loadPr(info, cwd, cx) {
+    const { branch } = info;
+    if (!branch || branch === "(detached)" || branch === "main" || branch === "master") return;
+    const k = JSON.stringify([info.repo, branch]);
+    const known = this.prs[k];
+    if (this.prLoading.has(k) || (known && Date.now() - known.at < PR_EVERY)) return;
+    this.prLoading.add(k);
+    cx.spawn(async (cx) => {
+      try {
+        const r = await exec("gh", ["pr", "view", branch, "--json", "number,state,isDraft,url,statusCheckRollup"], { cwd, timeout: 20000 });
+        if (r.code === 0) {
+          const d = JSON.parse(r.stdout);
+          const states = (d.statusCheckRollup ?? []).map((c) => c.conclusion || c.state || c.status);
+          const failing = states.some((s) => PR_FAILING.has(s));
+          const pending = !failing && states.some((s) => PR_PENDING.has(s));
+          const checks = failing ? "failing" : pending ? "pending" : states.length ? "passing" : null;
+          this.prs[k] = { pr: { number: d.number, state: d.state, draft: d.isDraft, url: d.url, checks }, at: Date.now() };
+        } else if (/no pull requests found/i.test(r.stderr)) {
+          this.prs[k] = { pr: null, at: Date.now() };
+        } else {
+          // Not a GitHub repo, not logged in, or offline: keep what it showed, ask again later.
+          this.prs[k] = { pr: known?.pr ?? null, at: Date.now() };
+        }
+      } catch {
+        this.prs[k] = { pr: known?.pr ?? null, at: Date.now() };
+      }
+      this.prLoading.delete(k);
+      cx.notify();
+    });
   }
 
   watch(repo, cx) {
@@ -445,7 +485,8 @@ export default class Spaces extends View {
       where = !w.machine && folder && (folder === h || folder.startsWith(`${h}/`)) ? `~${folder.slice(h.length)}` : folder ?? "";
     }
     const ahead = g?.ahead > 0, behind = g?.behind > 0, changes = g?.changes > 0;
-    if (!where && !ahead && !behind && !changes) return null;
+    const pr = g ? this.prs[JSON.stringify([g.repo, g.branch])]?.pr : null;
+    if (!where && !ahead && !behind && !changes && !pr) return null;
     return h_flex()
       .gap(6)
       .items_center()
@@ -456,7 +497,24 @@ export default class Spaces extends View {
       .when(ahead, (el) => el.child(div().flex_none().text_color(t.ansi2).child(`\u2191${g.ahead}`)))
       .when(behind, (el) => el.child(div().flex_none().text_color(t.ansi1).child(`\u2193${g.behind}`)))
       .when(changes, (el) => el.child(div().id(`space-changes-${w.id}`).flex_none().text_color(t.ansi3)
-        .tooltip(`${g.changes} uncommitted ${g.changes === 1 ? "file" : "files"}`).child(`\u00b1${g.changes}`)));
+        .tooltip(`${g.changes} uncommitted ${g.changes === 1 ? "file" : "files"}`).child(`\u00b1${g.changes}`)))
+      .when(Boolean(pr), (el) => el.child(this.prBadge(w, pr, t)));
+  }
+
+  // "#123", colored by state: open (green, yellow while checks run, red when they
+  // fail), draft (dim), merged (purple), closed (red). A click opens it in the browser.
+  prBadge(w, pr, t) {
+    const state = pr.state === "MERGED" ? "merged" : pr.state === "CLOSED" ? "closed" : pr.draft ? "draft" : "open";
+    const color = state === "merged" ? t.ansi5 : state === "closed" ? t.ansi1 : state === "draft" ? t.dim
+      : pr.checks === "failing" ? t.blocked : pr.checks === "pending" ? t.ansi3 : t.ansi2;
+    const tip = [`PR #${pr.number}`, state, pr.checks && `checks ${pr.checks}`].filter(Boolean).join(" \u00b7 ");
+    return div().id(`space-pr-${w.id}`).flex_none().text_color(color).tooltip(`${tip}. Click to open.`)
+      .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
+      .on_click((_e, cx) => {
+        cx.stop_propagation();
+        exec("xdg-open", [pr.url]).catch(() => {});
+      })
+      .child(`#${pr.number}`);
   }
 
   // The card's third line: "3 tabs \u00b7 2 agents \u00b7 1 needs you \u00b7 working 4m". Only for
