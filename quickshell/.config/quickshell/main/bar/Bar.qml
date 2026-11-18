@@ -34,7 +34,9 @@ Scope {
                 bottom: root.bottom
             }
             implicitHeight: Style.height + Style.screenMargin
-            exclusiveZone: implicitHeight
+            // One pixel more than the bar's height, for the window shadow to
+            // fall on.
+            exclusiveZone: implicitHeight + 1
             color: "transparent"
             WlrLayershell.namespace: "quickshell:bar"
 
