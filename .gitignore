@@ -56,3 +56,7 @@ herdr/.config/herdr/*
 # Keep this file
 !.gitignore
 hypr/.config/hypr/shaders/
+
+# Type files herdr-app generates in each mod folder
+herdr-app/.config/herdr-app/mods/*/jsconfig.json
+herdr-app/.config/herdr-app/mods/*/*.d.ts
