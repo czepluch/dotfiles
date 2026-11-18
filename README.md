@@ -48,6 +48,7 @@ Each directory is a "stow package" that contains configs symlinked to `~/`:
     - `mods/my-status`: the status bar, plus the ETH/USD price from the Chainlink feed (read through the DappNode execution client) and the Claude plan usage limits that `~/.claude/statusline.sh` saves to `~/.cache/claude-statusline/`
     - `mods/my-spaces`: each space as a card with its branch, ahead/behind, uncommitted files, pull request (through `gh`), tabs and agents
     - `mods/my-agents`: the agents list, plus each Claude Code agent's model and effort from the same status line cache, read over herdr's connection for agents on other machines (each machine needs a status line that saves to that cache)
+  - `themes/palette.json`: symlink into the theme system output (see `themes/SPEC.md`)
   - The app reloads an edited mod or layout only after `touch -h` on its symlink in `~/.config/herdr-app`
   - On a new machine, start herdr-app once before `stow herdr-app` (or use `stow --no-folding herdr-app`), otherwise stow links the whole `~/.config/herdr-app` folder into the repo and the app writes its state there
 - **mise** - Version manager for development tools

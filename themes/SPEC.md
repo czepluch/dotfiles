@@ -106,7 +106,8 @@ App config adds one source/import line pointing at generated output.
 
 ### C - Full Template
 The whole config is generated; the stow package ships a symlink.
-- **mako, fuzzel, yazi, fastfetch, starship, lazygit, eza, herdr**
+- **mako, fuzzel, yazi, fastfetch, starship, lazygit, eza, herdr, herdr-app**
+- herdr-app reads the theme `palette` from `~/.config/herdr-app/themes/palette.json`, a stowed symlink to `herdr-app-theme.json`, selected once with `herdr-app do app.theme '{"name":"palette"}'`. The template sets the terminal colors (background, foreground, `tone2` as selection, cursor, the 16 ANSI colors) and every panel color herdr-app would otherwise derive on its own: text (`foreground`, `tone7` as muted, `tone5` as dim), `accent`, `tone3` as border, `tone1` as popover, `tone2` as raised, `tone7` as ring, `tone5` as idle and unknown, and `foreground` at alpha `0e`, `17` and `24` as hover, selected and input. herdr-app copies working, blocked and done from ANSI yellow, red and blue. Its file watcher does not see changes behind the symlink, so theme-set touches the link
 - herdr reads `~/.config/herdr/config.toml`, a stowed symlink to
   `herdr-config.toml`. The template holds the whole herdr config (keys, UI,
   theme) on the `terminal` base theme, with the neutral `[theme.custom]`
@@ -140,7 +141,7 @@ The whole config is generated; the stow package ships a symlink.
 2. Runs `theme-apply` (render + atomic swap; aborts untouched on error)
 3. Copies `apps/<name>/neovim.lua` if present
 4. Reloads: SIGUSR2 to ghostty and waybar, `makoctl reload`, `hyprctl reload`,
-   `herdr server reload-config`
+   `herdr server reload-config`, `touch -h ~/.config/herdr-app/themes/palette.json`
 5. Wallpaper, if the palette defines one: instant per-monitor `hyprctl
    hyprpaper wallpaper` IPC, and regenerates
    `~/.config/themes/current/hyprpaper.conf` (single empty-monitor block =
@@ -267,6 +268,7 @@ Runtime output (not in git): `~/.config/themes/current/` plus the transient
 | Lazygit | No | Restart manually |
 | Eza | Yes (per-invocation) | - |
 | Herdr | No | herdr server reload-config |
+| Herdr app | No (its watcher misses changes behind the symlink) | `touch -h ~/.config/herdr-app/themes/palette.json` |
 | LS_COLORS | No (read at shell start) | New shell or `source ~/.zshrc` |
 | Hyprpaper | No | hyprctl IPC (instant) |
 | Neovim | No | Restart manually |

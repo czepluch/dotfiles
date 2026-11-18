@@ -72,3 +72,7 @@ output_path = "~/.config/themes/.staging/ls-colors.zsh"
 [templates.herdr]
 input_path = "templates/herdr-config.toml.tera"
 output_path = "~/.config/themes/.staging/herdr-config.toml"
+
+[templates.herdr_app]
+input_path = "templates/herdr-app-theme.json.tera"
+output_path = "~/.config/themes/.staging/herdr-app-theme.json"

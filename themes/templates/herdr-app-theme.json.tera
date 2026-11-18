@@ -1,0 +1,30 @@
+{
+  "background": "{{ colors.background.default.hex }}",
+  "foreground": "{{ colors.foreground.default.hex }}",
+  "selection": "{{ colors.tone2.default.hex }}",
+  "cursor": "{{ colors.cursor.default.hex }}",
+  "ansi": [
+    "{{ colors.color0.default.hex }}", "{{ colors.color1.default.hex }}", "{{ colors.color2.default.hex }}", "{{ colors.color3.default.hex }}",
+    "{{ colors.color4.default.hex }}", "{{ colors.color5.default.hex }}", "{{ colors.color6.default.hex }}", "{{ colors.color7.default.hex }}",
+    "{{ colors.color8.default.hex }}", "{{ colors.color9.default.hex }}", "{{ colors.color10.default.hex }}", "{{ colors.color11.default.hex }}",
+    "{{ colors.color12.default.hex }}", "{{ colors.color13.default.hex }}", "{{ colors.color14.default.hex }}", "{{ colors.color15.default.hex }}"
+  ],
+  "colors": {
+    "foreground": "{{ colors.foreground.default.hex }}",
+    "muted": "{{ colors.tone7.default.hex }}",
+    "dim": "{{ colors.tone5.default.hex }}",
+    "border": "{{ colors.tone3.default.hex }}",
+    "popover": "{{ colors.tone1.default.hex }}",
+    "raised": "{{ colors.tone2.default.hex }}",
+    "ring": "{{ colors.tone7.default.hex }}",
+    "idle": "{{ colors.tone5.default.hex }}",
+    "unknown": "{{ colors.tone5.default.hex }}",
+    "hover": "{{ colors.foreground.default.hex }}0e",
+    "selected": "{{ colors.foreground.default.hex }}17",
+    "input": "{{ colors.foreground.default.hex }}24",
+    "accent": "{{ colors.accent.default.hex }}",
+    "accent_foreground": "{{ colors.background.default.hex }}",
+    "solid": "{{ colors.accent.default.hex }}",
+    "solid_foreground": "{{ colors.background.default.hex }}"
+  }
+}
