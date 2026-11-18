@@ -12,11 +12,13 @@ const PRICE_DECIMALS = 8;
 const POLL_MS = 60000;
 
 // Claude plan usage limits, saved by ~/.claude/statusline.sh from the status
-// line input's `rate_limits` (5-hour and 7-day windows, each with
-// used_percentage and resets_at in epoch seconds).
+// line input's `rate_limits` (the 7-day window, with used_percentage and
+// resets_at in epoch seconds).
 const LIMITS_FILE = ".cache/claude-statusline/rate-limits.json";
 const LIMITS_POLL_MS = 20000;
-const LIMIT_WINDOWS = [["5h", "five_hour", "5-hour"], ["7d", "seven_day", "7-day"]];
+const LIMIT_WINDOWS = [["week", "seven_day", "7-day"]];
+// Width of each window's usage bar, in px.
+const METER_PX = 48;
 
 // "2h 10m", "5d 3h", "4m".
 const until = (seconds) => {
@@ -52,17 +54,27 @@ export default class WorkspaceStatus extends View {
     });
   }
 
-  // "5h 42%  7d 16%": windows that haven't reset yet, yellow from 70%, red from 90%.
+  // "Claude  week [bar] 16% resets in 5d 3h": windows that haven't reset yet, each with
+  // a bar filled to its usage; green, yellow from 70%, red from 90%.
   limitsLabel(t) {
     const now = Date.now() / 1000;
     const shown = LIMIT_WINDOWS
       .map(([short, key, long]) => [short, long, this.limits?.[key]])
       .filter(([, , w]) => w && Number.isFinite(w.used_percentage) && w.resets_at > now);
     if (!shown.length) return null;
-    const color = (p) => (p >= 90 ? t.blocked : p >= 70 ? t.ansi3 : t.foreground);
+    const color = (p) => (p >= 90 ? t.blocked : p >= 70 ? t.ansi3 : t.ansi2);
+    const meter = (p) => h_flex().w(METER_PX).h(6).rounded(3).bg(t.raised).overflow_hidden()
+      .child(div().h_full().w(Math.round((METER_PX * Math.min(p, 100)) / 100)).rounded(3).bg(color(p)));
     const tip = shown.map(([, long, w]) => `${long} limit: ${Math.round(w.used_percentage)}% used, resets in ${until(w.resets_at - now)}`).join(" · ");
-    return h_flex().id("claude-limits").gap(8).items_center().tooltip(tip)
-      .children(shown.map(([short, , w]) => div().text_color(color(w.used_percentage)).child(`${short} ${Math.round(w.used_percentage)}%`)));
+    return h_flex().id("claude-limits").gap(6).items_center().tooltip(tip)
+      .child(div().child("Claude"))
+      .children(shown.flatMap(([short, , w], i) => [
+        ...(i ? [div().child("\u00b7")] : []),
+        div().child(short),
+        meter(w.used_percentage),
+        div().text_color(color(w.used_percentage)).child(`${Math.round(w.used_percentage)}%`),
+        div().child(`resets in ${until(w.resets_at - now)}`),
+      ]));
   }
 
   loadEthPrice(cx) {
