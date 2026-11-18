@@ -30,7 +30,7 @@ Item {
         width: Math.ceil(dueMetrics.advanceWidth)
         height: parent.height
 
-        CutRect {
+        RoundRect {
             visible: root.task.overdue
             anchors {
                 fill: parent
@@ -39,7 +39,7 @@ Item {
                 leftMargin: -Style.alertPadding
                 rightMargin: -Style.alertPadding
             }
-            cut: Style.cellCut
+            radius: Style.cellRadius
             color: Theme.bad
         }
 

@@ -1,11 +1,11 @@
-// A cut-corner area that highlights on hover and reports clicks (any mouse
+// A round-cornered area that highlights on hover and reports clicks (any mouse
 // button) and, when wheelEnabled is set, wheel steps; otherwise wheel events
 // pass to the items underneath. Content placed inside it sits on top of the
 // fill.
 import QtQuick
 import qs
 
-CutRect {
+RoundRect {
     id: root
 
     // Fill when not hovered.
@@ -16,7 +16,7 @@ CutRect {
     signal clicked(var mouse)
     signal stepped(int direction)
 
-    cut: Style.cellCut
+    radius: Style.cellRadius
     color: hovered ? Qt.tint(baseColor, Theme.hover) : baseColor
 
     Behavior on color {

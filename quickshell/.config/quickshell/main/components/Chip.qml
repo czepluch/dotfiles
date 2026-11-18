@@ -14,13 +14,13 @@ Item {
     implicitWidth: chip.width
     implicitHeight: Style.pillHeight
 
-    CutRect {
+    RoundRect {
         id: chip
 
         anchors.verticalCenter: parent.verticalCenter
         width: row.implicitWidth + 2 * Style.chipPadding
         height: Style.chipHeight
-        cut: Style.cellCut
+        radius: Style.cellRadius
         color: root.fill
 
         Row {

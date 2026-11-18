@@ -31,7 +31,7 @@ BarPopup {
     }
 
     // The time in a sunken glass display, like the hub.
-    CutRect {
+    RoundRect {
         width: calendar.width
         height: Style.displayHeight
         color: Theme.glass

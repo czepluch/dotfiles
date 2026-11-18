@@ -5,7 +5,7 @@
 import QtQuick
 import qs
 
-CutRect {
+RoundRect {
     id: root
 
     // Oldest first.
@@ -21,7 +21,7 @@ CutRect {
     readonly property int count: Math.max(0, Math.floor((width - 2 * padding + barGap) / (barWidth + barGap)))
 
     implicitHeight: Style.rowHeight - 2 * Style.buttonInset
-    cut: Style.cellCut
+    radius: Style.cellRadius
     color: Theme.glass
     edge: "sunken"
 

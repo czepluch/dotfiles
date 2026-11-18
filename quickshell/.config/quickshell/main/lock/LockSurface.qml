@@ -110,19 +110,19 @@ Item {
     // The hub's display, growing into the lock display. In the bar it is the
     // hub's glass over the bar; away from the bar it brings the bar's fill
     // along, faded in as it grows.
-    CutRect {
+    RoundRect {
         id: display
 
         x: Math.round(root.mix(root.hubRect.x, root.displayRect.x))
         y: Math.round(root.mix(root.hubRect.y, root.displayRect.y))
         width: Math.round(root.mix(root.hubRect.width, root.displayRect.width))
         height: Math.round(root.mix(root.hubRect.height, root.displayRect.height))
-        cut: Math.round(root.mix(Style.panelCut, Style.lockCut))
+        radius: Math.round(root.mix(Style.panelRadius, Style.surfaceRadius))
         color: Qt.alpha(Theme.barFill, Theme.barFill.a * root.progress)
 
-        CutRect {
+        RoundRect {
             anchors.fill: parent
-            cut: parent.cut
+            radius: parent.radius
             color: Theme.glass
             edge: "sunken"
         }
@@ -190,7 +190,7 @@ Item {
             }
         }
 
-        CutRect {
+        RoundRect {
             id: slot
 
             readonly property bool failed: root.context.showFailure
@@ -205,13 +205,13 @@ Item {
             width: Math.max(Style.lockFieldWidth,
                 Style.lockPadding + Style.lockMinDots * (Style.lockDotSize + Style.lockDotGap) + cursorWidth)
             height: Style.lockFieldHeight
-            cut: Style.panelCut
+            radius: Style.panelRadius
             color: failed ? Theme.bad : Theme.barFill
 
-            CutRect {
+            RoundRect {
                 visible: !slot.failed
                 anchors.fill: parent
-                cut: parent.cut
+                radius: parent.radius
                 color: Theme.glass
                 outline: input.activeFocus ? Theme.accentFill : Theme.outline
                 edge: "sunken"

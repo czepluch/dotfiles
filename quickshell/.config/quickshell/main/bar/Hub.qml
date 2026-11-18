@@ -44,7 +44,7 @@ Item {
         }
     }
 
-    CutRect {
+    RoundRect {
         id: display
 
         x: root.displayX
@@ -117,11 +117,11 @@ Item {
             anchors.fill: parent
             shown: Osd.message === "lock"
 
-            CutRect {
+            RoundRect {
                 anchors.fill: parent
                 anchors.topMargin: Style.buttonInset
                 anchors.bottomMargin: Style.buttonInset
-                cut: Style.cellCut
+                radius: Style.cellRadius
                 color: Theme.foreground
             }
         }

@@ -18,7 +18,7 @@ Clickable {
 
     implicitWidth: row.implicitWidth + 2 * (Style.textPadding - Style.alertPadding)
     implicitHeight: Style.pillHeight
-    cut: Style.panelCut
+    radius: Style.panelRadius
     baseColor: Theme.glass
     edge: "raised"
 

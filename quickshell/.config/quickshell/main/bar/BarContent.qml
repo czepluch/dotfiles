@@ -54,7 +54,7 @@ Item {
             }
             spacing: Style.buttonInset
 
-            CutRect {
+            RoundRect {
                 visible: !root.locked
                 width: workspaces.implicitWidth + 2 * Style.buttonInset
                 height: Style.pillHeight
@@ -75,7 +75,7 @@ Item {
                 text: root.special
             }
 
-            CutRect {
+            RoundRect {
                 visible: root.locked
                 width: lockIcon.implicitWidth + 2 * Style.textPadding
                 height: Style.pillHeight

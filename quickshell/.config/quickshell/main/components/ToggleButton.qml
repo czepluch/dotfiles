@@ -11,7 +11,7 @@ Clickable {
 
     implicitWidth: buttonLabel.implicitWidth + 2 * Style.textPadding
     implicitHeight: Style.pillHeight
-    cut: Style.panelCut
+    radius: Style.panelRadius
     baseColor: checked ? Theme.accentFill : Theme.glass
     edge: checked ? "flat" : "raised"
     opacity: enabled ? 1 : 0.5

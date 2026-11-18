@@ -124,12 +124,12 @@ Column {
                 width: root.cellWidth
                 height: Style.rowHeight
 
-                CutRect {
+                RoundRect {
                     visible: cell.today
                     anchors.centerIn: parent
                     width: Style.buttonSize
                     height: Style.rowHeight - 2
-                    cut: Style.cellCut
+                    radius: Style.cellRadius
                     color: Theme.accentFill
                 }
 

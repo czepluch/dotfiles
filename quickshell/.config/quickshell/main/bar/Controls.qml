@@ -9,7 +9,7 @@ import qs
 import qs.components
 import qs.services
 
-CutRect {
+RoundRect {
     id: root
 
     signal openPanel()

@@ -2,8 +2,8 @@ pragma Singleton
 
 // Sizes, type scale, motion and input steps shared by the shell's parts.
 // Every container height has the same parity as the cap height of the text
-// centered in it, so the text lands on whole pixels. Corners are cut at 45°,
-// smaller for smaller parts.
+// centered in it, so the text lands on whole pixels. Corners are round, with
+// smaller radii for smaller parts.
 import QtQuick
 import Quickshell
 import qs
@@ -43,10 +43,10 @@ Singleton {
     // Space between buttons in a popup grid.
     readonly property int gap: 6
 
-    // Corner cuts: surfaces, panels, cells and chips.
-    readonly property int cut: 6
-    readonly property int panelCut: 4
-    readonly property int cellCut: 3
+    // Corner radii: surfaces, panels, and cells and chips.
+    readonly property int surfaceRadius: 12
+    readonly property int panelRadius: 10
+    readonly property int cellRadius: 7
 
     // Horizontal space around text in panels, between a label and its value,
     // and between text and the edge of an alert fill around it.
@@ -55,13 +55,12 @@ Singleton {
     readonly property int alertPadding: 5
     readonly property int dividerHeight: 17
 
-    // Lock screen: the large time, the date and password text, corner cut,
+    // Lock screen: the large time, the date and password text,
     // padding inside the display and gaps between its parts.
     readonly property int lockTimeSize: 136
     readonly property int lockTextSize: 22
     readonly property int lockTimeCap: capOf(lockTimeMetrics, "0")
     readonly property int lockTextCap: capOf(lockTextMetrics, "H")
-    readonly property int lockCut: 10
     readonly property int lockPadding: 40
     readonly property int lockGap: 24
     readonly property int lockFieldWidth: 560
