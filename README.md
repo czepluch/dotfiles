@@ -50,9 +50,9 @@ Each directory is a "stow package" that contains configs symlinked to `~/`:
 
 ### Linux-Only (Wayland/Hyprland)
 - **hypr** - Hyprland compositor configuration
-- **waybar** - Status bar configuration
+- **waybar** - Former status bar, no longer started (the Quickshell bar replaced it); `dnd.sh` in it is still used by SUPER+N
 - **mako** - Notification daemon configuration
-- **quickshell** - Lock screen in QML, run as `qs -c main` by `quickshell.service`, and a bar in development (`qs -p ~/.config/quickshell/main/bar-test.qml`)
+- **quickshell** - Bar and lock screen in QML, run as `qs -c main` by `quickshell.service`; `bar-test.qml` shows a second bar along the bottom for trying changes
 - **fuzzel** - Application launcher
 - **btop** - System monitor
 - **podman** - Container runtime configuration

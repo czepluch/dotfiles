@@ -1,6 +1,7 @@
 //@ pragma NativeTextRendering
 //@ pragma IconTheme Adwaita
-// Shows the bar along the bottom of every screen, next to a running Waybar.
+// Shows a second bar along the bottom of every screen, for trying changes
+// next to the shell's own bar.
 // Run with: qs -p ~/.config/quickshell/main/bar-test.qml
 import Quickshell
 import qs.bar

@@ -9,11 +9,10 @@ local terminal = "ghostty"
 
 hl.on("hyprland.start", function()
   -- Push compositor env into the systemd user manager so managed units (polkit,
-  -- waybar, quickshell) find the Wayland socket reliably at login.
+  -- quickshell) find the Wayland socket reliably at login.
   hl.exec_cmd("systemctl --user import-environment WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP")
   hl.exec_cmd("gnome-keyring-daemon --start --components=secrets")
   hl.exec_cmd("systemctl --user start hyprpolkitagent")
-  hl.exec_cmd("systemctl --user start --no-block waybar.service")
   hl.exec_cmd("systemctl --user start --no-block quickshell.service")
   hl.exec_cmd("hypridle")
   hl.exec_cmd("wl-paste --watch cliphist store")
