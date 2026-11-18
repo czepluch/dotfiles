@@ -4,6 +4,11 @@ pragma ComponentBehavior: Bound
 // News headline on the left, the hub (time) in the middle, and the tray,
 // chips, ETH price, hardware panel and control icons on the right, plus the
 // dashboard, system panel and control panel popups.
+//
+// The lock screen shows the same bar with `locked` set: a lock symbol in
+// place of the workspaces, no headline, tray or hub (the lock screen draws
+// the time itself, starting from hubRect), status kept but not clickable,
+// and no popups.
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
@@ -15,15 +20,22 @@ import qs.services
 Item {
     id: root
 
+    // The bar window, for popups and tray menus; null on the lock screen.
     required property QsWindow window
     required property ShellScreen screen
     // A bar at the bottom of the screen opens its popups upwards.
     property bool atBottom: false
+    property bool locked: false
     // Narrower screens get a shorter headline and no ETH 24 h change.
     readonly property bool compact: screen.width < Style.compactWidth
     readonly property string special: Hypr.specialOn(Hyprland.monitorFor(screen)?.name ?? "")
+    // The hub's time display in this item's coordinates.
+    readonly property rect hubRect: Qt.rect(surface.x + hub.displayX,
+        surface.y + Math.round((surface.height - Style.pillHeight) / 2), hub.timeWidth, Style.pillHeight)
 
     Surface {
+        id: surface
+
         anchors {
             fill: parent
             leftMargin: Style.screenMargin
@@ -43,6 +55,7 @@ Item {
             spacing: Style.buttonInset
 
             CutRect {
+                visible: !root.locked
                 width: workspaces.implicitWidth + 2 * Style.buttonInset
                 height: Style.pillHeight
                 color: Theme.glass
@@ -58,14 +71,30 @@ Item {
 
             // The special workspace (scratchpad) while it is open on this monitor.
             Chip {
-                visible: root.special !== ""
+                visible: !root.locked && root.special !== ""
                 text: root.special
+            }
+
+            CutRect {
+                visible: root.locked
+                width: lockIcon.implicitWidth + 2 * Style.textPadding
+                height: Style.pillHeight
+                color: Theme.glass
+                edge: "raised"
+
+                Label {
+                    id: lockIcon
+
+                    anchors.fill: parent
+                    text: "󰌾"
+                }
             }
         }
 
         // After the workspaces, up to the hub. Outside the left group, so the
         // hub's position does not depend on the headline's width.
         Headline {
+            shown: !root.locked
             x: leftGroup.x + leftGroup.width + Style.buttonInset
             anchors.verticalCenter: parent.verticalCenter
             maxWidth: hub.displayX - hub.gap - x
@@ -75,10 +104,11 @@ Item {
         Hub {
             id: hub
 
+            visible: !root.locked
             anchors.fill: parent
             leftLimit: leftGroup.x + leftGroup.width
             rightLimit: rightGroup.x
-            onOpenDashboard: dashboard.toggle()
+            onOpenDashboard: dashboard.item?.toggle()
         }
 
         Row {
@@ -91,10 +121,14 @@ Item {
             }
             spacing: Style.buttonInset
 
-            Tray {
-                visible: SystemTray.items.values.length > 0
-                rightPadding: Style.textPadding
-                window: root.window
+            Loader {
+                active: !root.locked && SystemTray.items.values.length > 0
+                visible: active
+
+                sourceComponent: Tray {
+                    rightPadding: Style.textPadding
+                    window: root.window
+                }
             }
 
             Chip {
@@ -125,38 +159,52 @@ Item {
             Readouts {
                 id: readouts
 
-                onClicked: system.toggle()
+                enabled: !root.locked
+                onClicked: system.item?.toggle()
             }
 
             Controls {
                 id: controls
 
-                onOpenPanel: panel.toggle()
+                enabled: !root.locked
+                onOpenPanel: panel.item?.toggle()
             }
         }
     }
 
-    Dashboard {
+    Loader {
         id: dashboard
 
-        bar: root.window
-        anchorItem: hub.timeItem
-        opensUp: root.atBottom
+        active: !root.locked
+
+        sourceComponent: Dashboard {
+            bar: root.window
+            anchorItem: hub.timeItem
+            opensUp: root.atBottom
+        }
     }
 
-    SystemPanel {
+    Loader {
         id: system
 
-        bar: root.window
-        anchorItem: readouts
-        opensUp: root.atBottom
+        active: !root.locked
+
+        sourceComponent: SystemPanel {
+            bar: root.window
+            anchorItem: readouts
+            opensUp: root.atBottom
+        }
     }
 
-    ControlPanel {
+    Loader {
         id: panel
 
-        bar: root.window
-        anchorItem: controls
-        opensUp: root.atBottom
+        active: !root.locked
+
+        sourceComponent: ControlPanel {
+            bar: root.window
+            anchorItem: controls
+            opensUp: root.atBottom
+        }
     }
 }

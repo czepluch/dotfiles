@@ -49,7 +49,6 @@ hypridle falls back to hyprlock when Quickshell is not running.
 - **Test crash recovery from a text console.** Lock, kill Quickshell from another VT, and check that the lock comes back.
   Recovery to verify: `systemctl --user stop quickshell.service`, then `hyprctl --instance 0 eval 'hl.clear_crashed_lockscreen()'`.
 - **Check lid close and resume.** The screen must be locked before sleep, and no desktop content may show on wake (see item 1).
-- **Card styling.** Make the card less rounded and less clean.
 
 ## 5. Quickshell theme switcher
 

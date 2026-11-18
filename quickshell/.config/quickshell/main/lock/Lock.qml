@@ -39,11 +39,14 @@ Scope {
         locked: false
 
         WlSessionLockSurface {
+            id: lockSurface
+
             color: "transparent"
 
             LockSurface {
                 anchors.fill: parent
                 context: lockContext
+                screen: lockSurface.screen
             }
         }
     }

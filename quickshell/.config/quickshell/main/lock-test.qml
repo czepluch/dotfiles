@@ -22,6 +22,8 @@ ShellRoot {
     }
 
     FloatingWindow {
+        id: window
+
         implicitWidth: 1280
         implicitHeight: 800
         color: "transparent"
@@ -29,6 +31,7 @@ ShellRoot {
         LockSurface {
             anchors.fill: parent
             context: lockContext
+            screen: window.screen
         }
     }
 

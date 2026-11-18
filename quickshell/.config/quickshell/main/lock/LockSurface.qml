@@ -1,11 +1,16 @@
-// Lock screen UI for one monitor: a translucent card with clock, date,
-// password field and a status row (keyboard layout, Caps Lock, ETH price,
-// battery). The area around the card is transparent so the compositor's
-// blurred desktop shows through.
+pragma ComponentBehavior: Bound
+
+// Lock screen for one monitor, in the bar's style: the bar in its locked
+// form along the top, and the hub's time display grown into a large display
+// in the middle, with the password slot and the keyboard state below it.
+// Once the blur is up, the display grows out of the hub's place in the bar;
+// after a correct password it shrinks back before the lock is released. The
+// area around it is transparent, so the compositor's blurred desktop shows
+// through.
 import QtQuick
-import QtQuick.Layouts
 import Quickshell
 import qs
+import qs.bar
 import qs.components
 import qs.services
 
@@ -13,12 +18,31 @@ Item {
     id: root
 
     required property LockContext context
+    required property ShellScreen screen
 
-    // Multiplies every size on the card.
-    readonly property real uiScale: 1.25
-    readonly property real margin: 36 * uiScale
+    readonly property bool open: context.blurReady && !context.unlocking
+    // 0 while the display sits in the hub, 1 once it has grown.
+    property real progress: open ? 1 : 0
+    readonly property rect hubRect: bar.hubRect
+    readonly property int displayWidth: Math.ceil(timeMetrics.advanceWidth) + 2 * Style.lockPadding
+    readonly property int displayHeight: 2 * Style.lockPadding + Style.lockTimeCap + Style.lockGap + Style.lockTextCap
+    // The display, the slot and the status row, centered on the screen.
+    readonly property int blockHeight: displayHeight + Style.lockGap + Style.lockFieldHeight + Style.lockGap + Style.pillHeight
+    readonly property rect displayRect: Qt.rect(Math.round((width - displayWidth) / 2),
+        Math.round((height - blockHeight) / 2), displayWidth, displayHeight)
+    // Where the time sits in the hub: first in a centered row with the date.
+    readonly property real hubTimeX: hubRect.x + Math.round((hubRect.width - smallTimeMetrics.advanceWidth - Style.popupSpacing - hubDate.implicitWidth) / 2)
 
-    readonly property date now: clock.date
+    function mix(from, to) {
+        return from + (to - from) * progress;
+    }
+
+    Behavior on progress {
+        NumberAnimation {
+            duration: root.open ? Style.lockGrow : Style.lockShrink
+            easing.type: Easing.OutCubic
+        }
+    }
 
     SystemClock {
         id: clock
@@ -35,6 +59,32 @@ Item {
         }
     }
 
+    Connections {
+        target: root.context
+
+        function onCurrentTextChanged() {
+            input.text = root.context.currentText;
+        }
+    }
+
+    TextMetrics {
+        id: timeMetrics
+
+        font.family: Theme.fontFamily
+        font.pixelSize: Style.lockTimeSize
+        font.bold: true
+        text: "00:00:00"
+    }
+
+    TextMetrics {
+        id: smallTimeMetrics
+
+        font.family: Theme.fontFamily
+        font.pixelSize: Style.size
+        font.bold: true
+        text: "00:00:00"
+    }
+
     // Hides the desktop until Hyprland's blur has been raised.
     Rectangle {
         anchors.fill: parent
@@ -46,185 +96,208 @@ Item {
         }
     }
 
-    Rectangle {
-        id: card
+    BarContent {
+        id: bar
 
-        anchors.centerIn: parent
-        width: Math.max(440 * root.uiScale, content.implicitWidth + 2 * root.margin)
-        height: content.implicitHeight + 2 * root.margin
-        radius: 18 * root.uiScale
-        color: Qt.alpha(Theme.background, 0.55)
-        border.width: 1
-        border.color: Qt.alpha(Theme.foreground, 0.12)
+        width: parent.width
+        height: Style.height + Style.screenMargin
+        window: null
+        screen: root.screen
+        locked: true
+    }
 
-        transform: Translate {
-            id: shake
+    // The hub's display, growing into the lock display. In the bar it is the
+    // hub's glass over the bar; away from the bar it brings the bar's fill
+    // along, faded in as it grows.
+    CutRect {
+        id: display
+
+        x: Math.round(root.mix(root.hubRect.x, root.displayRect.x))
+        y: Math.round(root.mix(root.hubRect.y, root.displayRect.y))
+        width: Math.round(root.mix(root.hubRect.width, root.displayRect.width))
+        height: Math.round(root.mix(root.hubRect.height, root.displayRect.height))
+        cut: Math.round(root.mix(Style.panelCut, Style.lockCut))
+        color: Qt.alpha(Theme.barFill, Theme.barFill.a * root.progress)
+
+        CutRect {
+            anchors.fill: parent
+            cut: parent.cut
+            color: Theme.glass
+            edge: "sunken"
         }
+    }
 
-        SequentialAnimation {
-            id: shakeAnimation
+    // The hub's date, fading out as the display leaves the bar.
+    Label {
+        id: hubDate
 
-            NumberAnimation { target: shake; property: "x"; to: -12; duration: 50 }
-            NumberAnimation { target: shake; property: "x"; to: 12; duration: 70 }
-            NumberAnimation { target: shake; property: "x"; to: -8; duration: 60 }
-            NumberAnimation { target: shake; property: "x"; to: 0; duration: 50 }
-        }
+        x: root.hubTimeX + Math.ceil(smallTimeMetrics.advanceWidth) + Style.popupSpacing
+        y: root.hubRect.y
+        height: root.hubRect.height
+        opacity: Math.max(0, 1 - 4 * root.progress)
+        text: Qt.formatDate(clock.date, "ddd d MMM")
+        caps: true
+        capHeight: Style.capHeight
+        color: Theme.foreground
+    }
 
-        Connections {
-            target: root.context
+    // The time, drawn at the large size and scaled down to the hub's size
+    // while in the bar, so it is sharp once grown.
+    Label {
+        readonly property real centerX: root.mix(root.hubTimeX + smallTimeMetrics.advanceWidth / 2, root.displayRect.x + root.displayRect.width / 2)
+        readonly property real centerY: root.mix(root.hubRect.y + root.hubRect.height / 2, root.displayRect.y + Style.lockPadding + Style.lockTimeCap / 2)
 
-            function onFailed() {
-                if (!Style.reduceMotion)
-                    shakeAnimation.restart();
-            }
-        }
+        x: Math.round(centerX - width / 2)
+        y: Math.round(centerY - height / 2)
+        height: Style.lockTimeCap
+        scale: root.mix(Style.size / Style.lockTimeSize, 1)
+        text: Qt.formatTime(clock.date, "HH:mm:ss")
+        size: Style.lockTimeSize
+        bold: true
+        color: Theme.accentFill
+    }
 
-        ColumnLayout {
-            id: content
+    Label {
+        anchors.horizontalCenter: display.horizontalCenter
+        y: display.y + display.height - Style.lockPadding - Style.lockTextCap
+        height: Style.lockTextCap
+        opacity: Math.max(0, (root.progress - 0.6) / 0.4)
+        text: clock.date.toLocaleDateString(Qt.locale("en_GB"), "dddd d MMMM yyyy")
+        caps: true
+        size: Style.lockTextSize
+        color: Theme.dim
+    }
 
-            anchors {
-                fill: parent
-                margins: root.margin
-            }
-            spacing: 0
+    // The password slot and the keyboard state, fading in once the display
+    // has grown and out first when it shrinks back.
+    Item {
+        anchors.fill: parent
+        opacity: root.open ? 1 : 0
 
-            Text {
-                text: Qt.formatTime(root.now, "HH:mm:ss")
-                color: Theme.foreground
-                font.family: Theme.fontFamily
-                font.pixelSize: 88 * root.uiScale
-                font.weight: Font.Light
-                renderType: Text.NativeRendering
-            }
-
-            Text {
-                Layout.topMargin: -2 * root.uiScale
-                text: root.now.toLocaleDateString(Qt.locale("en_GB"), "dddd d MMMM yyyy")
-                color: Qt.alpha(Theme.foreground, 0.65)
-                font.family: Theme.fontFamily
-                font.pixelSize: 17 * root.uiScale
-            }
-
-            Rectangle {
-                id: field
-
-                Layout.fillWidth: true
-                Layout.topMargin: 32 * root.uiScale
-                implicitHeight: 46 * root.uiScale
-                radius: 12 * root.uiScale
-                color: Qt.alpha(Theme.background, 0.6)
-                border.width: 1.5
-                border.color: root.context.showFailure ? Theme.red
-                    : input.activeFocus ? Qt.alpha(Theme.accent, 0.9)
-                    : Qt.alpha(Theme.foreground, 0.15)
-
-                Behavior on border.color {
-                    ColorAnimation { duration: Style.change }
+        Behavior on opacity {
+            SequentialAnimation {
+                PauseAnimation {
+                    duration: root.open ? Style.lockLateDelay : 0
                 }
 
-                TextInput {
-                    id: input
+                NumberAnimation {
+                    duration: Style.reduceMotion ? 0 : root.open ? 300 : 120
+                }
+            }
+        }
 
-                    anchors {
-                        fill: parent
-                        leftMargin: 16 * root.uiScale
-                        rightMargin: 16 * root.uiScale
-                    }
-                    verticalAlignment: TextInput.AlignVCenter
-                    clip: true
-                    focus: true
-                    enabled: !root.context.unlockInProgress
-                    echoMode: TextInput.Password
-                    passwordCharacter: "•"
-                    inputMethodHints: Qt.ImhSensitiveData
-                    color: Theme.foreground
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 18 * root.uiScale
-                    font.letterSpacing: 2 * root.uiScale
+        CutRect {
+            id: slot
 
-                    onTextChanged: root.context.currentText = text
-                    onAccepted: root.context.tryUnlock()
-                    Keys.onPressed: Keyboard.refresh()
+            readonly property bool failed: root.context.showFailure
 
-                    // Keeps the field in sync across monitors.
-                    Connections {
-                        target: root.context
+            // Wide enough for lockMinDots dots and the cursor; longer passwords
+            // show their last maxDots dots.
+            readonly property int cursorWidth: Math.round(Style.lockTextSize * 0.55)
+            readonly property int maxDots: Math.max(0, Math.floor((width - Style.lockPadding - cursorWidth) / (Style.lockDotSize + Style.lockDotGap)))
 
-                        function onCurrentTextChanged() {
-                            input.text = root.context.currentText;
+            x: Math.round((root.width - width) / 2)
+            y: root.displayRect.y + root.displayRect.height + Style.lockGap
+            width: Math.max(Style.lockFieldWidth,
+                Style.lockPadding + Style.lockMinDots * (Style.lockDotSize + Style.lockDotGap) + cursorWidth)
+            height: Style.lockFieldHeight
+            cut: Style.panelCut
+            color: failed ? Theme.bad : Theme.barFill
+            hatch: failed
+
+            CutRect {
+                visible: !slot.failed
+                anchors.fill: parent
+                cut: parent.cut
+                color: Theme.glass
+                outline: input.activeFocus ? Theme.accentFill : Theme.outline
+                edge: "sunken"
+            }
+
+            // Takes the keystrokes; the slot shows dots and a block cursor instead.
+            TextInput {
+                id: input
+
+                width: 1
+                height: 1
+                opacity: 0
+                focus: true
+                enabled: !root.context.unlockInProgress && !root.context.unlocking
+                echoMode: TextInput.Password
+                inputMethodHints: Qt.ImhSensitiveData
+                onTextChanged: root.context.currentText = text
+                onAccepted: root.context.tryUnlock()
+                Keys.onPressed: Keyboard.refresh()
+            }
+
+            Row {
+                x: Style.lockPadding / 2
+                height: parent.height
+                spacing: Style.labelSpacing
+
+                Row {
+                    visible: root.context.currentText.length > 0 && !slot.failed
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: Style.lockDotGap
+
+                    Repeater {
+                        model: Math.min(root.context.currentText.length, slot.maxDots)
+
+                        Rectangle {
+                            width: Style.lockDotSize
+                            height: Style.lockDotSize
+                            radius: Style.lockDotSize / 2
+                            color: Theme.foreground
                         }
                     }
                 }
 
-                Text {
-                    anchors {
-                        left: parent.left
-                        leftMargin: 16 * root.uiScale
-                        verticalCenter: parent.verticalCenter
+                // A block cursor that does not blink.
+                Item {
+                    visible: input.activeFocus && input.enabled && !slot.failed
+                    width: slot.cursorWidth
+                    height: parent.height
+
+                    Rectangle {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width
+                        height: Style.lockTextCap + 8
+                        color: Theme.accentFill
                     }
-                    visible: input.text.length === 0
-                    text: root.context.unlockInProgress ? "Checking…"
-                        : root.context.showFailure ? root.context.failureText
+                }
+
+                Label {
+                    visible: root.context.currentText.length === 0 || slot.failed
+                    height: parent.height
+                    text: slot.failed ? root.context.failureText
+                        : root.context.unlockInProgress ? "Checking…"
                         : "Password"
-                    color: root.context.showFailure ? Theme.red : Qt.alpha(Theme.foreground, 0.4)
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 15 * root.uiScale
+                    caps: true
+                    size: Style.lockTextSize
+                    color: slot.failed ? Theme.textOn(Theme.bad) : Theme.dim
                 }
             }
+        }
 
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.topMargin: 18 * root.uiScale
-                spacing: 14 * root.uiScale
+        Row {
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: slot.y + slot.height + Style.lockGap
+            spacing: Style.textPadding
 
-                Text {
-                    text: Keyboard.layout
-                    color: Qt.alpha(Theme.foreground, 0.65)
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 14 * root.uiScale
-                }
+            Chip {
+                text: Keyboard.layout
+                fill: Theme.accentFill
+            }
 
-                Chip {
-                    visible: Keyboard.capsLock
-                    text: "Caps Lock"
-                }
+            Label {
+                text: Keyboard.shortName
+                color: Theme.dim
+            }
 
-                Item {
-                    Layout.fillWidth: true
-                }
-
-                Text {
-                    visible: Eth.available
-                    text: "󰡪 " + Eth.priceText
-                    color: Qt.alpha(Theme.foreground, 0.65)
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 14 * root.uiScale
-                }
-
-                // Inverted with the alert hatch while the battery is low.
-                Item {
-                    visible: Battery.available
-                    implicitWidth: batteryText.implicitWidth
-                    implicitHeight: batteryText.implicitHeight
-
-                    CutRect {
-                        visible: Battery.low
-                        anchors.fill: parent
-                        anchors.margins: -Style.buttonInset
-                        cut: Style.cellCut
-                        color: Theme.foreground
-                        hatch: true
-                    }
-
-                    Text {
-                        id: batteryText
-
-                        text: Battery.icon + " " + Battery.percent + "%"
-                        color: Battery.low ? Theme.background : Qt.alpha(Theme.foreground, 0.65)
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 14 * root.uiScale
-                    }
-                }
+            Chip {
+                visible: Keyboard.capsLock
+                text: "Caps Lock"
+                fill: Theme.warn
             }
         }
     }

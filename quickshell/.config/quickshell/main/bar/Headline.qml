@@ -10,6 +10,8 @@ import qs.services
 Item {
     id: root
 
+    // False hides the headline, as on the lock screen.
+    property bool shown: true
     // Room for the whole headline, padding included.
     property real maxWidth: 0
     // Longest title in characters, "…" included; 0 means no limit.
@@ -22,7 +24,7 @@ Item {
         return maxChars > 0 ? Math.min(room, maxChars * charMetrics.advanceWidth) : room;
     }
 
-    visible: HackerNews.current !== null && maxWidth >= minWidth
+    visible: shown && HackerNews.current !== null && maxWidth >= minWidth
     implicitWidth: title.implicitWidth + 2 * padding
     implicitHeight: Style.pillHeight
 

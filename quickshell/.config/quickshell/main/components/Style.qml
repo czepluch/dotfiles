@@ -55,6 +55,22 @@ Singleton {
     readonly property int alertPadding: 5
     readonly property int dividerHeight: 17
 
+    // Lock screen: the large time, the date and password text, corner cut,
+    // padding inside the display and gaps between its parts.
+    readonly property int lockTimeSize: 136
+    readonly property int lockTextSize: 22
+    readonly property int lockTimeCap: capOf(lockTimeMetrics, "0")
+    readonly property int lockTextCap: capOf(lockTextMetrics, "H")
+    readonly property int lockCut: 10
+    readonly property int lockPadding: 40
+    readonly property int lockGap: 24
+    readonly property int lockFieldWidth: 560
+    // Password dots: size and gap, and how many the slot must show at least.
+    readonly property int lockDotSize: 12
+    readonly property int lockDotGap: 4
+    readonly property int lockMinDots: 30
+    readonly property int lockFieldHeight: fit(56, lockTextCap)
+
     // Screens narrower than this get the compact bar: a shorter headline and
     // no ETH 24 h change.
     readonly property int compactWidth: 3840
@@ -71,6 +87,11 @@ Singleton {
     readonly property int hoverOut: reduceMotion ? 0 : 150
     readonly property int change: reduceMotion ? 0 : 150
     readonly property int slide: 8
+    // The lock display growing out of the hub, shrinking back on unlock, and
+    // the delay before the password slot fades in.
+    readonly property int lockGrow: reduceMotion ? 0 : 650
+    readonly property int lockShrink: reduceMotion ? 0 : 400
+    readonly property int lockLateDelay: reduceMotion ? 0 : 450
 
     // Mouse wheel: angle delta of one notch, and how much one notch changes
     // a value from 0 to 1 (volume, brightness).
@@ -90,6 +111,10 @@ Singleton {
             return smallCap;
         case displaySize:
             return displayCap;
+        case lockTimeSize:
+            return lockTimeCap;
+        case lockTextSize:
+            return lockTextCap;
         default:
             return capHeight;
         }
@@ -119,6 +144,21 @@ Singleton {
 
         font.family: Theme.fontFamily
         font.pixelSize: root.size
+    }
+
+    FontMetrics {
+        id: lockTimeMetrics
+
+        font.family: Theme.fontFamily
+        font.pixelSize: root.lockTimeSize
+        font.bold: true
+    }
+
+    FontMetrics {
+        id: lockTextMetrics
+
+        font.family: Theme.fontFamily
+        font.pixelSize: root.lockTextSize
     }
 
     FontMetrics {

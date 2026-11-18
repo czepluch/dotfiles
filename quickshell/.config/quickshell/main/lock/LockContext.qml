@@ -1,8 +1,11 @@
 // State shared by the lock surfaces on every monitor: the typed password,
-// the PAM conversation and the blur behind the lock.
+// the PAM conversation and the blur behind the lock. After a correct
+// password, `unlocking` is set so the surfaces can play their closing
+// animation, and `unlocked` follows once it has run.
 import QtQuick
 import Quickshell
 import Quickshell.Services.Pam
+import qs.components
 
 Scope {
     id: root
@@ -14,6 +17,8 @@ Scope {
     property string pamError: ""
     // True while the lock screen is showing; raises Hyprland's blur.
     property bool active: false
+    // True from a correct password until the lock is released.
+    property bool unlocking: false
     // True once the desktop behind the lock is blurred enough to show.
     readonly property bool blurReady: blur.raised
 
@@ -27,6 +32,7 @@ Scope {
         showFailure = false;
         failureText = "";
         unlockInProgress = false;
+        unlocking = false;
     }
 
     function tryUnlock() {
@@ -62,7 +68,8 @@ Scope {
         onCompleted: result => {
             if (result === PamResult.Success) {
                 root.unlockInProgress = false;
-                root.unlocked();
+                root.unlocking = true;
+                release.restart();
                 return;
             }
             const text = root.pamError !== "" ? root.pamError
@@ -74,5 +81,13 @@ Scope {
             root.unlockInProgress = false;
             root.failed();
         }
+    }
+
+    // Lets the closing animation finish before the lock is released.
+    Timer {
+        id: release
+
+        interval: Style.lockShrink
+        onTriggered: root.unlocked()
     }
 }
