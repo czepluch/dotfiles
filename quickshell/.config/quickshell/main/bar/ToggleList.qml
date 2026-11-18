@@ -5,6 +5,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Bluetooth
+import qs
 import qs.services
 
 Singleton {
@@ -12,12 +13,14 @@ Singleton {
         ToggleItem {
             text: "Do not disturb"
             chip: "DND"
+            chipColor: Theme.warn
             on: Toggles.dnd
             onActivated: Toggles.toggleDnd()
         },
         ToggleItem {
             text: "Keep awake"
             chip: "Awake"
+            chipColor: Theme.info
             on: Session.keepAwake
             onActivated: Session.keepAwake = !Session.keepAwake
         },
@@ -25,14 +28,9 @@ Singleton {
             text: "Mic muted"
             chip: "Mic"
             chipIcon: "󰍭"
+            chipColor: Theme.bad
             on: Audio.micMuted
             onActivated: Audio.toggleMic()
-        },
-        ToggleItem {
-            text: "VPN"
-            chip: "VPN"
-            on: Toggles.vpn
-            onActivated: Toggles.toggleVpn()
         },
         ToggleItem {
             text: "Night light"

@@ -1,8 +1,9 @@
 pragma ComponentBehavior: Bound
 
-// Everything drawn in one bar: the surface, the workspaces on the left, the
-// hub in the middle, and the tray, chips, hardware panel and control icons
-// on the right, plus the dashboard and control panel popups.
+// Everything drawn in one bar: the surface, the workspaces and the Hacker
+// News headline on the left, the hub (time) in the middle, and the tray,
+// chips, ETH price, hardware panel and control icons on the right, plus the
+// dashboard, system panel and control panel popups.
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
@@ -18,6 +19,8 @@ Item {
     required property ShellScreen screen
     // A bar at the bottom of the screen opens its popups upwards.
     property bool atBottom: false
+    // Narrower screens get a shorter headline and no ETH 24 h change.
+    readonly property bool compact: screen.width < Style.compactWidth
     readonly property string special: Hypr.specialOn(Hyprland.monitorFor(screen)?.name ?? "")
 
     Surface {
@@ -60,6 +63,15 @@ Item {
             }
         }
 
+        // After the workspaces, up to the hub. Outside the left group, so the
+        // hub's position does not depend on the headline's width.
+        Headline {
+            x: leftGroup.x + leftGroup.width + Style.buttonInset
+            anchors.verticalCenter: parent.verticalCenter
+            maxWidth: hub.displayX - hub.gap - x
+            maxChars: root.compact ? Style.compactHeadlineChars : 0
+        }
+
         Hub {
             id: hub
 
@@ -88,6 +100,7 @@ Item {
             Chip {
                 visible: Keyboard.layout !== "EN" && Keyboard.layout !== ""
                 text: Keyboard.layout
+                fill: Theme.accentFill
             }
 
             // Chips for the toggles that are on.
@@ -101,10 +114,19 @@ Item {
 
                     text: modelData.chip
                     icon: modelData.chipIcon
+                    fill: modelData.chipColor
                 }
             }
 
-            Readouts {}
+            EthTicker {
+                showChange: !root.compact
+            }
+
+            Readouts {
+                id: readouts
+
+                onClicked: system.toggle()
+            }
 
             Controls {
                 id: controls
@@ -119,6 +141,14 @@ Item {
 
         bar: root.window
         anchorItem: hub.timeItem
+        opensUp: root.atBottom
+    }
+
+    SystemPanel {
+        id: system
+
+        bar: root.window
+        anchorItem: readouts
         opensUp: root.atBottom
     }
 

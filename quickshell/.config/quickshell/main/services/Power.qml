@@ -12,6 +12,8 @@ Singleton {
 
     readonly property int profile: PowerProfiles.profile
     readonly property string icon: iconFor(profile)
+    readonly property bool saver: profile === PowerProfile.PowerSaver
+    readonly property bool performance: profile === PowerProfile.Performance
     readonly property list<int> profiles: PowerProfiles.hasPerformanceProfile
         ? [PowerProfile.PowerSaver, PowerProfile.Balanced, PowerProfile.Performance]
         : [PowerProfile.PowerSaver, PowerProfile.Balanced]

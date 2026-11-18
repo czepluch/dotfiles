@@ -29,11 +29,13 @@ BarPopup {
         }
     }
 
+    // Active only while open, so a closed panel on another screen does not
+    // turn the scanner off.
     Binding {
-        when: Network.wifi !== null
+        when: Network.wifi !== null && root.visible
         target: Network.wifi
         property: "scannerEnabled"
-        value: root.visible
+        value: true
     }
 
     SectionLabel {

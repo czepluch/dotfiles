@@ -52,11 +52,30 @@ Singleton {
     readonly property color edgeDark: Qt.rgba(0, 0, 0, 0.35)
     readonly property color edgeDeep: Qt.rgba(0, 0, 0, 0.5)
     readonly property color edgeFaint: Qt.alpha(foreground, 0.08)
+    // State colors for text, icons and small fills: the palette's green,
+    // yellow, red and cyan, each replaced by the foreground where it is too
+    // close to the background to read.
+    readonly property color good: readable(green)
+    readonly property color warn: readable(yellow)
+    readonly property color bad: readable(red)
+    readonly property color info: readable(cyan)
     // Fill for the current item: the accent, or the foreground when the
     // accent is too close to the background to see.
     readonly property color accentFill: contrast(accent, background) >= 3 ? accent : foreground
     // Text on top of accentFill.
-    readonly property color onAccent: contrast(background, accentFill) >= contrast(foreground, accentFill) ? background : foreground
+    readonly property color onAccent: textOn(accentFill)
+
+    // The color, or the foreground when the color has a contrast below 3
+    // against the background.
+    function readable(c) {
+        return contrast(c, background) >= 3 ? c : foreground;
+    }
+
+    // Text on top of a fill: the background or the foreground, whichever
+    // stands out more.
+    function textOn(fill) {
+        return contrast(background, fill) >= contrast(foreground, fill) ? background : foreground;
+    }
 
     // Stripe color for the alert hatch drawn over a fill.
     function hatch(fill) {

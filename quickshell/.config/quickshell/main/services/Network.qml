@@ -18,6 +18,7 @@ Singleton {
     readonly property var networks: (wifi?.networks.values ?? []).slice()
         .sort((a, b) => (b.connected - a.connected) || (b.signalStrength - a.signalStrength))
 
+    readonly property bool connected: wired !== null || wifiNetwork !== null
     readonly property var wifiIcons: ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"]
     readonly property string icon: wired ? "󰈀"
         : wifiNetwork ? signalIcon(wifiNetwork.signalStrength)

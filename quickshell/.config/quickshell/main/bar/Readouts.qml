@@ -2,13 +2,14 @@
 // thin dividers, like the workspaces panel. Numbers are right-aligned in a
 // fixed number of digits so nothing shifts. Temperature and memory invert
 // with a hatch when they pass their alert thresholds, and the battery when
-// it is low. The battery reads AC while on mains power.
+// it is low. The battery reads AC while on mains power. Clicking it opens
+// the system panel.
 import QtQuick
 import qs
 import qs.components
 import qs.services
 
-CutRect {
+Clickable {
     id: root
 
     function pad(value, digits) {
@@ -17,7 +18,8 @@ CutRect {
 
     implicitWidth: row.implicitWidth + 2 * (Style.textPadding - Style.alertPadding)
     implicitHeight: Style.pillHeight
-    color: Theme.glass
+    cut: Style.panelCut
+    baseColor: Theme.glass
     edge: "raised"
 
     Row {
@@ -29,6 +31,7 @@ CutRect {
         ReadoutGroup {
             label: "CPU"
             value: root.pad(Stats.cpu * 100, 2) + "%"
+            warn: Stats.cpuWarn
         }
 
         Divider {}
@@ -36,6 +39,7 @@ CutRect {
         ReadoutGroup {
             label: "Temp"
             value: root.pad(Stats.temp, 2) + "°C"
+            warn: Stats.tempWarn
             alert: Stats.tempAlert
         }
 
@@ -44,6 +48,7 @@ CutRect {
         ReadoutGroup {
             label: "Mem"
             value: root.pad(Stats.mem * 100, 2) + "%"
+            warn: Stats.memWarn
             alert: Stats.memAlert
         }
 
@@ -55,7 +60,8 @@ CutRect {
             visible: Battery.available
             label: Battery.onAc ? "AC" : "Bat"
             value: root.pad(Battery.percent, 3) + "%"
-            alert: Battery.available && Battery.low
+            warn: Battery.warn
+            alert: Battery.low
         }
     }
 }

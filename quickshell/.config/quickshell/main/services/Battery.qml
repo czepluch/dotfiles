@@ -14,6 +14,8 @@ Singleton {
     readonly property bool charging: device.state === UPowerDeviceState.Charging
     readonly property bool full: device.state === UPowerDeviceState.FullyCharged
     readonly property bool low: available && percent <= 15 && !charging
+    // Getting low: shown in the warning color.
+    readonly property bool warn: available && percent <= 30 && !charging
     // Running on mains power (charging, full or held at a charge limit).
     readonly property bool onAc: !UPower.onBattery
 

@@ -49,7 +49,7 @@ Row {
 
             implicitWidth: Style.buttonSize
             implicitHeight: Style.buttonSize
-            baseColor: urgent ? Theme.foreground : current ? Theme.accentFill : "transparent"
+            baseColor: urgent ? Theme.bad : current ? Theme.accentFill : "transparent"
             outline: shownElsewhere ? Theme.dim : "transparent"
             hatch: urgent
             onClicked: Hypr.focus(modelData)
@@ -58,7 +58,7 @@ Row {
                 anchors.fill: parent
                 text: cell.modelData
                 bold: cell.current || cell.urgent
-                color: cell.urgent ? Theme.background
+                color: cell.urgent ? Theme.textOn(Theme.bad)
                     : cell.current ? Theme.onAccent
                     : cell.occupied || cell.shownElsewhere ? Theme.foreground
                     : Theme.dim

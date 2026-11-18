@@ -10,6 +10,8 @@ Item {
 
     property string label: ""
     property string value: ""
+    // Shown in the warning color; alert inverts instead.
+    property bool warn: false
     property bool alert: false
 
     implicitWidth: pair.implicitWidth + 2 * Style.alertPadding
@@ -34,6 +36,6 @@ Item {
         label: root.label
         value: root.value
         labelColor: root.alert ? Theme.background : Theme.dim
-        valueColor: root.alert ? Theme.background : Theme.foreground
+        valueColor: root.alert ? Theme.background : root.warn ? Theme.warn : Theme.foreground
     }
 }

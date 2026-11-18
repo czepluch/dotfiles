@@ -55,6 +55,11 @@ Singleton {
     readonly property int alertPadding: 5
     readonly property int dividerHeight: 17
 
+    // Screens narrower than this get the compact bar: a shorter headline and
+    // no ETH 24 h change.
+    readonly property int compactWidth: 3840
+    readonly property int compactHeadlineChars: 40
+
     // Space between the bar and the screen edges. Matches Hyprland's
     // gaps_out, so the bar lines up with the outer edge of window borders.
     readonly property int screenMargin: 3

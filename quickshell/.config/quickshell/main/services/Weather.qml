@@ -88,6 +88,22 @@ Singleton {
         }
     }
 
+    // Kind of weather for coloring: "clear", "partly", "cloudy" (with fog),
+    // "rain" (with drizzle and sleet), "snow" or "storm".
+    function kind(code) {
+        if (code <= 1)
+            return "clear";
+        if (code === 2)
+            return "partly";
+        if (code === 3 || code === 45 || code === 48)
+            return "cloudy";
+        if ((code >= 71 && code <= 77) || code === 85 || code === 86)
+            return "snow";
+        if (code >= 95)
+            return "storm";
+        return "rain";
+    }
+
     function icon(code, isDay) {
         switch (code) {
         case 0: case 1: return isDay ? "󰖙" : "󰖔";

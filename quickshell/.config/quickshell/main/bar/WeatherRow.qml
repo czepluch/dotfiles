@@ -19,6 +19,21 @@ Item {
     property real low: NaN
     property int rain: 0
 
+    // Sun yellow (by day), clouds dim, rain and snow cyan, storms red.
+    function iconColor(code, isDay) {
+        switch (Weather.kind(code)) {
+        case "clear":
+        case "partly":
+            return isDay ? Theme.readable(Theme.yellow) : Theme.foreground;
+        case "cloudy":
+            return Theme.dim;
+        case "storm":
+            return Theme.bad;
+        default:
+            return Theme.info;
+        }
+    }
+
     function degrees(value) {
         return Math.round(value) + "°";
     }
@@ -85,6 +100,7 @@ Item {
         height: parent.height
         text: Weather.icon(root.code, root.isDay)
         size: Style.smallSize
+        color: root.iconColor(root.code, root.isDay)
     }
 
     Label {
@@ -140,7 +156,7 @@ Item {
             height: parent.height
             text: root.rain + "%"
             size: Style.smallSize
-            color: Theme.dim
+            color: root.rain >= 30 ? Theme.info : Theme.dim
         }
     }
 }

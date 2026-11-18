@@ -1,5 +1,6 @@
 // A short inverted label for a state that is shown only while it is true,
-// such as a muted microphone. As tall as a bar panel, with the chip centered.
+// such as a muted microphone, filled with a color that says what kind of
+// state it is. As tall as a bar panel, with the chip centered.
 import QtQuick
 import qs
 
@@ -8,6 +9,7 @@ Item {
 
     property string text: ""
     property string icon: ""
+    property color fill: Theme.foreground
 
     implicitWidth: chip.width
     implicitHeight: Style.pillHeight
@@ -19,7 +21,7 @@ Item {
         width: row.implicitWidth + 2 * Style.chipPadding
         height: Style.chipHeight
         cut: Style.cellCut
-        color: Theme.foreground
+        color: root.fill
 
         Row {
             id: row
@@ -32,7 +34,7 @@ Item {
                 height: chip.height
                 text: root.icon
                 size: Style.labelSize
-                color: Theme.background
+                color: Theme.textOn(root.fill)
             }
 
             Label {
@@ -40,7 +42,7 @@ Item {
                 text: root.text
                 caps: true
                 bold: true
-                color: Theme.background
+                color: Theme.textOn(root.fill)
             }
         }
     }
