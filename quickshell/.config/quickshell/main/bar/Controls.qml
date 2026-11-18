@@ -1,8 +1,8 @@
 // The control icons at the right end of the bar: power mode, Wi-Fi and
-// volume. Clicking any of them opens the control panel. Scrolling on volume
-// changes it; middle-clicking mutes. Power mode is green in saver and
-// yellow in performance mode, Wi-Fi dims while disconnected, and volume is
-// red while muted.
+// volume, with the volume level next to its icon. Clicking any of them
+// opens the control panel. Scrolling on volume changes it; middle-clicking
+// mutes. Power mode is green in saver and yellow in performance mode,
+// Wi-Fi dims while disconnected, and volume is red while muted.
 import QtQuick
 import qs
 import qs.components
@@ -39,6 +39,9 @@ CutRect {
         IconButton {
             icon: Audio.icon
             iconColor: Audio.muted ? Theme.bad : Theme.foreground
+            // Padded to three digits so the bar does not shift.
+            text: String(Audio.percent).padStart(3, " ") + "%"
+            textColor: Audio.muted ? Theme.dim : Theme.foreground
             wheelEnabled: true
             onClicked: mouse => {
                 if (mouse.button === Qt.MiddleButton)
