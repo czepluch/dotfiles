@@ -107,9 +107,8 @@ Item {
         locked: true
     }
 
-    // The hub's display, growing into the lock display. In the bar it is the
-    // hub's glass over the bar; away from the bar it brings the bar's fill
-    // along, faded in as it grows.
+    // The hub's display, growing into the lock display: the hub's glass, over
+    // the bar while in it and over the blurred desktop once grown.
     RoundRect {
         id: display
 
@@ -118,14 +117,8 @@ Item {
         width: Math.round(root.mix(root.hubRect.width, root.displayRect.width))
         height: Math.round(root.mix(root.hubRect.height, root.displayRect.height))
         radius: Math.round(root.mix(Style.panelRadius, Style.surfaceRadius))
-        color: Qt.alpha(Theme.barFill, Theme.barFill.a * root.progress)
-
-        RoundRect {
-            anchors.fill: parent
-            radius: parent.radius
-            color: Theme.glass
-            edge: "sunken"
-        }
+        color: Theme.glass
+        edge: "sunken"
     }
 
     // The hub's divider and date, fading out as the display leaves the bar.
@@ -206,7 +199,7 @@ Item {
                 Style.lockPadding + Style.lockMinDots * (Style.lockDotSize + Style.lockDotGap) + cursorWidth)
             height: Style.lockFieldHeight
             radius: Style.panelRadius
-            color: failed ? Theme.bad : Theme.barFill
+            color: failed ? Theme.bad : "transparent"
 
             RoundRect {
                 visible: !slot.failed
