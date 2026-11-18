@@ -51,7 +51,7 @@ Each directory is a "stow package" that contains configs symlinked to `~/`:
 - **hypr** - Hyprland compositor configuration
 - **waybar** - Status bar configuration
 - **mako** - Notification daemon configuration
-- **quickshell** - Lock screen in QML, run as `qs -c main` by `quickshell.service`
+- **quickshell** - Lock screen in QML, run as `qs -c main` by `quickshell.service`, and a bar in development (`qs -p ~/.config/quickshell/main/bar-test.qml`)
 - **fuzzel** - Application launcher
 - **btop** - System monitor
 - **podman** - Container runtime configuration

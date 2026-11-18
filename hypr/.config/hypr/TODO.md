@@ -50,3 +50,14 @@ hypridle falls back to hyprlock when Quickshell is not running.
   Recovery to verify: `systemctl --user stop quickshell.service`, then `hyprctl --instance 0 eval 'hl.clear_crashed_lockscreen()'`.
 - **Check lid close and resume.** The screen must be locked before sleep, and no desktop content may show on wake (see item 1).
 - **Card styling.** Make the card less rounded and less clean.
+
+## 5. Quickshell theme switcher
+
+A panel in the Quickshell shell for choosing a palette from `themes/palettes/`, applied live.
+
+Before building, compare how caelestia, end-4, noctalia, DankMaterialShell and Omarchy switch themes instantly, and decide whether to reuse one of those approaches instead of writing our own.
+
+- One entry per palette, with its colors as swatches and its wallpaper as a thumbnail where the palette sets one.
+- Selecting an entry runs `theme-set <palette>`; Quickshell and the apps `theme-set` reloads recolor at once (btop, yazi and lazygit still need a restart).
+- Opens from the dashboard, the control panel or a keybind; arrow keys move, Enter applies, Escape closes.
+- `theme-set` writes only to `~/.config/themes/`, so switching never changes files tracked in git.
