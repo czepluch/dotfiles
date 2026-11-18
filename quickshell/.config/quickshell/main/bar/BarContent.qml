@@ -32,9 +32,29 @@ Item {
     // The hub's time display in this item's coordinates.
     readonly property rect hubRect: Qt.rect(surface.x + hub.displayX,
         surface.y + Math.round((surface.height - Style.pillHeight) / 2), hub.timeWidth, Style.pillHeight)
+    readonly property var popups: [dashboard.item, system.item, panel.item]
+
+    // Opens or closes a popup, closing the others: each one attaches to the
+    // bar, and two side by side would overlap.
+    function togglePopup(popup) {
+        for (const other of popups) {
+            if (other && other !== popup)
+                other.visible = false;
+        }
+        popup?.toggle();
+    }
 
     Surface {
         id: surface
+
+        up: root.atBottom
+        // An opening for each open popup.
+        openings: root.popups
+            .filter(popup => popup?.visible)
+            .map(popup => ({
+                left: popup.windowX - x,
+                right: popup.windowX + popup.implicitWidth - x
+            }))
 
         anchors {
             fill: parent
@@ -108,7 +128,7 @@ Item {
             anchors.fill: parent
             leftLimit: leftGroup.x + leftGroup.width
             rightLimit: rightGroup.x
-            onOpenDashboard: dashboard.item?.toggle()
+            onOpenDashboard: root.togglePopup(dashboard.item)
         }
 
         Row {
@@ -160,14 +180,14 @@ Item {
                 id: readouts
 
                 enabled: !root.locked
-                onClicked: system.item?.toggle()
+                onClicked: root.togglePopup(system.item)
             }
 
             Controls {
                 id: controls
 
                 enabled: !root.locked
-                onOpenPanel: panel.item?.toggle()
+                onOpenPanel: root.togglePopup(panel.item)
             }
         }
     }
@@ -179,7 +199,9 @@ Item {
 
         sourceComponent: Dashboard {
             bar: root.window
-            anchorItem: hub.timeItem
+            barLeft: surface.x
+            barRight: surface.x + surface.width
+            centerX: surface.x + hub.displayX + hub.timeWidth / 2
             opensUp: root.atBottom
         }
     }
@@ -191,7 +213,9 @@ Item {
 
         sourceComponent: SystemPanel {
             bar: root.window
-            anchorItem: readouts
+            barLeft: surface.x
+            barRight: surface.x + surface.width
+            centerX: surface.x + rightGroup.x + readouts.x + readouts.width / 2
             opensUp: root.atBottom
         }
     }
@@ -203,7 +227,8 @@ Item {
 
         sourceComponent: ControlPanel {
             bar: root.window
-            anchorItem: controls
+            barLeft: surface.x
+            barRight: surface.x + surface.width
             opensUp: root.atBottom
         }
     }

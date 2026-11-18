@@ -17,8 +17,6 @@ Item {
     // group and left of the right group.
     property real leftLimit: 0
     property real rightLimit: width
-    // The display, for anchoring the dashboard and placing the headline.
-    readonly property Item timeItem: display
     readonly property int gap: Style.buttonInset
     readonly property int timeWidth: 260
     // In the middle, moved aside when a group needs the room.

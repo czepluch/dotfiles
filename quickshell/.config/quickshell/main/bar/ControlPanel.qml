@@ -1,8 +1,8 @@
 pragma ComponentBehavior: Bound
 
 // The control panel: power mode, Wi-Fi networks, volume, brightness and the
-// toggles from ToggleList. It opens from the control icons, aligned to their
-// right edge. Wi-Fi scanning runs only while it is open.
+// toggles from ToggleList. It opens from the control icons, flush with the
+// right end of the bar. Wi-Fi scanning runs only while it is open.
 import QtQuick
 import Quickshell
 import qs

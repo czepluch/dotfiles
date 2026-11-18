@@ -43,10 +43,12 @@ Singleton {
     // Space between buttons in a popup grid.
     readonly property int gap: 6
 
-    // Corner radii: surfaces, panels, and cells and chips.
+    // Corner radii: surfaces, panels, and cells and chips; and the curves
+    // where a popup joins the bar.
     readonly property int surfaceRadius: 12
     readonly property int panelRadius: 10
     readonly property int cellRadius: 7
+    readonly property int joinRadius: 12
 
     // Horizontal space around text in panels, between a label and its value,
     // and between text and the edge of an alert fill around it.
