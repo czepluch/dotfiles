@@ -1,11 +1,13 @@
-// Workspace spaces: stable colored avatars, worktrees under their checkout,
-// grouped by machine when more than one is known. After a space's name, the repo
-// its first terminal is in now, only where unusual: branch, ahead/behind. Agent state lives in the agents list, not here. Click to
-// switch, right-click for its menu, drag to reorder.
+// Workspace spaces as cards: stable colored avatars, worktrees under their checkout,
+// grouped by machine when more than one is known. Each card has up to 3 lines: the
+// space's name with an attention dot; the repo its first terminal is in, its branch,
+// ahead/behind and uncommitted files (the folder when it isn't a repo); its tabs and
+// agents, when it has more than one tab or any agent. Click to switch, right-click
+// for its menu, drag to reorder.
 
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, ScrollHandle } from "gpui-base";
-import { spaces, machines, panes, run, openOverlay, exec, hc, theme, shared, setShared, watchFolder, window, layout } from "herdr";
+import { spaces, machines, panes, agents, home, run, openOverlay, exec, hc, theme, shared, setShared, watchFolder, window, layout } from "herdr";
 
 function find(node, id) {
   if (node?.id === id) return node;
@@ -25,11 +27,15 @@ function place(s, ps) {
   const tabs = new Set((s.tabs ?? []).map((c) => c.id));
   return ps.find((p) => tabs.has(p.tab) && p.cwd)?.cwd || s.folder;
 }
-const rowHeight = ({ tree }) => (tree ? 28 : 30);
 const RAIL_CELL = 32;
-// A space's name and its git tail never shrink below this, so a short one ("api")
-// stays readable instead of turning into an ellipsis next to a long branch.
-const SIDE_MIN = 48;
+// Where a card's second and third lines start: under the name, past the avatar
+// (18 + gap 9) or a worktree's indent and branch icon (22 + 13 + gap 9).
+const cardIndent = (tree) => (tree ? 44 : 27);
+// "4m", "1h 5m"; "" under a minute.
+const elapsed = (ms) => {
+  const m = Math.floor(ms / 60000);
+  return m < 1 ? "" : m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${m % 60}m`;
+};
 const railCell = (el) => h_flex().flex_none().justify_center().child(el);
 const where = (s, ps) => JSON.stringify([s.machine ?? null, place(s, ps)]);
 const base = (path) => path.replace(/\/+$/, "").split("/").pop();
@@ -64,7 +70,7 @@ export function tone(t, status) {
 
 export default class Spaces extends View {
   init(_props, cx) {
-    this.git = {}; // where() -> { name, branch, ahead, behind, repo, linked }, null: not a repo
+    this.git = {}; // where() -> { name, branch, ahead, behind, changes, repo, linked }, null: not a repo
     this.checked = {}; // where() -> when it was last looked at
     this.unsure = new Set(); // where()s git couldn't answer for (a machine away)
     this.pending = new Set(); // where()s to look at next
@@ -91,6 +97,10 @@ export default class Spaces extends View {
     cx.timer.every(15000, cx => this.refreshMachines(cx));
     // Refresh only when the refs could have changed (see `due`).
     cx.timer.every(250, (cx) => this.checkNew(cx));
+    // Redraw the "working 4m" times while an agent works.
+    cx.timer.every(30000, (cx) => {
+      if (spaces().some((s) => (s.tabs ?? []).some((tab) => tab.working_since))) cx.notify();
+    });
   }
 
   checkNew(cx) {
@@ -225,7 +235,7 @@ export default class Spaces extends View {
     });
   }
 
-  // One place's git: branch, ahead/behind, its repo.
+  // One place's git: branch, ahead/behind, uncommitted files, its repo.
   async check(key, cx) {
     const [on, cwd] = JSON.parse(key);
     this.checked[key] = Date.now();
@@ -253,7 +263,10 @@ export default class Spaces extends View {
       );
       const name = repo.endsWith("/.git") ? base(repo.slice(0, -5)) : base(repo).replace(/\.git$/, "");
       const [ahead, behind] = counts.code === 0 ? counts.stdout.trim().split(/\s+/).map(Number) : [0, 0];
-      const info = { name, branch: branch.code === 0 ? branch.stdout.trim().replace(/^refs\/heads\//, "") : "(detached)", ahead, behind, repo: JSON.stringify([on, repo]), linked: repo !== `${top}/.git` };
+      // Uncommitted files, without the index refresh `git status` would otherwise write.
+      const status = await exec("git", ["--no-optional-locks", "status", "--porcelain"], { cwd, on });
+      const changes = status.code === 0 ? status.stdout.split("\n").filter(Boolean).length : null;
+      const info = { name, branch: branch.code === 0 ? branch.stdout.trim().replace(/^refs\/heads\//, "") : "(detached)", ahead, behind, changes, repo: JSON.stringify([on, repo]), linked: repo !== `${top}/.git` };
       this.git[key] = info;
       if (!on) this.watch(repo, cx);
     } catch {
@@ -300,7 +313,7 @@ export default class Spaces extends View {
     const sp = spaces(), ps = panes();
     const ready = (w) => this.shown.has(w.id) || where(w, ps) in this.git || Date.now() - (this.born[w.id] ??= Date.now()) > 1500;
     for (const w of sp) if (!this.shown.has(w.id) && ready(w)) this.shown.add(w.id);
-    const list = sp.map((w, i) => ({ w, i, g: this.git[where(w, ps)] ?? null }));
+    const list = sp.map((w, i) => ({ w, i, g: this.git[where(w, ps)] ?? null, folder: place(w, ps) }));
     const mains = new Set(list.filter((r) => r.g && !r.g.linked).map((r) => r.g.repo));
     const nested = (r) => r.g?.linked && mains.has(r.g.repo);
     const out = [];
@@ -418,30 +431,64 @@ export default class Spaces extends View {
     });
   }
 
-  // Only what's unusual, after the name: "herdr \u00b7 spike \u21912 \u21931". The repo or
-  // branch goes when the name already says it (a worktree is named after its branch),
-  // and master/main go: nearly every space is on one. When the row is full, it
-  // and the name both start from their text's width and give way in proportion.
-  gitTail(g, tree, name, t) {
-    const raw = g.branch ?? "detached";
-    const same = (a) => a.toLowerCase() === name.toLowerCase();
-    const branch = same(raw) || raw === "master" || raw === "main" ? "" : raw;
-    const repo = tree || same(g.name) ? "" : g.name;
-    const where = [repo, branch].filter(Boolean).join(" \u00b7 ");
+  // The card's second line: "herdr \u00b7 spike  \u21912 \u21931 \u00b15". The repo goes when the
+  // name already says it, the branch when it is the name (a worktree is named after
+  // its branch). Outside a repo, the folder, with the home folder as "~" on this computer.
+  gitLine({ w, g, tree, folder }, t) {
+    const same = (a) => a.toLowerCase() === w.name.toLowerCase();
+    let where;
+    if (g) {
+      const branch = g.branch ?? "detached";
+      where = [tree || same(g.name) ? "" : g.name, same(branch) ? "" : branch].filter(Boolean).join(" \u00b7 ");
+    } else {
+      const h = home();
+      where = !w.machine && folder && (folder === h || folder.startsWith(`${h}/`)) ? `~${folder.slice(h.length)}` : folder ?? "";
+    }
+    const ahead = g?.ahead > 0, behind = g?.behind > 0, changes = g?.changes > 0;
+    if (!where && !ahead && !behind && !changes) return null;
     return h_flex()
-      .flex_auto()
-      .min_w(where ? SIDE_MIN : 0)
-      .gap(5)
-      .justify_end()
+      .gap(6)
       .items_center()
       .text_size(11.5)
       .text_color(t.dim)
-      .when(Boolean(where), (el) => el.child(div().min_w(0).truncate().child(where)))
-      .when(g.ahead > 0, (el) => el.child(div().flex_none().text_color(t.ansi2).child(`\u2191${g.ahead}`)))
-      .when(g.behind > 0, (el) => el.child(div().flex_none().text_color(t.ansi1).child(`\u2193${g.behind}`)));
+      .when(Boolean(where), (el) => el.child(div().flex_initial().min_w(0).truncate().child(where)))
+      .when(ahead, (el) => el.child(div().flex_none().text_color(t.ansi2).child(`\u2191${g.ahead}`)))
+      .when(behind, (el) => el.child(div().flex_none().text_color(t.ansi1).child(`\u2193${g.behind}`)))
+      .when(changes, (el) => el.child(div().id(`space-changes-${w.id}`).flex_none().text_color(t.ansi3)
+        .tooltip(`${g.changes} uncommitted ${g.changes === 1 ? "file" : "files"}`).child(`\u00b1${g.changes}`)));
   }
 
-  row({ w, i, g, tree }, t) {
+  // The card's third line: "3 tabs \u00b7 2 agents \u00b7 1 needs you \u00b7 working 4m". Only for
+  // a space with more than one tab or any agent.
+  workLine(w, t) {
+    const mine = (this.agentList ?? []).filter((a) => a.space === w.id);
+    const tabs = (w.tabs ?? []).length;
+    if (!mine.length && tabs < 2) return null;
+    const count = (status) => mine.filter((a) => a.status === status).length;
+    const since = Math.min(...(w.tabs ?? []).map((tab) => tab.working_since ?? Infinity));
+    const working = count("working");
+    const parts = [];
+    if (tabs > 1) parts.push([`${tabs} tabs`, t.dim]);
+    if (mine.length) parts.push([`${mine.length} ${mine.length === 1 ? "agent" : "agents"}`, t.dim]);
+    if (count("blocked")) parts.push([`${count("blocked")} needs you`, tone(t, "blocked")]);
+    if (count("done")) parts.push([`${count("done")} done`, tone(t, "done")]);
+    if (working) {
+      const time = Number.isFinite(since) ? elapsed(Date.now() - since) : "";
+      parts.push([time ? `working ${time}` : "working", tone(t, "working")]);
+    }
+    return h_flex()
+      .gap(5)
+      .items_center()
+      .text_size(11.5)
+      .text_color(t.dim)
+      .children(parts.flatMap(([text, color], n) => [
+        ...(n ? [div().flex_none().child("\u00b7")] : []),
+        div().flex_none().text_color(color).child(text),
+      ]));
+  }
+
+  row(r, t) {
+    const { w, i, tree } = r;
     const on = w.active;
     const fromIndex = this.pressed === null ? -1 : spaces().findIndex(s => s.id === this.pressed);
     const colors = shared("space.colors") ?? {};
@@ -451,9 +498,9 @@ export default class Spaces extends View {
       .relative()
       .id(`space-${w.id}`)
       .px(8)
-      .h(rowHeight({ tree }))
+      .py(6)
+      .gap(2)
       .flex_none()
-      .justify_center()
       .rounded(8)
       .when(on, (el) => el.bg(t.selected))
       .when(!on, (el) => el.hover((s) => s.bg(t.hover)))
@@ -493,9 +540,10 @@ export default class Spaces extends View {
           .items_center()
           .when(Boolean(tree), el => el.pl(22).child(svg("mods/workspace-chrome/branch.svg").size(13).flex_none().text_color(t.dim)))
           .when(!tree, el => el.child(h_flex().size(18).flex_none().rounded(5).bg(fill).items_center().justify_center().text_size(10.5).font_bold().text_color("#ffffff").child([...w.name][0]?.toUpperCase() ?? "?")))
-          .child(div().flex_initial().min_w(SIDE_MIN).truncate().text_color(t.foreground).child(w.name))
-          .child(g ? this.gitTail(g, tree, w.name, t) : div().flex_1()),
-      );
+          .child(div().id(`space-name-${w.id}`).flex_1().min_w(0).truncate().tooltip(w.name).text_color(t.foreground).child(w.name))
+          .when(w.status === "blocked" || w.status === "done", (el) => el.child(div().flex_none().text_color(tone(t, w.status)).child(glyph(w.status)))),
+      )
+      .children([this.gitLine(r, t), this.workLine(w, t)].filter(Boolean).map((line) => line.pl(cardIndent(tree))));
   }
 
   compact({ w, i }, t) {
@@ -529,6 +577,7 @@ export default class Spaces extends View {
       changed = true;
     }
     if (changed) setShared("space.colors", kept);
+    this.agentList = agents();
     const list = this.grouped(t, collapsed);
     // Bring the active space into view when it, or its place in the list, changes; a row already in view stays put.
     const active = sp.find(p => p.active)?.id;
