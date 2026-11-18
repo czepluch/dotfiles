@@ -59,10 +59,6 @@ async function both(a, b) {
   return done.map((d) => d.value);
 }
 
-// What a stored color name looks like on an avatar (the same in every mod
-// that draws space avatars): one strong color per hue, light and dark alike.
-const MARK = { ansi6: "#22a99a", ansi3: "#e3814f", ansi4: "#5b8def", ansi5: "#8b7cf6", ansi2: "#3fae6a", ansi1: "#d9649a" };
-
 // A space speaks up only when something in it needs you.
 export function glyph(status) {
   return status === "blocked" || status === "done" ? "●" : "·";
@@ -402,7 +398,7 @@ export default class Spaces extends View {
       return layout === "loading" || (!layout && this.machines.some(k => k.name === m && k.state === "connected"))
         || spaces().some(s => (s.machine ?? null) === m && !this.shown.has(s.id));
     };
-    const loadingRow = m => h_flex().id(`machine-loading-${m ?? "local"}`).h(28).flex_none().px(collapsed ? 0 : 8).items_center().when(collapsed, el => el.justify_center()).text_size(12).text_color(t.dim).child(collapsed ? "…" : "Loading…");
+    const loadingRow = m => h_flex().id(`machine-loading-${m ?? "local"}`).h(28).flex_none().px(collapsed ? 0 : 8).items_center().when(collapsed, el => el.justify_center()).text_size(12).text_color(t.muted).child(collapsed ? "…" : "Loading…");
     if (!remote.length) {
       if (loading(null) && !rows.length) return [loadingRow(null)];
       this.activeAt = rows.findIndex(r => r.w.active);
@@ -419,7 +415,7 @@ export default class Spaces extends View {
       const folded = this.folded.has(m);
       const icon = svg(`mods/workspace-chrome/${m ? "server" : "monitor"}.svg`).size(13).flex_none();
       const badge = div().absolute().right(-3).bottom(-2).size(6).rounded(3).border_1().border_color(t.chrome).bg(connected ? t.ansi2 : t.dim);
-      const head = h_flex().id(`machine-${m ?? "local"}`).h(26).flex_none().px(collapsed ? 0 : 8).gap(7).items_center().text_size(11).text_color(t.dim)
+      const head = h_flex().id(`machine-${m ?? "local"}`).h(26).flex_none().px(collapsed ? 0 : 8).gap(7).items_center().text_size(11).text_color(t.muted)
         .when(collapsed, el => el.mt(4).w(RAIL_CELL).justify_center().rounded(6).tooltip(login ? `${m} needs a login: run ${login}. Click for Copy.` : m ? `${m} · ${connected ? "connected" : (machine?.state ?? "asleep").replace(/_/g, " ")}` : "This computer"))
         .cursor_pointer().hover(s => s.bg(t.hover))
         .on_click((_e, cx) => {
@@ -447,7 +443,7 @@ export default class Spaces extends View {
           .child(div().size(6).rounded(3).flex_none().bg(connected ? t.ansi2 : t.dim))
           .child(svg(`mods/workspace-chrome/chevron-${folded ? "right" : "down"}.svg`).size(11).flex_none()));
       const empty = h_flex().id(`machine-new-${m ?? "local"}`).h(28).flex_none().px(collapsed ? 0 : 8).gap(7).items_center().rounded(7)
-        .text_size(12).text_color(t.dim).hover(s => s.bg(t.hover).text_color(t.foreground))
+        .text_size(12).text_color(t.muted).hover(s => s.bg(t.hover).text_color(t.foreground))
         .on_click(() => run("space.new", { machine: m ?? "" }))
         .when(collapsed, el => el.w(RAIL_CELL).rounded(6).justify_center().tooltip(`New space on ${m ?? "this computer"}`)
           .child(h_flex().size(18).rounded(5).border_1().border_color(t.dim).items_center().justify_center()
@@ -474,26 +470,33 @@ export default class Spaces extends View {
   // The card's second line: "herdr \u00b7 spike  \u21912 \u21931 \u00b15". The repo goes when the
   // name already says it, the branch when it is the name (a worktree is named after
   // its branch). Outside a repo, the folder, with the home folder as "~" on this computer.
+  // The repo is muted, the branch cyan (ansi6) and the folder blue (ansi4).
   gitLine({ w, g, tree, folder }, t) {
     const same = (a) => a.toLowerCase() === w.name.toLowerCase();
-    let where;
+    let repo = "", branch = "", place = "";
     if (g) {
-      const branch = g.branch ?? "detached";
-      where = [tree || same(g.name) ? "" : g.name, same(branch) ? "" : branch].filter(Boolean).join(" \u00b7 ");
+      const b = g.branch ?? "detached";
+      repo = tree || same(g.name) ? "" : g.name;
+      branch = same(b) ? "" : b;
     } else {
       const h = home();
-      where = !w.machine && folder && (folder === h || folder.startsWith(`${h}/`)) ? `~${folder.slice(h.length)}` : folder ?? "";
+      place = !w.machine && folder && (folder === h || folder.startsWith(`${h}/`)) ? `~${folder.slice(h.length)}` : folder ?? "";
     }
+    const where = h_flex().flex_initial().min_w(0).gap(5)
+      .when(Boolean(repo), (el) => el.child(div().min_w(0).truncate().text_color(t.muted).child(repo)))
+      .when(Boolean(repo && branch), (el) => el.child(div().flex_none().child("\u00b7")))
+      .when(Boolean(branch), (el) => el.child(div().min_w(0).truncate().text_color(t.ansi6).child(branch)))
+      .when(Boolean(place), (el) => el.child(div().min_w(0).truncate().text_color(t.ansi4).child(place)));
     const ahead = g?.ahead > 0, behind = g?.behind > 0, changes = g?.changes > 0;
     const pr = g ? this.prs[JSON.stringify([g.repo, g.branch])]?.pr : null;
-    if (!where && !ahead && !behind && !changes && !pr) return null;
+    if (!repo && !branch && !place && !ahead && !behind && !changes && !pr) return null;
     return h_flex()
       .gap(6)
       .items_center()
       .text_size(11.5)
       .line_height("15px")
       .text_color(t.dim)
-      .when(Boolean(where), (el) => el.child(div().flex_initial().min_w(0).truncate().child(where)))
+      .when(Boolean(repo || branch || place), (el) => el.child(where))
       .when(ahead, (el) => el.child(div().flex_none().text_color(t.ansi2).child(`\u2191${g.ahead}`)))
       .when(behind, (el) => el.child(div().flex_none().text_color(t.ansi1).child(`\u2193${g.behind}`)))
       .when(changes, (el) => el.child(div().id(`space-changes-${w.id}`).flex_none().text_color(t.ansi3)
@@ -502,10 +505,10 @@ export default class Spaces extends View {
   }
 
   // "#123", colored by state: open (green, yellow while checks run, red when they
-  // fail), draft (dim), merged (purple), closed (red). A click opens it in the browser.
+  // fail), draft (muted), merged (purple), closed (red). A click opens it in the browser.
   prBadge(w, pr, t) {
     const state = pr.state === "MERGED" ? "merged" : pr.state === "CLOSED" ? "closed" : pr.draft ? "draft" : "open";
-    const color = state === "merged" ? t.ansi5 : state === "closed" ? t.ansi1 : state === "draft" ? t.dim
+    const color = state === "merged" ? t.ansi5 : state === "closed" ? t.ansi1 : state === "draft" ? t.muted
       : pr.checks === "failing" ? t.blocked : pr.checks === "pending" ? t.ansi3 : t.ansi2;
     const tip = [`PR #${pr.number}`, state, pr.checks && `checks ${pr.checks}`].filter(Boolean).join(" \u00b7 ");
     return div().id(`space-pr-${w.id}`).flex_none().text_color(color).tooltip(`${tip}. Click to open.`)
@@ -527,8 +530,8 @@ export default class Spaces extends View {
     const since = Math.min(...(w.tabs ?? []).map((tab) => tab.working_since ?? Infinity));
     const working = count("working");
     const parts = [];
-    if (tabs > 1) parts.push([`${tabs} tabs`, t.dim]);
-    if (mine.length) parts.push([`${mine.length} ${mine.length === 1 ? "agent" : "agents"}`, t.dim]);
+    if (tabs > 1) parts.push([`${tabs} tabs`, t.muted]);
+    if (mine.length) parts.push([`${mine.length} ${mine.length === 1 ? "agent" : "agents"}`, t.muted]);
     if (count("blocked")) parts.push([`${count("blocked")} needs you`, tone(t, "blocked")]);
     if (count("done")) parts.push([`${count("done")} done`, tone(t, "done")]);
     if (working) {
@@ -553,7 +556,7 @@ export default class Spaces extends View {
     const fromIndex = this.pressed === null ? -1 : spaces().findIndex(s => s.id === this.pressed);
     const colors = shared("space.colors") ?? {};
     const color = colors[w.id] ?? "ansi6";
-    const fill = color.startsWith("#") ? color : (MARK[color] ?? t[color]);
+    const fill = color.startsWith("#") ? color : (t[color] ?? t.ansi6);
     return v_flex()
       .relative()
       .id(`space-${w.id}`)
@@ -599,7 +602,7 @@ export default class Spaces extends View {
           .gap(9)
           .items_center()
           .when(Boolean(tree), el => el.pl(22).child(svg("mods/workspace-chrome/branch.svg").size(13).flex_none().text_color(t.dim)))
-          .when(!tree, el => el.child(h_flex().size(18).flex_none().rounded(5).bg(fill).items_center().justify_center().text_size(10.5).font_bold().text_color("#ffffff").child([...w.name][0]?.toUpperCase() ?? "?")))
+          .when(!tree, el => el.child(h_flex().size(18).flex_none().rounded(5).bg(fill).items_center().justify_center().text_size(10.5).font_bold().text_color(t.accent_foreground).child([...w.name][0]?.toUpperCase() ?? "?")))
           .child(div().id(`space-name-${w.id}`).flex_1().min_w(0).truncate().tooltip(w.name).text_color(t.foreground).child(w.name))
           .when(w.status === "blocked" || w.status === "done", (el) => el.child(div().flex_none().text_color(tone(t, w.status)).child(glyph(w.status)))),
       )
@@ -647,7 +650,7 @@ export default class Spaces extends View {
       if (this.activeAt >= 0) this.scroll.scroll_to_item(this.activeAt);
     }
     return v_flex().size_full().min_h(0).bg(t.chrome).text_size(13)
-      .child(h_flex().h(31).pl(16).pr(10).items_center().justify_between().text_size(11.5).text_color(t.dim)
+      .child(h_flex().h(31).pl(16).pr(10).items_center().justify_between().text_size(11.5).text_color(t.muted)
         .when(collapsed, el => el.pl(0).pr(0).justify_center())
         .when(!collapsed, el => el.child("Spaces"))
         .child(div().id("space-new").size(26).flex_none().flex().items_center().justify_center().rounded(6).hover(s => s.bg(t.hover).text_color(t.foreground))

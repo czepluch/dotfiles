@@ -69,6 +69,22 @@ const sortOf = () => SORTS.find((s) => s.id === shared("agents.sort")) ?? SORTS[
 const SECTION = { 4: "Needs you", 3: "Done", 2: "Working", 1: "Idle" };
 const SECTION_STATUS = { 4: "blocked", 3: "done", 2: "working" };
 
+// Claude Code effort levels, lowest first. Each is drawn on the blue (ansi4) to
+// magenta (ansi5) gradient by its place in this list.
+const EFFORTS = ["low", "medium", "high", "xhigh", "max"];
+
+// Mix two "#rrggbb" colors: w is the share of a.
+function mix(a, b, w) {
+  const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const x = rgb(a), y = rgb(b);
+  return "#" + x.map((v, i) => Math.round(v * w + y[i] * (1 - w)).toString(16).padStart(2, "0")).join("");
+}
+
+function effortColor(t, level) {
+  const i = EFFORTS.indexOf(level);
+  return i < 0 ? t.muted : mix(t.ansi5, t.ansi4, i / (EFFORTS.length - 1));
+}
+
 function duration(ms) {
   const m = Math.floor(ms / 60000);
   if (m < 1) return "<1m";
@@ -95,7 +111,7 @@ export default class Agents extends View {
     if (!this.pendingPins.length) localStorage.removeItem("pins");
     this.migratingPins = new Set();
     cx.timer.every(30000, (cx) => cx.notify());
-    this.claude = {}; // terminal address -> "Opus 5.5 · xhigh"
+    this.claude = {}; // terminal address -> { model: "Opus 5.5", effort: "xhigh" }
     if (checking()) return;
     cx.timer.every(CLAUDE_POLL_MS, (cx) => this.loadClaude(cx));
     this.loadClaude(cx);
@@ -118,8 +134,7 @@ export default class Agents extends View {
           }
           if (!text) continue;
           const d = JSON.parse(text);
-          const line = [d.model?.display_name, d.effort?.level].filter(Boolean).join(" · ");
-          if (line) next[a.address] = line;
+          if (d.model?.display_name) next[a.address] = { model: d.model.display_name, effort: d.effort?.level ?? null };
         } catch (e) {
           console.log(`claude model ${a.address}: ${e}`);
         }
@@ -181,7 +196,7 @@ export default class Agents extends View {
       .p(5)
       .bg(t.popover)
       .text_size(12.8)
-      .child(div().px(8).pt(4).pb(6).text_size(11).text_color(t.dim).child("Sort agents"))
+      .child(div().px(8).pt(4).pb(6).text_size(11).text_color(t.muted).child("Sort agents"))
       .children(SORTS.map((s) => h_flex()
         .id(`sort-${s.id}`)
         .h(31)
@@ -301,7 +316,7 @@ export default class Agents extends View {
         .items_center()
         .rounded(4)
         .text_size(11)
-        .text_color(open ? t.dim : (t[top] ?? t.dim))
+        .text_color(open ? t.muted : (t[top] ?? t.muted))
         .cursor_pointer()
         .hover((s) => s.bg(t.hover).text_color(t.foreground))
         .on_click((_e, cx) => {
@@ -401,15 +416,18 @@ export default class Agents extends View {
             cx.notify();
           })).child(pic)))
         .child(h_flex().flex_1().min_w(0).gap(5).items_center()
-          .child(div().min_w(0).max_w(full && more ? 120 : 200).truncate().text_color(idle ? t.muted : t.foreground).child(name))
-          .when(full && Boolean(more), el => el.child(div().flex_1().min_w(0).truncate().text_color(t.dim).child(`\u00b7 ${more}`))))
-        .when(Boolean(machine), el => el.child(div().text_size(10).text_color(t.dim).child(machine)))
+          .child(div().min_w(0).max_w(full && more ? 120 : 200).truncate().text_color(t.foreground).child(name))
+          .when(full && Boolean(more), el => el.child(div().flex_1().min_w(0).truncate().text_color(t.muted).child(`\u00b7 ${more}`))))
+        .when(Boolean(machine), el => el.child(div().text_size(10).text_color(t.ansi4).child(machine)))
         .when(subs.length > 0, el => el.child(fold(a, subs)))
         .when(this.hovered === a.address, el => el.child(pin))
-        .when(this.hovered !== a.address && Boolean(when), el => el.child(div().flex_none().text_size(11).text_color(t.dim).child(duration(now - when))))
+        .when(this.hovered !== a.address && Boolean(when), el => el.child(div().flex_none().text_size(11).text_color(t.muted).child(duration(now - when))))
         .child(this.status(t, a, byPriority && !isPinned))
         // Second line, wrapped under the whole row and lined up with the name: the Claude Code agent's model and effort.
-        .when(Boolean(model), el => el.child(div().min_w_full().pl(25).truncate().text_size(11).line_height("14px").text_color(t.dim).child(model)));
+        .when(Boolean(model), el => el.child(h_flex().min_w_full().pl(25).gap(5).text_size(11).line_height("14px").text_color(t.dim)
+          .child(div().min_w(0).truncate().text_color(t.ansi5).child(model?.model))
+          .when(Boolean(model?.effort), el => el.child(div().flex_none().child("\u00b7"))
+            .child(div().flex_none().text_color(effortColor(t, model.effort)).child(model.effort)))));
     };
 
     // Groups in list order: spaces (grouped) or priority sections. Agents of a
@@ -442,8 +460,8 @@ export default class Agents extends View {
           open ? this.folded.add(g.id) : this.folded.delete(g.id);
           cx.notify();
         })
-        .child(div().truncate().text_color(t[g.status] ?? t.dim).child(g.label))
-        .when(byPriority || !open, (el) => el.child(div().text_color(t.dim).child(String(g.members.length))))
+        .child(div().truncate().text_color(t[g.status] ?? t.muted).child(g.label))
+        .when(byPriority || !open, (el) => el.child(div().text_color(t.muted).child(String(g.members.length))))
         .child(div().flex_1())
         .when(!open, (el) => el
           .when(!byPriority && top && top !== "idle", (el) => el.child(this.status(t, { status: top }, true)))
@@ -470,7 +488,7 @@ export default class Agents extends View {
             .flex_none()
             .items_center()
             .justify_between()
-            .child(div().text_size(11.5).font_medium().text_color(t.dim).child("Agents"))
+            .child(div().text_size(11.5).font_medium().text_color(t.muted).child("Agents"))
             .child(
               div()
                 .id("ag-sort")
@@ -484,7 +502,7 @@ export default class Agents extends View {
         ),
       )
       .when(list.length === 0 && !collapsed, (el) =>
-        el.child(div().px(12).text_size(12).text_color(t.dim).child("No agent status yet. Agents show up here when they report their status. Older versions and agents inside tmux may not.")),
+        el.child(div().px(12).text_size(12).text_color(t.muted).child("No agent status yet. Agents show up here when they report their status. Older versions and agents inside tmux may not.")),
       )
       .child(v_flex().id("ag-list").flex_1().min_h(0).px(collapsed ? 0 : 8).overflow_y_scrollbar().mode("always").children(rows))
       .when(collapsed, (el) =>
