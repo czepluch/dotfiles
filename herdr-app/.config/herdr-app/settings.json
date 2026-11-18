@@ -1,0 +1,15 @@
+{
+  "zoom": 1.100000023841858,
+  "sounds": {
+    "enabled": true
+  },
+  "font": "Hack Nerd Font",
+  "font_size": 16,
+  "font_ligatures": false,
+  "terminal_line_height": 1,
+  "terminal_cell_width": 1,
+  "terminal_scroll_speed": 1,
+  "ui_font": "Hack Nerd Font Mono",
+  "minimum_contrast": 1,
+  "appearance": "dark"
+}
