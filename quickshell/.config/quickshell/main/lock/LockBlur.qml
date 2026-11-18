@@ -18,8 +18,8 @@ Scope {
     // True once Hyprland has applied the stronger blur.
     property bool raised: false
 
-    readonly property int size: 10
-    readonly property int passes: 6
+    readonly property int size: 5
+    readonly property int passes: 4
 
     function apply(size, passes) {
         return ["hyprctl", "eval", "hl.config({decoration={blur={size=" + size + ",passes=" + passes + "}}})"];
