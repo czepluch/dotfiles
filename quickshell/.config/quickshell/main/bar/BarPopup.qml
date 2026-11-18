@@ -1,26 +1,25 @@
-// A popup attached to the bar: below it for a bar at the top, above it for
-// a bar at the bottom, centered on a point of the bar or flush with its
-// right end. It continues the bar's surface: the same fill, and an outline
-// that curves out of the bar's edge into the popup's sides (the bar leaves
-// an opening there, see Surface). Flush with the bar's end, its side runs
-// straight on from the bar's side. It closes on Escape, on a click outside
-// it or the bar, or when toggled again. Children are stacked in a padded
-// column.
+// A popup attached to the bar and drawn in the bar's own window, so that
+// Hyprland blurs the two as one surface: below the bar for a bar at the top,
+// above it for a bar at the bottom, centered on a point of the bar or flush
+// with its right end. It continues the bar's surface: the same fill, and an
+// outline that curves out of the bar's edge into the popup's sides (the bar
+// leaves an opening there, see Surface). Flush with the bar's end, its side
+// runs straight on from the bar's side. It closes on Escape or when toggled
+// again; BarContent closes it on a click outside the bar. Children are
+// stacked in a padded column.
 import QtQuick
 import QtQuick.Shapes
-import Quickshell
-import Quickshell.Hyprland
 import qs
 import qs.components
 
-PopupWindow {
+Item {
     id: root
 
-    // The bar window, and the horizontal extent of the bar's surface in it.
-    required property QsWindow bar
+    // The horizontal extent of the bar's surface, in the parent's
+    // coordinates.
     required property real barLeft
     required property real barRight
-    // The point of the bar to center on, in the bar window's coordinates.
+    // The point of the bar to center on.
     property real centerX: (barLeft + barRight) / 2
     property bool opensUp: false
     // Flush with the bar's right end instead of centered.
@@ -32,15 +31,10 @@ PopupWindow {
     readonly property int bodyWidth: column.implicitWidth + 2 * Style.popupPadding
     readonly property int joinLeft: join
     readonly property int joinRight: alignRight ? 0 : join
-    // The left edge of this window in the bar window's coordinates, kept
-    // clear of the bar's rounded corners.
-    readonly property int windowX: alignRight ? Math.round(barRight) - implicitWidth
-        : Math.round(Math.max(barLeft + Style.surfaceRadius,
-            Math.min(centerX - implicitWidth / 2, barRight - Style.surfaceRadius - implicitWidth)))
 
     // The fill and the outline as SVG paths, drawn for a popup below the bar
-    // and mirrored for one above it. The curves start on the bar's edge,
-    // above this window, where the bar draws their first pixels.
+    // and mirrored for one above it. The outline's curves start on the bar's
+    // last row, just outside this item.
     readonly property string fillPath: {
         const w = implicitWidth;
         const h = implicitHeight;
@@ -73,80 +67,67 @@ PopupWindow {
         visible = !visible;
     }
 
-    // Anchored to a point on the bar window's edge.
-    anchor.window: bar
-    anchor.rect.x: windowX
-    anchor.rect.y: opensUp ? 0 : bar.height - 1
-    anchor.rect.width: 1
-    anchor.rect.height: 1
-    anchor.edges: (opensUp ? Edges.Top : Edges.Bottom) | Edges.Left
-    anchor.gravity: (opensUp ? Edges.Top : Edges.Bottom) | Edges.Right
-    anchor.adjustment: PopupAdjustment.Slide
-
+    // Kept clear of the bar's rounded corners.
+    x: alignRight ? Math.round(barRight) - implicitWidth
+        : Math.round(Math.max(barLeft + Style.surfaceRadius,
+            Math.min(centerX - implicitWidth / 2, barRight - Style.surfaceRadius - implicitWidth)))
     implicitWidth: joinLeft + bodyWidth + joinRight
     implicitHeight: column.implicitHeight + 2 * Style.popupPadding
-    color: "transparent"
+    width: implicitWidth
+    height: implicitHeight
     visible: false
-
-    HyprlandFocusGrab {
-        active: root.visible
-        windows: [root, root.bar]
-        onCleared: root.visible = false
+    focus: visible
+    onVisibleChanged: {
+        if (visible)
+            forceActiveFocus();
     }
+    Keys.onEscapePressed: visible = false
 
-    Item {
-        id: body
+    Shape {
+        id: shape
 
         anchors.fill: parent
-        focus: true
-        Keys.onEscapePressed: root.visible = false
+        preferredRendererType: Shape.CurveRenderer
+        transform: Scale {
+            origin.y: shape.height / 2
+            yScale: root.opensUp ? -1 : 1
+        }
 
-        Shape {
-            id: shape
+        ShapePath {
+            fillColor: Theme.barFill
+            strokeWidth: -1
 
-            anchors.fill: parent
-            preferredRendererType: Shape.CurveRenderer
-            transform: Scale {
-                origin.y: shape.height / 2
-                yScale: root.opensUp ? -1 : 1
-            }
-
-            ShapePath {
-                fillColor: Theme.barFill
-                strokeWidth: -1
-
-                PathSvg {
-                    path: root.fillPath
-                }
-            }
-
-            ShapePath {
-                fillColor: "transparent"
-                strokeColor: Theme.outline
-                strokeWidth: 1
-
-                PathSvg {
-                    path: root.outlinePath
-                }
+            PathSvg {
+                path: root.fillPath
             }
         }
 
-        // Raised edge on the side away from the bar: a dark line along the
-        // bottom, or a light line along the top for a popup above the bar.
-        Rectangle {
-            x: root.joinLeft + Style.surfaceRadius
-            y: root.opensUp ? 1 : parent.height - 2
-            width: root.bodyWidth - 2 * Style.surfaceRadius
-            height: 1
-            color: root.opensUp ? Theme.edgeLight : Theme.edgeDark
-        }
+        ShapePath {
+            fillColor: "transparent"
+            strokeColor: Theme.outline
+            strokeWidth: 1
 
-        Column {
-            id: column
-
-            x: root.joinLeft + Style.popupPadding
-            y: Style.popupPadding
-            spacing: Style.popupSpacing
+            PathSvg {
+                path: root.outlinePath
+            }
         }
+    }
+
+    // Raised edge on the side away from the bar: a dark line along the
+    // bottom, or a light line along the top for a popup above the bar.
+    Rectangle {
+        x: root.joinLeft + Style.surfaceRadius
+        y: root.opensUp ? 1 : parent.height - 2
+        width: root.bodyWidth - 2 * Style.surfaceRadius
+        height: 1
+        color: root.opensUp ? Theme.edgeLight : Theme.edgeDark
+    }
+
+    Column {
+        id: column
+
+        x: root.joinLeft + Style.popupPadding
+        y: Style.popupPadding
+        spacing: Style.popupSpacing
     }
 }

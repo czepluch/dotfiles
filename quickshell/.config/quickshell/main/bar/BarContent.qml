@@ -3,7 +3,9 @@ pragma ComponentBehavior: Bound
 // Everything drawn in one bar: the surface, the workspaces and the Hacker
 // News headline on the left, the hub (time) in the middle, and the tray,
 // chips, ETH price, hardware panel and control icons on the right, plus the
-// dashboard, system panel and control panel popups.
+// dashboard, system panel and control panel popups. The bar takes barHeight
+// at the top of this item (the bottom with atBottom), and an open popup sits
+// right under it (above it).
 //
 // The lock screen shows the same bar with `locked` set: a lock symbol in
 // place of the workspaces, no headline, tray or hub (the lock screen draws
@@ -32,37 +34,61 @@ Item {
     // The hub's time display in this item's coordinates.
     readonly property rect hubRect: Qt.rect(surface.x + hub.displayX,
         surface.y + Math.round((surface.height - Style.pillHeight) / 2), hub.timeWidth, Style.pillHeight)
+    // The bar's height, margin to the screen edge included.
+    readonly property int barHeight: Style.height + Style.screenMargin
     readonly property var popups: [dashboard.item, system.item, panel.item]
+    // At most one popup is open at a time.
+    readonly property Item openPopup: popups.find(popup => popup?.visible) ?? null
+    // The bar's strip in this item's coordinates, for the input region.
+    readonly property rect barRect: Qt.rect(0, atBottom ? height - barHeight : 0, width, barHeight)
 
     // Opens or closes a popup, closing the others: each one attaches to the
-    // bar, and two side by side would overlap.
+    // bar, and two side by side would overlap. The new popup opens before
+    // the old one closes, so that a switch keeps the focus grab.
     function togglePopup(popup) {
+        if (!popup)
+            return;
+        popup.toggle();
         for (const other of popups) {
             if (other && other !== popup)
                 other.visible = false;
         }
-        popup?.toggle();
+    }
+
+    function popupNamed(name) {
+        return { dashboard: dashboard.item, system: system.item, panel: panel.item }[name] ?? null;
+    }
+
+    function closePopups() {
+        for (const popup of popups) {
+            if (popup)
+                popup.visible = false;
+        }
+    }
+
+    // Closes the open popup on a click outside the bar's window, and gives
+    // the window the keyboard while the popup is open (see Bar).
+    HyprlandFocusGrab {
+        active: root.window !== null && root.openPopup !== null
+        windows: root.window ? [root.window] : []
+        onCleared: root.closePopups()
     }
 
     Surface {
         id: surface
 
+        x: Style.screenMargin
+        y: root.atBottom ? root.height - root.barHeight : Style.screenMargin
+        width: root.width - 2 * Style.screenMargin
+        height: Style.height
         up: root.atBottom
         // An opening for each open popup.
         openings: root.popups
             .filter(popup => popup?.visible)
             .map(popup => ({
-                left: popup.windowX - x,
-                right: popup.windowX + popup.implicitWidth - x
+                left: popup.x - x,
+                right: popup.x + popup.width - x
             }))
-
-        anchors {
-            fill: parent
-            leftMargin: Style.screenMargin
-            rightMargin: Style.screenMargin
-            topMargin: root.atBottom ? 0 : Style.screenMargin
-            bottomMargin: root.atBottom ? Style.screenMargin : 0
-        }
 
         Row {
             id: leftGroup
@@ -198,7 +224,7 @@ Item {
         active: !root.locked
 
         sourceComponent: Dashboard {
-            bar: root.window
+            y: root.atBottom ? surface.y - height : surface.y + surface.height
             barLeft: surface.x
             barRight: surface.x + surface.width
             centerX: surface.x + hub.displayX + hub.timeWidth / 2
@@ -212,7 +238,7 @@ Item {
         active: !root.locked
 
         sourceComponent: SystemPanel {
-            bar: root.window
+            y: root.atBottom ? surface.y - height : surface.y + surface.height
             barLeft: surface.x
             barRight: surface.x + surface.width
             centerX: surface.x + rightGroup.x + readouts.x + readouts.width / 2
@@ -226,7 +252,7 @@ Item {
         active: !root.locked
 
         sourceComponent: ControlPanel {
-            bar: root.window
+            y: root.atBottom ? surface.y - height : surface.y + surface.height
             barLeft: surface.x
             barRight: surface.x + surface.width
             opensUp: root.atBottom
