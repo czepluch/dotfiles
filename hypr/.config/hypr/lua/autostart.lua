@@ -1,6 +1,6 @@
 -- Autostart. Registered on the "hyprland.start" event, which fires once at compositor
--- start and NOT on `hyprctl reload` - so a reload (e.g. idle-warn.sh restoring the
--- border, or a theme switch) never relaunches these. See
+-- start and NOT on `hyprctl reload` - so a reload (e.g. a theme switch) never
+-- relaunches these. See
 -- https://wiki.hypr.land/Configuring/Basics/Autostart/
 
 local element  = "element-desktop --password-store=gnome-libsecret"
