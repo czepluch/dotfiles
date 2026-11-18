@@ -44,7 +44,7 @@ Singleton {
     readonly property color hover: Qt.alpha(foreground, 0.10)
     // Translucent fill of the bar and its popups. Hyprland only blurs behind
     // pixels with at least 30% opacity (ignore_alpha in look.lua).
-    readonly property color barFill: Qt.alpha(background, 0.75)
+    readonly property color barFill: Qt.alpha(background, 0.85)
     // Edge lines: a raised panel has a light top edge and a dark bottom edge,
     // a sunken one a deep top edge and a faint light bottom edge.
     readonly property color edgeLight: Qt.alpha(foreground, 0.10)
