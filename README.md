@@ -44,11 +44,13 @@ Each directory is a "stow package" that contains configs symlinked to `~/`:
 - **herdr** - Terminal workspace manager for AI coding agents (symlink into the theme system output)
 - **herdr-app** - Herdr desktop app config
   - `keys.json` and `settings.json`; the app writes zoom and Settings changes back into `settings.json`
-  - the `my-main` layout, a copy of the shipped `main` that uses 5 copied mods:
+  - the `my-main` layout, a copy of the shipped `main` that uses 7 copied mods:
     - `mods/my-status`: the status bar, plus the ETH/USD price from the Chainlink feed (read through the DappNode execution client) with a green or red arrow for its last move, and the Claude plan usage limits that `~/.claude/statusline.sh` saves to `~/.cache/claude-statusline/`
     - `mods/my-spaces`: each space as a card with its branch, ahead/behind, uncommitted files, pull request (through `gh`), tabs and agents
     - `mods/my-agents`: the agents list, plus each Claude Code agent's model and effort from the same status line cache, read over herdr's connection for agents on other machines (each machine needs a status line that saves to that cache)
-    - `mods/my-changes`: the Changes panel, with added and removed lines at 25% of green and red and modified files in yellow
+    - `mods/my-changes`: the Changes panel, with added and removed lines at 25% of green and red, modified files in yellow and hunk headers in cyan
+    - `mods/my-files`: the Files panel, with the open file or folder in cyan
+    - `mods/my-pane`: the strip above each terminal, with its folder in cyan
     - `mods/my-chrome`: the sidebar header and footer, with the Settings and Add machine rows in the foreground color and colored icons (only the icons it uses are copied)
   - `themes/palette.json`: symlink into the theme system output (see `themes/SPEC.md`)
   - The window is 92% opaque like Ghostty: `my-main` turns on `window_blur` (without it the window is opaque), the theme sets the alphas (see `themes/SPEC.md`), and a Hyprland rule in `hypr/.config/hypr/lua/rules.lua` turns the blur off again

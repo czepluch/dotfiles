@@ -100,7 +100,7 @@
                 "pane": {
                   "header": {
                     "content": {
-                      "mod": "pane"
+                      "mod": "my-pane"
                     },
                     "reveal": "always",
                     "height": 30,
@@ -133,7 +133,7 @@
                       "id": "files",
                       "type": "block",
                       "content": {
-                        "mod": "files"
+                        "mod": "my-files"
                       }
                     },
                     {
