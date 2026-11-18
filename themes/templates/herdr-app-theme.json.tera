@@ -10,6 +10,9 @@
     "{{ colors.color12.default.hex }}", "{{ colors.color13.default.hex }}", "{{ colors.color14.default.hex }}", "{{ colors.color15.default.hex }}"
   ],
   "colors": {
+    "background": "{{ colors.background.default.hex }}00",
+    "canvas": "{{ colors.background.default.hex }}eb",
+    "chrome": "{{ colors.background.default.hex }}00",
     "foreground": "{{ colors.foreground.default.hex }}",
     "muted": "{{ colors.tone7.default.hex }}",
     "dim": "{{ colors.tone5.default.hex }}",

@@ -1,5 +1,7 @@
 {
   "id": "root",
+  "window_blur": true,
+  "terminal_opacity": 0,
   "cloned_from": {
     "name": "main",
     "version": "0.1.16"

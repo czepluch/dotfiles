@@ -24,6 +24,13 @@ hl.window_rule({
   center = true,
 })
 
+-- herdr-app: no blur behind its translucent window
+hl.window_rule({
+  name  = "herdr-app-no-blur",
+  match = { class = "^herdr-app$" },
+  no_blur = true,
+})
+
 -- Rainbow border for the magic special workspace (active = ROYGBIV, inactive = muted).
 -- Verbatim port of the original two-gradient string (active 7-stop @0deg + inactive
 -- 2-stop @0deg). The wiki confirms border_color accepts a color/gradient string.
