@@ -107,8 +107,8 @@ Item {
         locked: true
     }
 
-    // The hub's display, growing into the lock display: the hub's glass, over
-    // the bar while in it and over the blurred desktop once grown.
+    // The lock display, growing out of the clock's place in the bar and
+    // fading in as it grows.
     RoundRect {
         id: display
 
@@ -117,6 +117,7 @@ Item {
         width: Math.round(root.mix(root.hubRect.width, root.displayRect.width))
         height: Math.round(root.mix(root.hubRect.height, root.displayRect.height))
         radius: Math.round(root.mix(Style.panelRadius, Style.surfaceRadius))
+        opacity: root.progress
         color: Theme.glass
         edge: "sunken"
     }

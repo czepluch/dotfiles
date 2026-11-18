@@ -30,7 +30,7 @@ BarPopup {
         enabled: root.visible
     }
 
-    // The time in a sunken glass display, like the hub.
+    // The time in a sunken glass display.
     RoundRect {
         width: calendar.width
         height: Style.displayHeight

@@ -1,9 +1,9 @@
 pragma ComponentBehavior: Bound
 
 // The center of the bar: the time with seconds and, after a divider, the
-// date in a sunken display, in the middle of the screen while there is room. Short messages
-// from Osd (volume, layout, the idle lock countdown) replace the time.
-// Clicking it opens the dashboard.
+// date, as text on the bar in the middle of the screen while there is room.
+// Short messages from Osd (volume, layout, the idle lock countdown) replace
+// them. Clicking anywhere in its area opens the dashboard.
 import QtQuick
 import Quickshell
 import qs
@@ -44,15 +44,13 @@ Item {
         }
     }
 
-    RoundRect {
+    Item {
         id: display
 
         x: root.displayX
         width: root.timeWidth
         height: Style.pillHeight
         anchors.verticalCenter: parent.verticalCenter
-        color: Theme.glass
-        edge: "sunken"
         clip: true
 
         HubView {
