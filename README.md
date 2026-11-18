@@ -52,6 +52,7 @@ Each directory is a "stow package" that contains configs symlinked to `~/`:
     - `mods/my-files`: the Files panel, with the open file or folder in cyan
     - `mods/my-pane`: the strip above each terminal, with its folder in cyan
     - `mods/my-chrome`: the sidebar header and footer, with the Settings and Add machine rows in the foreground color and colored icons (only the icons it uses are copied)
+  - `mods/my-toast`, set as the layout's `toast`: sends herdr-app's notifications to the system notification service with `notify-send` (app name "Herdr") instead of herdr-app's own pop-up; clicking one runs its action through `herdr-app do`
   - `themes/palette.json`: symlink into the theme system output (see `themes/SPEC.md`)
   - The window is 92% opaque like Ghostty: `my-main` turns on `window_blur` (without it the window is opaque), the theme sets the alphas (see `themes/SPEC.md`), and a Hyprland rule in `hypr/.config/hypr/lua/rules.lua` turns the blur off again
   - The app reloads an edited mod or layout only after `touch -h` on its symlink in `~/.config/herdr-app`

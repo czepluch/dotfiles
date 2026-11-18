@@ -2,6 +2,7 @@
   "id": "root",
   "window_blur": true,
   "terminal_opacity": 0,
+  "toast": "my-toast",
   "cloned_from": {
     "name": "main",
     "version": "0.1.16"
