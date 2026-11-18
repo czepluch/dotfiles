@@ -29,6 +29,7 @@ const until = (seconds) => {
 export default class WorkspaceStatus extends View {
   init(_props, cx) {
     this.ethPrice = null;
+    this.ethDir = null; // "up" or "down": the direction of the last price change
     this.ethFailed = false;
     this.limits = null;
     if (checking()) return;
@@ -58,7 +59,7 @@ export default class WorkspaceStatus extends View {
       .map(([short, key, long]) => [short, long, this.limits?.[key]])
       .filter(([, , w]) => w && Number.isFinite(w.used_percentage) && w.resets_at > now);
     if (!shown.length) return null;
-    const color = (p) => (p >= 90 ? t.blocked : p >= 70 ? t.ansi3 : t.muted);
+    const color = (p) => (p >= 90 ? t.blocked : p >= 70 ? t.ansi3 : t.foreground);
     const tip = shown.map(([, long, w]) => `${long} limit: ${Math.round(w.used_percentage)}% used, resets in ${until(w.resets_at - now)}`).join(" · ");
     return h_flex().id("claude-limits").gap(8).items_center().tooltip(tip)
       .children(shown.map(([short, , w]) => div().text_color(color(w.used_percentage)).child(`${short} ${Math.round(w.used_percentage)}%`)));
@@ -80,7 +81,9 @@ export default class WorkspaceStatus extends View {
         const { result } = await res.json();
         const answer = parseInt(result.slice(2 + 64, 2 + 128), 16);
         if (!Number.isFinite(answer) || answer <= 0) throw new Error(`bad answer: ${result}`);
-        this.ethPrice = answer / 10 ** PRICE_DECIMALS;
+        const price = answer / 10 ** PRICE_DECIMALS;
+        if (this.ethPrice != null && price !== this.ethPrice) this.ethDir = price > this.ethPrice ? "up" : "down";
+        this.ethPrice = price;
         this.ethFailed = false;
       } catch (e) {
         console.log(`eth price: ${e}`);
@@ -90,10 +93,15 @@ export default class WorkspaceStatus extends View {
     });
   }
 
-  // Whole dollars with thousands separators; dimmed after a failed fetch.
+  // Whole dollars with thousands separators, after a green up or red down arrow
+  // for the last price change (no arrow until the price first changes); dimmed
+  // after a failed fetch.
   ethLabel(t) {
     const dollars = Math.round(this.ethPrice).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    return div().when(this.ethFailed, (el) => el.text_color(t.dim)).child(`ETH $${dollars}`);
+    const up = this.ethDir === "up";
+    return h_flex().gap(5).items_center()
+      .when(this.ethDir != null, (el) => el.child(div().text_color(up ? t.ansi2 : t.ansi1).child(up ? "▲" : "▼")))
+      .child(div().text_color(this.ethFailed ? t.dim : t.foreground).child(`ETH $${dollars}`));
   }
 
   // The palette key as actually bound, not a hardcoded one; without a
@@ -112,15 +120,17 @@ export default class WorkspaceStatus extends View {
     const space = spaces().find(s => s.active);
     const list = agents();
     const needs = list.filter(a => a.status === "blocked").length;
-    const label = (icon, text) => h_flex().gap(6).items_center().child(svg(`mods/workspace-chrome/${icon}.svg`).size(13)).child(text);
-    return h_flex().size_full().px(14).gap(16).items_center().bg(t.chrome).border_t(1).border_color(t.border).text_size(11.8).text_color(t.muted)
-      .child(label(space?.machine ? "server" : "monitor", space?.machine ?? "This computer"))
-      .when(Boolean(space?.branch), el => el.child(label("branch", space.branch)))
-      .child(h_flex().gap(6).items_center().child(div().size(6).rounded(3).bg(t.dim)).child(`${list.length} agents`)
+    // The dot takes the color of the most urgent agent: needs you, working, done, else idle.
+    const top = ["blocked", "working", "done"].find(s => list.some(a => a.status === s)) ?? "idle";
+    const label = (icon, color, text) => h_flex().gap(6).items_center().child(svg(`mods/workspace-chrome/${icon}.svg`).size(13).text_color(color)).child(text);
+    return h_flex().size_full().px(14).gap(16).items_center().bg(t.chrome).border_t(1).border_color(t.border).text_size(11.8).text_color(t.foreground)
+      .child(label(space?.machine ? "server" : "monitor", t.ansi4, space?.machine ?? "This computer"))
+      .when(Boolean(space?.branch), el => el.child(label("branch", t.ansi6, space.branch)))
+      .child(h_flex().gap(6).items_center().child(div().size(6).rounded(3).bg(t[top])).child(`${list.length} agents`)
         .when(needs > 0, el => el.child(div().text_color(t.blocked).child(`· ${needs} needs you`))))
       .when(this.ethPrice != null, el => el.child(this.ethLabel(t)))
       .when(Boolean(this.limitsLabel(t)), el => el.child(this.limitsLabel(t)))
       .child(div().flex_1())
-      .child(div().id("palette").text_color(t.dim).on_click(() => run("app.palette")).child(this.hint(t)));
+      .child(div().id("palette").text_color(t.muted).on_click(() => run("app.palette")).child(this.hint(t)));
   }
 }
