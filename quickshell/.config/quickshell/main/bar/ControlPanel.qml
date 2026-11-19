@@ -1,8 +1,9 @@
 pragma ComponentBehavior: Bound
 
-// The control panel: power mode, Wi-Fi networks, volume, brightness and the
-// toggles from ToggleList. It opens from the control icons, flush with the
-// right end of the bar. Wi-Fi scanning runs only while it is open.
+// The control panel: power mode, Wi-Fi networks, volume, brightness, the
+// toggles from ToggleList, and a power icon that opens the session menu
+// (see Launcher). It opens from the control icons, flush with the right end
+// of the bar. Wi-Fi scanning runs only while it is open.
 import QtQuick
 import Quickshell
 import qs
@@ -166,6 +167,21 @@ BarPopup {
                 text: modelData.text
                 checked: modelData.on
                 onClicked: modelData.activated()
+            }
+        }
+    }
+
+    Item {
+        width: root.contentWidth
+        height: Style.buttonSize
+
+        IconButton {
+            anchors.right: parent.right
+            icon: "󰐥"
+            iconColor: Theme.dim
+            onClicked: {
+                Launcher.open("session");
+                root.visible = false;
             }
         }
     }
