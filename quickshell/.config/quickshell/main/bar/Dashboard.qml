@@ -43,12 +43,11 @@ BarPopup {
         width: calendar.width
     }
 
-    // The time in a sunken glass display.
+    // The time in a glass display.
     RoundRect {
         width: calendar.width
         height: Style.displayHeight
         color: Theme.glass
-        edge: "sunken"
 
         Label {
             anchors.fill: parent

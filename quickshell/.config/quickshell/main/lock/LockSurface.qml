@@ -1,11 +1,11 @@
 pragma ComponentBehavior: Bound
 
-// Lock screen for one monitor, in the bar's style: the bar in its locked
-// form along the top, and the hub's time display grown into a large display
-// in the middle, with the password slot and the keyboard state below it.
-// Once the blur is up, the display grows out of the hub's place in the bar;
-// after a correct password it shrinks back before the lock is released. The
-// area around it is transparent, so the compositor's blurred desktop shows
+// Lock screen for one monitor, in the style of the bar and the launcher:
+// the bar in its locked form along the top, and a panel in the middle with
+// the time, the date, the password field and the keyboard state. Once the
+// blur is up, the panel grows out of the clock's place in the bar; after a
+// correct password it shrinks back before the lock is released. The area
+// around it is transparent, so the compositor's blurred desktop shows
 // through.
 import QtQuick
 import Quickshell
@@ -21,15 +21,24 @@ Item {
     required property ShellScreen screen
 
     readonly property bool open: context.blurReady && !context.unlocking
-    // 0 while the display sits in the hub, 1 once it has grown.
+    // 0 while the panel sits in the hub, 1 once it has grown.
     property real progress: open ? 1 : 0
     readonly property rect hubRect: bar.hubRect
-    readonly property int displayWidth: Math.ceil(timeMetrics.advanceWidth) + 2 * Style.lockPadding
-    readonly property int displayHeight: 2 * Style.lockPadding + Style.lockTimeCap + Style.lockGap + Style.lockTextCap
-    // The display, the slot and the status row, centered on the screen.
-    readonly property int blockHeight: displayHeight + Style.lockGap + Style.lockFieldHeight + Style.lockGap + Style.pillHeight
-    readonly property rect displayRect: Qt.rect(Math.round((width - displayWidth) / 2),
-        Math.round((height - blockHeight) / 2), displayWidth, displayHeight)
+    // The password field is wide enough for lockMinDots dots and the cursor;
+    // longer passwords show their last dots.
+    readonly property int cursorWidth: Math.round(Style.lockTextSize * 0.55)
+    readonly property int fieldWidth: Math.max(Style.lockFieldWidth,
+        Style.lockPadding + Style.lockMinDots * (Style.lockDotSize + Style.lockDotGap) + cursorWidth)
+    // The panel, centered on the screen: the time, the date, the password
+    // field and the keyboard state, each a gap apart.
+    readonly property int panelWidth: Math.max(Math.ceil(timeMetrics.advanceWidth), fieldWidth) + 2 * Style.lockPadding
+    readonly property int panelHeight: 2 * Style.lockPadding + Style.lockTimeCap + Style.lockGap + Style.lockTextCap
+        + Style.lockGap + Style.lockFieldHeight + Style.lockGap + Style.pillHeight
+    readonly property rect panelRect: Qt.rect(Math.round((width - panelWidth) / 2),
+        Math.round((height - panelHeight) / 2), panelWidth, panelHeight)
+    // The top of the date, the password field and the keyboard state.
+    readonly property int dateTop: panelRect.y + Style.lockPadding + Style.lockTimeCap + Style.lockGap
+    readonly property int fieldTop: dateTop + Style.lockTextCap + Style.lockGap
     // Where the time sits in the hub: first in a centered row with a divider
     // and the date.
     readonly property real hubTimeX: hubRect.x + Math.round((hubRect.width - smallTimeMetrics.advanceWidth - 2 * Style.popupSpacing - 1 - hubDate.implicitWidth) / 2)
@@ -107,22 +116,23 @@ Item {
         locked: true
     }
 
-    // The lock display, growing out of the clock's place in the bar and
-    // fading in as it grows.
+    // The panel, growing out of the clock's place in the bar and fading in
+    // as it grows.
     RoundRect {
-        id: display
+        id: panel
 
-        x: Math.round(root.mix(root.hubRect.x, root.displayRect.x))
-        y: Math.round(root.mix(root.hubRect.y, root.displayRect.y))
-        width: Math.round(root.mix(root.hubRect.width, root.displayRect.width))
-        height: Math.round(root.mix(root.hubRect.height, root.displayRect.height))
+        x: Math.round(root.mix(root.hubRect.x, root.panelRect.x))
+        y: Math.round(root.mix(root.hubRect.y, root.panelRect.y))
+        width: Math.round(root.mix(root.hubRect.width, root.panelRect.width))
+        height: Math.round(root.mix(root.hubRect.height, root.panelRect.height))
         radius: Math.round(root.mix(Style.panelRadius, Style.surfaceRadius))
         opacity: root.progress
-        color: Theme.glass
-        edge: "sunken"
+        color: Theme.barFill
+        outline: Theme.outline
+        edge: "raised"
     }
 
-    // The hub's divider and date, fading out as the display leaves the bar.
+    // The hub's divider and date, fading out as the panel leaves the bar.
     Divider {
         x: root.hubTimeX + Math.ceil(smallTimeMetrics.advanceWidth) + Style.popupSpacing
         y: root.hubRect.y
@@ -142,8 +152,8 @@ Item {
     // The time, drawn at the large size and scaled down to the hub's size
     // while in the bar, so it is sharp once grown.
     Label {
-        readonly property real centerX: root.mix(root.hubTimeX + smallTimeMetrics.advanceWidth / 2, root.displayRect.x + root.displayRect.width / 2)
-        readonly property real centerY: root.mix(root.hubRect.y + root.hubRect.height / 2, root.displayRect.y + Style.lockPadding + Style.lockTimeCap / 2)
+        readonly property real centerX: root.mix(root.hubTimeX + smallTimeMetrics.advanceWidth / 2, root.panelRect.x + root.panelRect.width / 2)
+        readonly property real centerY: root.mix(root.hubRect.y + root.hubRect.height / 2, root.panelRect.y + Style.lockPadding + Style.lockTimeCap / 2)
 
         x: Math.round(centerX - width / 2)
         y: Math.round(centerY - height / 2)
@@ -156,8 +166,9 @@ Item {
     }
 
     Label {
-        anchors.horizontalCenter: display.horizontalCenter
-        y: display.y + display.height - Style.lockPadding - Style.lockTextCap
+        anchors.horizontalCenter: panel.horizontalCenter
+        // Moves with the panel while it grows.
+        y: Math.round(root.mix(root.hubRect.y, root.dateTop))
         height: Style.lockTextCap
         opacity: Math.max(0, (root.progress - 0.6) / 0.4)
         text: clock.date.toLocaleDateString(Qt.locale("en_GB"), "dddd d MMMM yyyy")
@@ -166,7 +177,7 @@ Item {
         color: Theme.dim
     }
 
-    // The password slot and the keyboard state, fading in once the display
+    // The password field and the keyboard state, fading in once the panel
     // has grown and out first when it shrinks back.
     Item {
         anchors.fill: parent
@@ -189,15 +200,12 @@ Item {
 
             readonly property bool failed: root.context.showFailure
 
-            // Wide enough for lockMinDots dots and the cursor; longer passwords
-            // show their last maxDots dots.
-            readonly property int cursorWidth: Math.round(Style.lockTextSize * 0.55)
-            readonly property int maxDots: Math.max(0, Math.floor((width - Style.lockPadding - cursorWidth) / (Style.lockDotSize + Style.lockDotGap)))
+            // How many dots fit; longer passwords show their last ones.
+            readonly property int maxDots: Math.max(0, Math.floor((width - Style.lockPadding - root.cursorWidth) / (Style.lockDotSize + Style.lockDotGap)))
 
-            x: Math.round((root.width - width) / 2)
-            y: root.displayRect.y + root.displayRect.height + Style.lockGap
-            width: Math.max(Style.lockFieldWidth,
-                Style.lockPadding + Style.lockMinDots * (Style.lockDotSize + Style.lockDotGap) + cursorWidth)
+            x: root.panelRect.x + Style.lockPadding
+            y: root.fieldTop
+            width: root.panelRect.width - 2 * Style.lockPadding
             height: Style.lockFieldHeight
             radius: Style.panelRadius
             color: failed ? Theme.bad : "transparent"
@@ -207,8 +215,6 @@ Item {
                 anchors.fill: parent
                 radius: parent.radius
                 color: Theme.glass
-                outline: input.activeFocus ? Theme.accentFill : Theme.outline
-                edge: "sunken"
             }
 
             // Takes the keystrokes; the slot shows dots and a block cursor instead.
@@ -252,7 +258,7 @@ Item {
                 // A block cursor that does not blink.
                 Item {
                     visible: input.activeFocus && input.enabled && !slot.failed
-                    width: slot.cursorWidth
+                    width: root.cursorWidth
                     height: parent.height
 
                     Rectangle {

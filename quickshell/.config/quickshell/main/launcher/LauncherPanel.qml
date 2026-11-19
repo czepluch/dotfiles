@@ -157,7 +157,6 @@ RoundRect {
             width: root.listWidth
             height: Style.launcherField
             color: Theme.glass
-            edge: "sunken"
 
             Label {
                 x: Style.launcherInset

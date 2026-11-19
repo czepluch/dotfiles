@@ -89,8 +89,9 @@ Singleton {
     readonly property int alertPadding: 5
     readonly property int dividerHeight: 17
 
-    // Lock screen: the large time, the date and password text,
-    // padding inside the display and gaps between its parts.
+    // Lock screen: the large time, the date and password text, padding
+    // inside the panel, gaps between its parts, and the least width of the
+    // password field.
     readonly property int lockTimeSize: 136
     readonly property int lockTextSize: 22
     readonly property int lockTimeCap: capOf(lockTimeMetrics, "0")

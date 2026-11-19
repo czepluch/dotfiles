@@ -1,5 +1,4 @@
-// A bar graph of recent values, newest at the right, in a sunken glass
-// panel. Values are mapped from minimum..maximum to the inner height; the
+// A bar graph of recent values, newest at the right, in a glass panel. Values are mapped from minimum..maximum to the inner height; the
 // graph shows as many of the newest values as fit its width. Bars at or
 // above warnAt are in the warning color, at or above alertAt in red.
 import QtQuick
@@ -23,7 +22,6 @@ RoundRect {
     implicitHeight: Style.rowHeight - 2 * Style.buttonInset
     radius: Style.cellRadius
     color: Theme.glass
-    edge: "sunken"
 
     Repeater {
         model: root.count
