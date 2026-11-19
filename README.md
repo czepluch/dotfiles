@@ -64,9 +64,9 @@ Each directory is a "stow package" that contains configs symlinked to `~/`:
 
 ### Linux-Only (Wayland/Hyprland)
 - **hypr** - Hyprland compositor configuration
-- **waybar** - Former status bar, no longer started (the Quickshell bar replaced it); `dnd.sh` in it is still used by SUPER+N
-- **mako** - Notification daemon configuration
-- **quickshell** - Bar and lock screen in QML, run as `qs -c main` by `quickshell.service`; `bar-test.qml` shows a second bar along the bottom for trying changes
+- **waybar** - Former status bar, no longer started (the Quickshell bar replaced it)
+- **mako** - Former notification daemon, no longer started (the Quickshell bar shows notifications)
+- **quickshell** - Bar, notifications and lock screen in QML, run as `qs -c main` by `quickshell.service`; `bar-test.qml` shows a second bar along the bottom for trying changes. A D-Bus service file makes the session bus start `quickshell.service`, not mako, for `org.freedesktop.Notifications`
 - **fuzzel** - Application launcher
 - **btop** - System monitor
 - **podman** - Container runtime configuration

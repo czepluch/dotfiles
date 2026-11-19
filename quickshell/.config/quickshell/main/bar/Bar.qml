@@ -4,10 +4,11 @@ pragma ComponentBehavior: Bound
 // with a fixed reserved height so nothing in it ever moves windows. Its
 // content is BarContent. The window is as tall as the screen, so that a
 // popup opens inside it without a resize (a resize ends the focus grab that
-// closes it), but it takes clicks only on the bar and the open popup. While
-// a popup is open it accepts the keyboard on demand, and the focus grab
-// hands it over, for Escape. While keep awake is on, each bar holds an idle
-// inhibitor.
+// closes it), but it takes clicks only on the bar, the open popup and what
+// drops down under the clock. While a popup is open it accepts the keyboard
+// on demand, and the focus grab hands it over, for Escape. While keep awake
+// is on, each bar holds an idle inhibitor. Notifications pop up below the
+// clock unless a dashboard is open.
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -35,6 +36,12 @@ Scope {
         }
     }
 
+    Binding {
+        target: Notifications
+        property: "listOpen"
+        value: bars.instances.some(bar => bar.dashboardOpen)
+    }
+
     Variants {
         id: bars
 
@@ -44,6 +51,7 @@ Scope {
             id: barWindow
 
             required property ShellScreen modelData
+            readonly property bool dashboardOpen: content.dashboardOpen
 
             function togglePopup(name: string) {
                 content.togglePopup(content.popupNamed(name));
@@ -63,7 +71,8 @@ Scope {
             color: "transparent"
             WlrLayershell.namespace: "quickshell:bar"
             WlrLayershell.keyboardFocus: content.openPopup ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
-            // Clicks land on the bar and the open popup only.
+            // Clicks land on the bar, the open popup and what drops down under
+            // the clock only.
             mask: Region {
                 x: content.barRect.x
                 y: content.barRect.y
@@ -76,6 +85,14 @@ Scope {
                     y: content.openPopup?.y ?? 0
                     width: content.openPopup?.width ?? 0
                     height: content.openPopup?.height ?? 0
+                }
+
+                Region {
+                    intersection: Intersection.Combine
+                    x: content.dropRect.x
+                    y: content.dropRect.y
+                    width: content.dropRect.width
+                    height: content.dropRect.height
                 }
             }
 

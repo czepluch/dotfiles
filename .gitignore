@@ -18,9 +18,11 @@ Thumbs.db
 *.local
 *_local
 
-# But keep the stow packages whose layout requires <pkg>/.local/bin/
+# But keep the stow packages that install into ~/.local/
 !bin/.local/
 !bin/.local/**
+!quickshell/.local/
+!quickshell/.local/**
 !screensaver/.local/
 !screensaver/.local/**
 !xdg/.local/

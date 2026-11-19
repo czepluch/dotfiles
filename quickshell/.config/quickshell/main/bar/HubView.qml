@@ -1,5 +1,5 @@
-// One state of the hub's time part: a centered row that slides down into
-// view when shown and up out of view when hidden.
+// One message of OsdRow: a centered row that slides down into view when
+// shown and up out of view when hidden.
 import QtQuick
 import qs.components
 

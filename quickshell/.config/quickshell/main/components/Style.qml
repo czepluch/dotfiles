@@ -43,6 +43,16 @@ Singleton {
     // Space between buttons in a popup grid.
     readonly property int gap: 6
 
+    // Notifications: the width of one, its icon, and the most and the
+    // least height of the dashboard's list before it scrolls. The width of a
+    // short message under the clock, which makes its popup as wide as the
+    // clock's area.
+    readonly property int notificationWidth: 420
+    readonly property int notificationIcon: 32
+    readonly property int historyHeight: 600
+    readonly property int historyMinHeight: 120
+    readonly property int messageWidth: 228
+
     // Corner radii: surfaces, panels, and cells and chips; and the curves
     // where a popup joins the bar.
     readonly property int surfaceRadius: 12

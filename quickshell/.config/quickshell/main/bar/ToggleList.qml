@@ -14,8 +14,8 @@ Singleton {
             text: "Do not disturb"
             chip: "DND"
             chipColor: Theme.warn
-            on: Toggles.dnd
-            onActivated: Toggles.toggleDnd()
+            on: Notifications.dnd
+            onActivated: Notifications.dnd = !Notifications.dnd
         },
         ToggleItem {
             text: "Keep awake"

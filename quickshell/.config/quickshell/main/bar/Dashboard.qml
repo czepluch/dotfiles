@@ -1,7 +1,11 @@
+pragma ComponentBehavior: Bound
+
 // The dashboard: the time with seconds, today's date and week, the
 // timezone, a month calendar, the weather now and for the next 3 days, the
-// next tasks from husk, and a section for recent notifications. It opens
-// centered under the time in the hub. The calendar starts on the current
+// next tasks from husk, and the notifications, newest first, with a button
+// that dismisses them all; the list scrolls when it is long. It opens
+// centered under the time in the hub, and a short message from Osd shows at
+// its top while the dashboard is open. The calendar starts on the current
 // month every time, the timezone and tasks are read again each time it
 // opens, and the weather is fetched again when it is older than 30 minutes.
 import QtQuick
@@ -12,6 +16,10 @@ import qs.services
 
 BarPopup {
     id: root
+
+    // The height it can take before it reaches the far edge of the screen;
+    // the notification list scrolls to stay within it.
+    property real room: Infinity
 
     onVisibleChanged: {
         if (!visible)
@@ -28,6 +36,11 @@ BarPopup {
 
         precision: SystemClock.Seconds
         enabled: root.visible
+    }
+
+    OsdRow {
+        visible: Osd.message !== ""
+        width: calendar.width
     }
 
     // The time in a sunken glass display.
@@ -176,13 +189,70 @@ BarPopup {
         color: Theme.divider
     }
 
-    SectionLabel {
-        text: "Notifications"
+    Item {
+        width: calendar.width
+        height: Style.sectionHeight
+
+        SectionLabel {
+            text: "Notifications"
+        }
+
+        Clickable {
+            visible: Notifications.list.length > 0
+            anchors.right: parent.right
+            anchors.rightMargin: -Style.labelSpacing
+            anchors.verticalCenter: parent.verticalCenter
+            width: clearLabel.implicitWidth + 2 * Style.labelSpacing
+            height: Style.sectionHeight + 4
+            onClicked: Notifications.clear()
+
+            Label {
+                id: clearLabel
+
+                anchors.centerIn: parent
+                height: parent.height
+                text: "Clear all"
+                caps: true
+            }
+        }
+    }
+
+    ListView {
+        visible: count > 0
+        width: calendar.width
+        height: Math.min(contentHeight, Style.historyHeight,
+            Math.max(Style.historyMinHeight, root.room - 2 * Style.popupPadding - y))
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
+        spacing: Style.popupSpacing
+        model: Notifications.list
+
+        delegate: Column {
+            id: entry
+
+            required property var modelData
+            required property int index
+
+            spacing: Style.popupSpacing
+
+            Rectangle {
+                visible: entry.index > 0
+                width: calendar.width
+                height: 1
+                color: Theme.divider
+            }
+
+            NotificationRow {
+                width: calendar.width
+                notification: entry.modelData
+            }
+        }
     }
 
     Label {
+        visible: Notifications.list.length === 0
         height: Style.rowHeight
-        text: "Not available yet"
+        text: "No notifications"
         size: Style.smallSize
         color: Theme.dim
     }

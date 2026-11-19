@@ -4,9 +4,10 @@
 // with its right end. It continues the bar's surface: the same fill, and an
 // outline that curves out of the bar's edge into the popup's sides (the bar
 // leaves an opening there, see Surface). Flush with the bar's end, its side
-// runs straight on from the bar's side. It closes on Escape or when toggled
-// again; BarContent closes it on a click outside the bar. Children are
-// stacked in a padded column.
+// runs straight on from the bar's side. It takes the keyboard when it opens
+// and closes on Escape or when toggled again; BarContent closes it on a
+// click outside the bar. With takesFocus off it leaves the keyboard alone,
+// for content that only shows. Children are stacked in a padded column.
 import QtQuick
 import QtQuick.Shapes
 import qs
@@ -24,6 +25,8 @@ Item {
     property bool opensUp: false
     // Flush with the bar's right end instead of centered.
     property bool alignRight: false
+    property bool takesFocus: true
+    readonly property alias hovered: hover.hovered
     default property alias content: column.data
     property alias spacing: column.spacing
 
@@ -76,12 +79,16 @@ Item {
     width: implicitWidth
     height: implicitHeight
     visible: false
-    focus: visible
+    focus: takesFocus && visible
     onVisibleChanged: {
-        if (visible)
+        if (visible && takesFocus)
             forceActiveFocus();
     }
     Keys.onEscapePressed: visible = false
+
+    HoverHandler {
+        id: hover
+    }
 
     Shape {
         id: shape

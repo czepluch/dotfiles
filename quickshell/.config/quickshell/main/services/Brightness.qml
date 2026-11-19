@@ -1,9 +1,9 @@
 pragma Singleton
 
-// Laptop screen backlight. Read from /sys when refresh() is called (sysfs
-// cannot be watched), set through brightnessctl. While a set is running,
-// only the newest requested value is kept and applied next, and the value
-// is read back only after the last set.
+// Laptop screen backlight. Read from /sys at start and whenever the file
+// changes, set through brightnessctl. While a set is running, only the
+// newest requested value is kept and applied next, and the value is read
+// back only after the last set.
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -56,6 +56,11 @@ Singleton {
         id: brightnessFile
 
         path: root.available ? "/sys/class/backlight/" + root.device + "/brightness" : ""
+        watchChanges: true
+        onFileChanged: {
+            if (!setter.running)
+                reload();
+        }
         onLoaded: root.current = Number(text())
     }
 

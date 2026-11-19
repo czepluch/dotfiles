@@ -1,6 +1,7 @@
 //@ pragma NativeTextRendering
 //@ pragma IconTheme Adwaita
-// Quickshell entry point: the bar on every screen and the lock screen.
+// Quickshell entry point: the bar on every screen, which also shows the
+// notifications, and the lock screen.
 // Run with: qs -c main
 import Quickshell
 import qs.bar
