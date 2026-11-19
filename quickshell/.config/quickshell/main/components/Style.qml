@@ -74,6 +74,13 @@ Singleton {
     readonly property int launcherRowGap: Math.round(2 * launcherScale)
     readonly property int previewWidth: Math.round(80 * launcherScale)
     readonly property int previewHeight: Math.round(44 * launcherScale)
+    // Theme pickers: the smaller text under a wallpaper, a color swatch and
+    // the space between swatches, and the wallpapers per row.
+    readonly property int launcherSmallSize: Math.round(11 * launcherScale)
+    readonly property int launcherSmallCap: capOf(launcherSmallMetrics, "H")
+    readonly property int swatchSize: Math.round(13 * launcherScale)
+    readonly property int swatchGap: Math.round(3 * launcherScale)
+    readonly property int wallpaperColumns: 4
 
     // Corner radii: surfaces, panels, and cells and chips; and the curves
     // where a popup joins the bar.
@@ -151,6 +158,8 @@ Singleton {
             return lockTextCap;
         case launcherSize:
             return launcherCap;
+        case launcherSmallSize:
+            return launcherSmallCap;
         default:
             return capHeight;
         }
@@ -195,6 +204,13 @@ Singleton {
 
         font.family: Theme.fontFamily
         font.pixelSize: root.lockTextSize
+    }
+
+    FontMetrics {
+        id: launcherSmallMetrics
+
+        font.family: Theme.fontFamily
+        font.pixelSize: root.launcherSmallSize
     }
 
     FontMetrics {

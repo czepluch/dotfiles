@@ -52,11 +52,8 @@ hypridle falls back to hyprlock when Quickshell is not running.
 
 ## 5. Quickshell theme switcher
 
-A panel in the Quickshell shell for choosing a palette from `themes/palettes/`, applied live.
+Built: SUPER+W opens the palette picker and SUPER+SHIFT+W the wallpaper picker in the Quickshell launcher (see `themes/SPEC.md`, "Quickshell pickers").
+Both apply each entry while browsing and go back on Escape.
 
-Before building, compare how caelestia, end-4, noctalia, DankMaterialShell and Omarchy switch themes instantly, and decide whether to reuse one of those approaches instead of writing our own.
-
-- One entry per palette, with its colors as swatches and its wallpaper as a thumbnail where the palette sets one.
-- Selecting an entry runs `theme-set <palette>`; Quickshell and the apps `theme-set` reloads recolor at once (btop, yazi and lazygit still need a restart).
-- Opens from the dashboard, the control panel or a keybind; arrow keys move, Enter applies, Escape closes.
-- `theme-set` writes only to `~/.config/themes/`, so switching never changes files tracked in git.
+Left open:
+- GTK3/4 colours (adw-gtk3, a `gtk.css` template, `gsettings color-scheme`) and a qt6ct colour template.

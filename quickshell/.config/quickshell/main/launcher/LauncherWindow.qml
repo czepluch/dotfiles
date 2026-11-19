@@ -33,7 +33,7 @@ PanelWindow {
     HyprlandFocusGrab {
         active: root.visible
         windows: [root]
-        onCleared: Launcher.close()
+        onCleared: Launcher.cancel()
     }
 
     LauncherPanel {

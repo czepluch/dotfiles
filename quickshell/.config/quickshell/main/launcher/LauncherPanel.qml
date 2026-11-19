@@ -1,13 +1,17 @@
 pragma ComponentBehavior: Bound
 
-// The panel of the app launcher, the session menu and the clipboard history
-// (see Launcher): a search field and a list. Typing filters the list; Up
-// and Down (or Ctrl+K and Ctrl+J) move the selection, Enter or a click runs
-// it, Escape closes. Log out, Reboot and Power off ask first: the first
-// press turns the entry red, and a second one within 3 s runs it. In the
-// clipboard history, an × on the entry under the mouse deletes it, and
-// "Clear all" in the search field deletes them all after the same second
-// press. The panel keeps its size while the list gets shorter.
+// The panel of the app launcher, the session menu, the clipboard history
+// and the palette and wallpaper pickers (see Launcher): a search field and
+// a list (a grid for the wallpapers). Typing filters it; Up and Down (or
+// Ctrl+K and Ctrl+J) move the selection, and Left and Right in the grid;
+// Enter or a click runs it, Escape closes. Log out, Reboot and Power off ask
+// first: the first press turns the entry red, and a second one within 3 s
+// runs it. In the clipboard history, an × on the entry under the mouse
+// deletes it, and "Clear all" in the search field deletes them all after
+// the same second press. The theme pickers start on the palette or
+// wallpaper in use and apply each one the selection moves to (see Themes);
+// Enter keeps it, and closing any other way goes back. The panel keeps its
+// size while the list gets shorter.
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
@@ -19,14 +23,22 @@ RoundRect {
     id: root
 
     readonly property string mode: Launcher.mode
-    // Width of the list before Style.launcherScale and number of rows of
-    // Style.launcherRow it shows.
+    // Width of the list before Style.launcherScale, number of rows it shows
+    // and their height (in the wallpaper grid, tileHeight).
     readonly property var layout: ({
-            apps: { width: 420, rows: 8, placeholder: "Search apps" },
-            session: { width: 260, rows: 5, placeholder: "Session" },
-            clipboard: { width: 560, rows: 10, placeholder: "Search clipboard" }
-        })[mode] ?? { width: 420, rows: 8, placeholder: "" }
+            apps: { width: 420, rows: 8, rowHeight: Style.launcherRow, placeholder: "Search apps" },
+            session: { width: 260, rows: 5, rowHeight: Style.launcherRow, placeholder: "Session" },
+            clipboard: { width: 560, rows: 10, rowHeight: Style.launcherRow, placeholder: "Search clipboard" },
+            palettes: { width: 560, rows: 6, rowHeight: Style.launcherImageRow, placeholder: "Search palettes" },
+            wallpapers: { width: 560, rows: 3, rowHeight: 0, placeholder: "Search wallpapers" }
+        })[mode] ?? { width: 420, rows: 8, rowHeight: Style.launcherRow, placeholder: "" }
     readonly property int listWidth: Math.round(layout.width * Style.launcherScale)
+    readonly property bool themeMode: mode === "palettes" || mode === "wallpapers"
+    readonly property bool grid: mode === "wallpapers"
+    // A cell of the wallpaper grid; the tile in it leaves a gap.
+    readonly property int tileWidth: Math.floor(listWidth / Style.wallpaperColumns)
+    readonly property int tileHeight: Math.round((tileWidth - Style.launcherRowGap - 2 * Style.launcherEdge) * 0.625)
+        + 4 * Style.launcherEdge + Style.launcherSmallCap + Style.launcherRowGap
     readonly property var sessionItems: [
         { name: "Lock", glyph: "󰌾", run: () => Quickshell.execDetached(["loginctl", "lock-session"]) },
         { name: "Log out", glyph: "󰍃", confirm: true, run: () => Hyprland.dispatch("hl.dsp.exit()") },
@@ -43,6 +55,9 @@ RoundRect {
     // Where the mouse was last seen over the list, in window coordinates;
     // null until it is first seen after opening.
     property var pointer: null
+    // The theme pickers apply the selection once they start on the entry in
+    // use.
+    property bool previewing: false
     // Entries as { name, detail, icon, glyph, preview, confirm, run }.
     readonly property var items: {
         switch (mode) {
@@ -72,6 +87,26 @@ RoundRect {
                     remove: () => ClipHistory.remove(entry)
                 };
             });
+        case "palettes":
+            return Themes.palettes.filter(p => query.trim() === "" || Apps.score(p.name, query.trim().toLowerCase()) > 0).map(p => ({
+                        name: p.name,
+                        detail: p.name === Themes.startPalette ? "current" : "",
+                        preview: p.wallpaper !== "" ? Themes.previews[p.wallpaper] ?? "" : "",
+                        crop: true,
+                        image: true,
+                        // Shown until the preview is made, and for a palette without a wallpaper.
+                        block: { background: p.background, foreground: p.foreground },
+                        swatches: [p.accent].concat(p.colors).filter(c => c !== ""),
+                        current: p.name === Themes.startPalette,
+                        apply: () => Themes.applyPalette(p.name)
+                    }));
+        case "wallpapers":
+            return Themes.wallpapers.map(path => ({
+                        name: path.replace(/^.*\//, "").replace(/\.\w+$/, ""),
+                        preview: Themes.previews[path] ?? "",
+                        current: path === Themes.startWallpaper,
+                        apply: () => Themes.applyWallpaper(path)
+                    })).filter(w => query.trim() === "" || Apps.score(w.name, query.trim().toLowerCase()) > 0);
         default:
             return [];
         }
@@ -81,7 +116,25 @@ RoundRect {
         if (items.length === 0)
             return;
         selected = (selected + step + items.length) % items.length;
-        list.positionViewAtIndex(selected, ListView.Contain);
+        if (grid)
+            tiles.positionViewAtIndex(selected, GridView.Contain);
+        else
+            list.positionViewAtIndex(selected, ListView.Contain);
+    }
+
+    // Selects an entry when the mouse moves onto it, not when the list moves
+    // under a resting mouse.
+    function pointed(area, mouse, index) {
+        const p = area.mapToItem(null, mouse.x, mouse.y);
+        const moved = pointer !== null && (p.x !== pointer.x || p.y !== pointer.y);
+        pointer = p;
+        if (moved)
+            selected = index;
+    }
+
+    function applySelected() {
+        if (previewing)
+            items[selected]?.apply?.();
     }
 
     function activate(index) {
@@ -95,7 +148,10 @@ RoundRect {
             return;
         }
         Launcher.close();
-        item.run();
+        if (item.apply)
+            item.apply();
+        else
+            item.run();
     }
 
     function clearAll() {
@@ -109,6 +165,7 @@ RoundRect {
     }
 
     onModeChanged: {
+        previewing = false;
         field.text = "";
         selected = 0;
         confirming = -1;
@@ -116,6 +173,9 @@ RoundRect {
         pointer = null;
         if (mode === "clipboard")
             ClipHistory.refresh();
+        // Derived properties such as themeMode may not follow mode yet here.
+        if (mode === "palettes" || mode === "wallpapers")
+            Themes.begin();
         if (mode !== "")
             field.forceActiveFocus();
     }
@@ -123,10 +183,35 @@ RoundRect {
         selected = 0;
         confirming = -1;
         list.positionViewAtBeginning();
+        tiles.positionViewAtBeginning();
+        applySelected();
     }
     onSelectedChanged: {
         if (confirming !== selected)
             confirming = -1;
+        applySelected();
+    }
+
+    // Starts the theme pickers on the entry in use.
+    Connections {
+        target: Themes
+
+        function onReadyChanged() {
+            if (!Themes.ready || !root.themeMode || root.previewing)
+                return;
+            root.selected = Math.max(0, root.items.findIndex(item => item.current));
+            root.move(0);
+            root.previewing = true;
+        }
+    }
+
+    Connections {
+        target: Launcher
+
+        function onCancelled(mode) {
+            if (mode === "palettes" || mode === "wallpapers")
+                Themes.revert();
+        }
     }
 
     width: listWidth + 2 * Style.launcherPadding
@@ -180,11 +265,16 @@ RoundRect {
                 onTextChanged: root.query = text
                 Keys.onPressed: event => {
                     const ctrl = event.modifiers & Qt.ControlModifier;
+                    const row = root.grid ? Style.wallpaperColumns : 1;
                     if (event.key === Qt.Key_Escape)
-                        Launcher.close();
+                        Launcher.cancel();
                     else if (event.key === Qt.Key_Down || (ctrl && event.key === Qt.Key_J))
-                        root.move(1);
+                        root.move(row);
                     else if (event.key === Qt.Key_Up || (ctrl && event.key === Qt.Key_K))
+                        root.move(-row);
+                    else if (root.grid && event.key === Qt.Key_Right)
+                        root.move(1);
+                    else if (root.grid && event.key === Qt.Key_Left)
                         root.move(-1);
                     else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
                         root.activate(root.selected);
@@ -240,12 +330,13 @@ RoundRect {
         ListView {
             id: list
 
+            visible: !root.grid
             width: root.listWidth
-            height: root.layout.rows * (Style.launcherRow + spacing) - spacing
+            height: root.layout.rows * (root.layout.rowHeight + spacing) - spacing
             clip: true
             spacing: Style.launcherRowGap
             boundsBehavior: Flickable.StopAtBounds
-            model: root.items
+            model: root.grid ? [] : root.items
 
             delegate: LauncherRow {
                 id: row
@@ -259,19 +350,13 @@ RoundRect {
                 confirming: index === root.confirming
                 trailing: modelData.remove !== undefined ? remove.width + Style.launcherEdge : 0
 
-                // Selects the entry when the mouse moves onto it, not when the
-                // list moves under a resting mouse.
                 MouseArea {
+                    id: rowArea
+
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onPositionChanged: mouse => {
-                        const p = mapToItem(null, mouse.x, mouse.y);
-                        const moved = root.pointer !== null && (p.x !== root.pointer.x || p.y !== root.pointer.y);
-                        root.pointer = p;
-                        if (moved)
-                            root.selected = row.index;
-                    }
+                    onPositionChanged: mouse => root.pointed(rowArea, mouse, row.index)
                     onClicked: root.activate(row.index)
                 }
 
@@ -300,7 +385,52 @@ RoundRect {
                 visible: list.count === 0
                 width: list.width
                 height: Style.launcherRow
-                text: root.mode === "clipboard" && ClipHistory.items.length === 0 ? "Clipboard history is empty" : "No matches"
+                text: root.mode === "clipboard" && ClipHistory.items.length === 0 ? "Clipboard history is empty"
+                    : root.themeMode && !Themes.ready ? "Loading…" : "No matches"
+                size: Style.launcherSize
+                color: Theme.dim
+            }
+        }
+
+        GridView {
+            id: tiles
+
+            visible: root.grid
+            width: root.listWidth
+            height: root.layout.rows * cellHeight
+            clip: true
+            cellWidth: root.tileWidth
+            cellHeight: root.tileHeight
+            boundsBehavior: Flickable.StopAtBounds
+            model: root.grid ? root.items : []
+
+            delegate: LauncherTile {
+                id: tile
+
+                required property var modelData
+                required property int index
+
+                width: root.tileWidth - Style.launcherRowGap
+                height: root.tileHeight - Style.launcherRowGap
+                item: modelData
+                selected: index === root.selected
+
+                MouseArea {
+                    id: tileArea
+
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onPositionChanged: mouse => root.pointed(tileArea, mouse, tile.index)
+                    onClicked: root.activate(tile.index)
+                }
+            }
+
+            Label {
+                visible: tiles.count === 0
+                width: tiles.width
+                height: Style.launcherRow
+                text: !Themes.ready ? "Loading…" : "No matches"
                 size: Style.launcherSize
                 color: Theme.dim
             }

@@ -18,7 +18,8 @@ hl.bind(mainMod .. " + F",      hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + P",      hl.dsp.window.pseudo())              -- dwindle
 hl.bind(mainMod .. " + T",      hl.dsp.layout("togglesplit"))        -- dwindle
 hl.bind(mainMod .. " + Space",  hl.dsp.exec_cmd(menu))
-hl.bind(mainMod .. " + W",      hl.dsp.exec_cmd("~/dotfiles/themes/bin/theme-wallpaper --browse"), { description = "Wallpaper browser" })
+hl.bind(mainMod .. " + W",      hl.dsp.exec_cmd("qs -c main ipc call launcher toggle palettes"), { description = "Palette picker" })
+hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("qs -c main ipc call launcher toggle wallpapers"), { description = "Wallpaper picker" })
 hl.bind(mainMod .. " + N",      hl.dsp.exec_cmd("qs -c main ipc call notifications toggleDnd")) -- Do not disturb
 hl.bind(mainMod .. " + A",      hl.dsp.exec_cmd("~/.local/bin/husk-capture"), { description = "Quick task capture (husk)" }) -- full path: ~/.local/bin is not on Hyprland's PATH
 

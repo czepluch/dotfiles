@@ -45,8 +45,8 @@ ever touched by a palette switch.
 The theme toolkit (each command has its own --help):
   theme-set <palette>         Switch the active palette (this command)
   theme-apply                 Re-render current palette (after template edits)
-  theme-wallpaper             Switch wallpaper only: fuzzel picker by name,
-                              --browse for the yazi previewer (SUPER+W),
+  theme-wallpaper             Switch wallpaper only: Quickshell picker,
+                              --browse for the yazi previewer,
                               --save makes it the theme's permanent wallpaper
   wallpaper-theme <image>     Generate a palette FROM a wallpaper (wallust);
                               --browse to pick visually, --legible for
