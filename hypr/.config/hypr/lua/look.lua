@@ -34,6 +34,7 @@ hl.config({
 hl.layer_rule({ match = { namespace = "waybar" },        blur = true, blur_popups = true, ignore_alpha = 0.3 })
 hl.layer_rule({ match = { namespace = "notifications" }, blur = true, ignore_alpha = 0.3 })
 hl.layer_rule({ match = { namespace = "quickshell:bar" }, blur = true, blur_popups = true, ignore_alpha = 0.3 })
+hl.layer_rule({ match = { namespace = "quickshell:launcher" }, blur = true, ignore_alpha = 0.3 })
 
 --------------------------------------------------------------------------------
 -- Animations

@@ -53,6 +53,28 @@ Singleton {
     readonly property int historyMinHeight: 120
     readonly property int messageWidth: 228
 
+    // Launcher, session menu and clipboard history: everything in them is
+    // launcherScale times the size it would have in a popup (text, icons,
+    // rows, padding, widths), except the corner radii. Its text size, a
+    // row and a row with an image preview, an app icon, the search field,
+    // the panel's padding and spacing, the space between a row's edge and
+    // its icon and between parts of a row, the space between rows, and the
+    // largest image preview.
+    readonly property real launcherScale: 2
+    readonly property int launcherSize: Math.round(smallSize * launcherScale)
+    readonly property int launcherCap: capOf(launcherMetrics, "H")
+    readonly property int launcherRow: fit(Math.round(36 * launcherScale), launcherCap)
+    readonly property int launcherImageRow: fit(Math.round(56 * launcherScale), launcherCap)
+    readonly property int launcherIcon: Math.round(24 * launcherScale)
+    readonly property int launcherField: fit(Math.round((pillHeight + 8) * launcherScale), launcherCap)
+    readonly property int launcherPadding: Math.round(popupPadding * launcherScale)
+    readonly property int launcherSpacing: Math.round(popupSpacing * launcherScale)
+    readonly property int launcherEdge: Math.round(8 * launcherScale)
+    readonly property int launcherInset: Math.round(textPadding * launcherScale)
+    readonly property int launcherRowGap: Math.round(2 * launcherScale)
+    readonly property int previewWidth: Math.round(80 * launcherScale)
+    readonly property int previewHeight: Math.round(44 * launcherScale)
+
     // Corner radii: surfaces, panels, and cells and chips; and the curves
     // where a popup joins the bar.
     readonly property int surfaceRadius: 12
@@ -126,6 +148,8 @@ Singleton {
             return lockTimeCap;
         case lockTextSize:
             return lockTextCap;
+        case launcherSize:
+            return launcherCap;
         default:
             return capHeight;
         }
@@ -170,6 +194,13 @@ Singleton {
 
         font.family: Theme.fontFamily
         font.pixelSize: root.lockTextSize
+    }
+
+    FontMetrics {
+        id: launcherMetrics
+
+        font.family: Theme.fontFamily
+        font.pixelSize: root.launcherSize
     }
 
     FontMetrics {

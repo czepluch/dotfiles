@@ -5,7 +5,7 @@ local mainMod = "SUPER"
 -- Programs (were $terminal / $fileManager / $menu)
 local terminal    = "ghostty"
 local fileManager = "dolphin"
-local menu        = "fuzzel"
+local menu        = "qs -c main ipc call launcher toggle apps"
 
 --------------------------------------------------------------------------------
 -- Core
@@ -32,8 +32,8 @@ hl.bind(mainMod .. " + C", hl.dsp.exec_cmd([[hyprctl dispatch 'hl.dsp.send_short
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd([[hyprctl dispatch 'hl.dsp.send_shortcut({ mods = "SHIFT", key = "Insert" })']]))
 hl.bind(mainMod .. " + X", hl.dsp.exec_cmd([[hyprctl dispatch 'hl.dsp.send_shortcut({ mods = "CTRL", key = "X" })']]))
 
--- Clipboard manager
-hl.bind(mainMod .. " + CTRL + V", hl.dsp.exec_cmd("cliphist list | fuzzel --dmenu | cliphist decode | wl-copy"))
+-- Clipboard history (Quickshell picker over cliphist)
+hl.bind(mainMod .. " + CTRL + V", hl.dsp.exec_cmd("qs -c main ipc call launcher toggle clipboard"))
 
 --------------------------------------------------------------------------------
 -- Focus / move / resize
@@ -105,7 +105,7 @@ hl.bind("SHIFT + Print", hl.dsp.exec_cmd([[grim - | tee ~/pics/scrots/$(date +'%
 hl.bind("ALT + Print",   hl.dsp.exec_cmd([[grim -g "$(hyprctl activewindow -j | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"')" - | tee ~/pics/scrots/$(date +'%Y-%m-%d_%H-%M-%S.png') | wl-copy]]))
 
 --------------------------------------------------------------------------------
--- Session / power menu (replaces the old SUPER+M = exit). Fuzzel dmenu, themed
--- by the theme system; entries execute immediately, Escape cancels.
+-- Session / power menu (replaces the old SUPER+M = exit). Quickshell picker;
+-- Log out, Reboot and Power off ask for a second Enter, Escape cancels.
 --------------------------------------------------------------------------------
-hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("~/.config/hypr/scripts/power-menu.sh"), { description = "Session menu" })
+hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("qs -c main ipc call launcher toggle session"), { description = "Session menu" })
