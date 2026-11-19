@@ -1,7 +1,7 @@
 // One row of the weather table in the dashboard: a day label (or, in the
 // first row, the temperature now), the weather icon and description, the
-// high and low, and the chance of rain. Numbers are right-aligned in fixed
-// columns, so the rows line up.
+// high and low, and the chance of rain, yellow from 30% and red from 90%.
+// Numbers are right-aligned in fixed columns, so the rows line up.
 import QtQuick
 import qs
 import qs.components
@@ -156,7 +156,7 @@ Item {
             height: parent.height
             text: root.rain + "%"
             size: Style.smallSize
-            color: root.rain >= 30 ? Theme.info : Theme.dim
+            color: root.rain >= 90 ? Theme.bad : root.rain >= 30 ? Theme.warn : Theme.dim
         }
     }
 }
