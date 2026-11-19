@@ -24,7 +24,7 @@ Singleton {
     property alias dnd: persist.dnd
     // Set while a dashboard is open (see Bar).
     property bool listOpen: false
-    // Set while the mouse is over the popups.
+    // Set while the mouse is over the popups (see Bar).
     property bool paused: false
     readonly property int maxPopups: 3
     readonly property int defaultTimeout: 5000
@@ -98,11 +98,6 @@ Singleton {
     onListOpenChanged: {
         if (listOpen)
             clearPopups();
-    }
-
-    onPopupsChanged: {
-        if (popups.length === 0)
-            paused = false;
     }
 
     PersistentProperties {
