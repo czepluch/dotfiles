@@ -42,6 +42,8 @@ Item {
     // At most one popup is open at a time.
     readonly property Item openPopup: popups.find(popup => popup?.visible) ?? null
     readonly property bool dashboardOpen: dashboard.item?.visible ?? false
+    // The mouse is over the notification popups under the clock.
+    readonly property bool popupsHovered: drop.item?.pausing ?? false
     // This screen has Hyprland's focused monitor.
     readonly property bool focusedScreen: Hyprland.focusedMonitor !== null
         && Hyprland.focusedMonitor === Hyprland.monitorFor(screen)

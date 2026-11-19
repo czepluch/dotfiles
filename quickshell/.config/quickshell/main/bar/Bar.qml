@@ -8,7 +8,8 @@ pragma ComponentBehavior: Bound
 // drops down under the clock. While a popup is open it accepts the keyboard
 // on demand, and the focus grab hands it over, for Escape. While keep awake
 // is on, each bar holds an idle inhibitor. Notifications pop up below the
-// clock unless a dashboard is open.
+// clock unless a dashboard is open, and their timers pause while the mouse
+// is over them on any screen.
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -42,6 +43,12 @@ Scope {
         value: bars.instances.some(bar => bar.dashboardOpen)
     }
 
+    Binding {
+        target: Notifications
+        property: "paused"
+        value: bars.instances.some(bar => bar.popupsHovered)
+    }
+
     Variants {
         id: bars
 
@@ -52,6 +59,7 @@ Scope {
 
             required property ShellScreen modelData
             readonly property bool dashboardOpen: content.dashboardOpen
+            readonly property bool popupsHovered: content.popupsHovered
 
             function togglePopup(name: string) {
                 content.togglePopup(content.popupNamed(name));
