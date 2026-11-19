@@ -7,6 +7,7 @@ solidity = "latest"
 uv = "0.11.19"
 yarn = "1.22.22"
 zig = "master"
+"github:can1357/oh-my-pi" = "latest"
 
 # herdr-refresh rewrites the agent skill and agent integrations to match the
 # herdr version that was just installed. `mise install herdr` runs it on demand.

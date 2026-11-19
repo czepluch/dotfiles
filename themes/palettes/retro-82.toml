@@ -1,0 +1,27 @@
+# retro-82 - imported from Omarchy: https://github.com/basecamp/omarchy (MIT), theme 'retro-82'
+
+accent = "#faa968"
+cursor = "#f6dcac"
+foreground = "#f6dcac"
+background = "#05182e"
+selection_foreground = "#f6dcac"
+selection_background = "#134e5a"
+
+color0 = "#031222"
+color1 = "#f85525"
+color2 = "#028391"
+color3 = "#e97b3c"
+color4 = "#3f8f8a"
+color5 = "#3f8f8a"
+color6 = "#8cbfb8"
+color7 = "#f6dcac"
+color8 = "#2a6b78"
+color9 = "#f85525"
+color10 = "#028391"
+color11 = "#e97b3c"
+color12 = "#faa968"
+color13 = "#3f8f8a"
+color14 = "#8cbfb8"
+color15 = "#f6dcac"
+
+wallpaper = "~/pics/wallpapers/retro-82-1-in-the-groove.webp"
