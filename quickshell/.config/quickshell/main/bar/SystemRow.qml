@@ -1,0 +1,64 @@
+// One row of the system panel: an uppercase label, a value, a visual such
+// as a graph or meter, and a detail on the right. The panel sets the column
+// widths so all rows line up. The value is yellow while high (warn) and red
+// while critical (alert).
+import QtQuick
+import qs
+import qs.components
+
+Item {
+    id: root
+
+    property string label: ""
+    property string value: ""
+    property string detail: ""
+    property bool warn: false
+    property bool alert: false
+    property int labelWidth: 0
+    property int valueWidth: 0
+    property int detailWidth: 0
+    // The visual, placed in its column and centered vertically.
+    default property alias visual: visualArea.data
+
+    implicitHeight: Style.rowHeight
+
+    Label {
+        height: parent.height
+        text: root.label
+        caps: true
+        capHeight: Style.smallCap
+    }
+
+    Item {
+        id: valueArea
+
+        x: root.labelWidth + Style.textPadding
+        width: root.valueWidth
+        height: parent.height
+
+        Label {
+            anchors.right: parent.right
+            height: parent.height
+            text: root.value
+            size: Style.smallSize
+            color: root.alert ? Theme.bad : root.warn ? Theme.warn : Theme.foreground
+        }
+    }
+
+    Item {
+        id: visualArea
+
+        x: valueArea.x + valueArea.width + Style.textPadding
+        width: root.width - x - (root.detailWidth > 0 ? root.detailWidth + Style.textPadding : 0)
+        height: parent.height
+    }
+
+    Label {
+        anchors.right: parent.right
+        height: parent.height
+        text: root.detail
+        size: Style.smallSize
+        color: Theme.dim
+        maxWidth: root.detailWidth
+    }
+}

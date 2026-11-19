@@ -16,10 +16,16 @@ quit() {
 }
 trap quit INT TERM HUP QUIT
 
-# hyprlock is a lock surface, not a window, so the active window stays ours
-# while the session is locked; check for it explicitly.
+# True while hyprlock or the Quickshell lock screen is up.
+locked() {
+  pgrep -x hyprlock >/dev/null ||
+    [[ $(qs -c main ipc call lock isLocked 2>/dev/null) == true ]]
+}
+
+# A lock screen is a lock surface, not a window, so the active window stays
+# ours while the session is locked; check for it explicitly.
 in_focus() {
-  ! pgrep -x hyprlock >/dev/null &&
+  ! locked &&
     hyprctl activewindow -j 2>/dev/null | jq -e --arg c "$class" '.class == $c' >/dev/null
 }
 

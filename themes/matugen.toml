@@ -49,6 +49,10 @@ output_path = "~/.config/themes/.staging/hypr-colors.lua"
 input_path = "templates/hyprlock.conf.tera"
 output_path = "~/.config/themes/.staging/hyprlock.conf"
 
+[templates.quickshell]
+input_path = "templates/quickshell-colors.json.tera"
+output_path = "~/.config/themes/.staging/quickshell-colors.json"
+
 [templates.starship]
 input_path = "templates/starship.toml.tera"
 output_path = "~/.config/themes/.staging/starship.toml"
