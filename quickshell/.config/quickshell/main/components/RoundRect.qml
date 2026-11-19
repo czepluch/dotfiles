@@ -1,6 +1,5 @@
-// A rectangle with round corners. It can have a 1 px outline, a 1 px edge
-// that makes it look raised (light top, dark bottom) or sunken (dark top,
-// light bottom).
+// A rectangle with round corners. It can have a 1 px outline and a 1 px
+// edge that makes it look raised (light top, dark bottom).
 import QtQuick
 import qs
 
@@ -8,7 +7,7 @@ Rectangle {
     id: root
 
     property color outline: "transparent"
-    // "flat", "raised" or "sunken".
+    // "flat" or "raised".
     property string edge: "flat"
 
     readonly property int edgeInset: outline.a > 0 ? 1 : 0
@@ -25,7 +24,7 @@ Rectangle {
         y: root.edgeInset
         width: root.width - 2 * root.radius
         height: 1
-        color: root.edge === "raised" ? Theme.edgeLight : Theme.edgeDeep
+        color: Theme.edgeLight
     }
 
     // Bottom edge.
@@ -35,6 +34,6 @@ Rectangle {
         y: root.height - 1 - root.edgeInset
         width: root.width - 2 * root.radius
         height: 1
-        color: root.edge === "raised" ? Theme.edgeDark : Theme.edgeFaint
+        color: Theme.edgeDark
     }
 }

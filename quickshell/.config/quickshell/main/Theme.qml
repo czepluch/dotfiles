@@ -45,12 +45,9 @@ Singleton {
     // Translucent fill of the bar and its popups. Hyprland only blurs behind
     // pixels with at least 30% opacity (ignore_alpha in look.lua).
     readonly property color barFill: Qt.alpha(background, 0.85)
-    // Edge lines: a raised panel has a light top edge and a dark bottom edge,
-    // a sunken one a deep top edge and a faint light bottom edge.
+    // Edge lines: a raised panel has a light top edge and a dark bottom edge.
     readonly property color edgeLight: Qt.alpha(foreground, 0.10)
     readonly property color edgeDark: Qt.rgba(0, 0, 0, 0.35)
-    readonly property color edgeDeep: Qt.rgba(0, 0, 0, 0.5)
-    readonly property color edgeFaint: Qt.alpha(foreground, 0.08)
     // State colors for text, icons and small fills: the palette's green,
     // yellow, red and cyan, each replaced by the foreground where it is too
     // close to the background to read.
