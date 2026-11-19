@@ -2,8 +2,7 @@ pragma ComponentBehavior: Bound
 
 // The center of the bar: the time with seconds and, after a divider, the
 // date, as text on the bar in the middle of the screen while there is room.
-// Short messages from Osd (volume, layout, the idle lock countdown) replace
-// them. Clicking anywhere in its area opens the dashboard.
+// Clicking anywhere in its area opens the dashboard.
 import QtQuick
 import Quickshell
 import qs
@@ -49,11 +48,10 @@ Item {
         width: root.timeWidth
         height: Style.pillHeight
         anchors.verticalCenter: parent.verticalCenter
-        clip: true
 
-        HubView {
-            anchors.fill: parent
-            shown: Osd.message === ""
+        Row {
+            anchors.centerIn: parent
+            spacing: Style.popupSpacing
 
             Label {
                 text: Qt.formatTime(clock.date, "HH:mm:ss")
@@ -65,83 +63,6 @@ Item {
 
             Label {
                 text: Qt.formatDate(clock.date, "ddd d MMM")
-            }
-        }
-
-        HubView {
-            anchors.fill: parent
-            shown: Osd.message === "volume"
-
-            Label {
-                text: Audio.icon
-            }
-
-            Item {
-                implicitWidth: meter.width
-                implicitHeight: Style.pillHeight
-
-                SegMeter {
-                    id: meter
-
-                    anchors.verticalCenter: parent.verticalCenter
-                    segments: 10
-                    value: Audio.muted ? 0 : Audio.volume
-                }
-            }
-
-            Label {
-                text: Audio.muted ? "MUTED" : String(Audio.percent).padStart(3, " ")
-            }
-        }
-
-        HubView {
-            anchors.fill: parent
-            shown: Osd.message === "layout"
-
-            Chip {
-                text: Keyboard.layout
-                fill: Theme.accentFill
-            }
-
-            Label {
-                text: Keyboard.shortName
-            }
-        }
-
-        // The last seconds before the idle lock, inverted.
-        HubView {
-            anchors.fill: parent
-            shown: Osd.message === "lock"
-
-            RoundRect {
-                anchors.fill: parent
-                anchors.topMargin: Style.buttonInset
-                anchors.bottomMargin: Style.buttonInset
-                radius: Style.cellRadius
-                color: Theme.foreground
-            }
-        }
-
-        HubView {
-            anchors.fill: parent
-            shown: Osd.message === "lock"
-
-            Label {
-                text: "󰌾"
-                color: Theme.background
-            }
-
-            Label {
-                text: "Locking in"
-                caps: true
-                capHeight: Style.capHeight
-                color: Theme.background
-            }
-
-            Label {
-                text: Osd.lockRemaining
-                bold: true
-                color: Theme.background
             }
         }
 

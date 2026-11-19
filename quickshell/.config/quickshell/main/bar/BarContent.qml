@@ -3,14 +3,16 @@ pragma ComponentBehavior: Bound
 // Everything drawn in one bar: the surface, the workspaces and the Hacker
 // News headline on the left, the hub (time) in the middle, and the tray,
 // chips, ETH price, hardware panel and control icons on the right, plus the
-// dashboard, system panel and control panel popups. The bar takes barHeight
-// at the top of this item (the bottom with atBottom), and an open popup sits
-// right under it (above it).
+// dashboard, system panel and control panel popups, and what drops down
+// under the clock without being opened (short messages and notifications,
+// see NotificationDrop). The bar takes barHeight at the top of this item
+// (the bottom with atBottom), and an open popup sits right under it (above
+// it).
 //
 // The lock screen shows the same bar with `locked` set: a lock symbol in
 // place of the workspaces, no headline, tray or hub (the lock screen draws
 // the time itself, starting from hubRect), status kept but not clickable,
-// and no popups.
+// and no popups or notifications.
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
@@ -39,8 +41,16 @@ Item {
     readonly property var popups: [dashboard.item, system.item, panel.item]
     // At most one popup is open at a time.
     readonly property Item openPopup: popups.find(popup => popup?.visible) ?? null
+    readonly property bool dashboardOpen: dashboard.item?.visible ?? false
+    // This screen has Hyprland's focused monitor.
+    readonly property bool focusedScreen: Hyprland.focusedMonitor !== null
+        && Hyprland.focusedMonitor === Hyprland.monitorFor(screen)
     // The bar's strip in this item's coordinates, for the input region.
     readonly property rect barRect: Qt.rect(0, atBottom ? height - barHeight : 0, width, barHeight)
+    // What drops down under the clock while it shows, for the input region.
+    readonly property rect dropRect: drop.item?.visible
+        ? Qt.rect(drop.item.x, drop.item.y, drop.item.width, drop.item.height)
+        : Qt.rect(0, 0, 0, 0)
 
     // Opens or closes a popup, closing the others: each one attaches to the
     // bar, and two side by side would overlap. The new popup opens before
@@ -82,8 +92,9 @@ Item {
         width: root.width - 2 * Style.screenMargin
         height: Style.height
         up: root.atBottom
-        // An opening for each open popup.
-        openings: root.popups
+        // An opening for each open popup and for what drops down under the
+        // clock.
+        openings: root.popups.concat([drop.item])
             .filter(popup => popup?.visible)
             .map(popup => ({
                 left: popup.x - x,
@@ -229,6 +240,26 @@ Item {
             barRight: surface.x + surface.width
             centerX: surface.x + hub.displayX + hub.timeWidth / 2
             opensUp: root.atBottom
+            room: root.atBottom ? surface.y - Style.screenMargin
+                : root.height - surface.y - surface.height - Style.screenMargin
+        }
+    }
+
+    Loader {
+        id: drop
+
+        active: !root.locked
+
+        sourceComponent: NotificationDrop {
+            y: root.atBottom ? surface.y - height : surface.y + surface.height
+            barLeft: surface.x
+            barRight: surface.x + surface.width
+            centerX: surface.x + hub.displayX + hub.timeWidth / 2
+            opensUp: root.atBottom
+            focused: root.focusedScreen
+            // The dashboard opens in its place; another popup may reach it on
+            // a narrow screen.
+            covered: root.popups.some(popup => popup?.visible && popup.x < x + width && x < popup.x + popup.width)
         }
     }
 

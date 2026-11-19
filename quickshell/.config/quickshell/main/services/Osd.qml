@@ -1,10 +1,12 @@
 pragma Singleton
 
-// Short messages the hub shows in place of the time: a volume change or a
-// keyboard layout switch for 2 s, and a countdown over the last 10 s before
-// the idle lock. The countdown uses the same times as hypridle's warning
-// (170 s) and lock (180 s) listeners in hypr/.config/hypr/hypridle.conf and
-// ends on any input.
+// Short messages shown under the clock: a change of volume or brightness,
+// a keyboard layout switch or do-not-disturb switched on or off for 2 s,
+// and a countdown over the last 10 s before the idle lock. The countdown
+// uses the same times as hypridle's warning (170 s) and lock (180 s)
+// listeners in hypr/.config/hypr/hypridle.conf and ends on any input.
+// hypridle's warning dims the screen and restores it when the countdown
+// ends; that restore shows no message.
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
@@ -12,7 +14,7 @@ import Quickshell.Wayland
 Singleton {
     id: root
 
-    // "" for none, "volume", "layout" or "lock".
+    // "" for none, "volume", "brightness", "layout", "dnd" or "lock".
     property string message: ""
     readonly property int lockWarning: 170
     readonly property int lockAfter: 180
@@ -23,7 +25,7 @@ Singleton {
     property bool armed: false
 
     function show(kind) {
-        if (!armed || message === "lock")
+        if (!armed || message === "lock" || (kind === "brightness" && restoring.running))
             return;
         message = kind;
         hold.restart();
@@ -65,6 +67,30 @@ Singleton {
         }
     }
 
+    Connections {
+        target: Notifications
+
+        function onDndChanged() {
+            root.show("dnd");
+        }
+    }
+
+    Connections {
+        target: Brightness
+
+        function onCurrentChanged() {
+            root.show("brightness");
+        }
+    }
+
+    // Runs for a moment after the countdown ends, while the brightness is
+    // restored.
+    Timer {
+        id: restoring
+
+        interval: 2000
+    }
+
     IdleMonitor {
         timeout: root.lockWarning
         respectInhibitors: true
@@ -76,6 +102,7 @@ Singleton {
             } else if (root.message === "lock") {
                 countdown.stop();
                 root.message = "";
+                restoring.restart();
             }
         }
     }
