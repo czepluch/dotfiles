@@ -4,13 +4,15 @@ pragma ComponentBehavior: Bound
 // Desktop notifications: the shell is the notification server
 // (org.freedesktop.Notifications). Every notification stays in `list`,
 // newest first, until it is dismissed, its app closes it or the shell
-// restarts. A new one, or one its app updates, also pops up: `popups`,
-// newest first, at most 3, older ones only leave the popups. Nothing pops
-// up during do-not-disturb, except a critical one, or while a dashboard
-// shows the list. A popup leaves after the app's timeout, or 5 s when the
-// app sets none, counted only while the popups are not paused (the mouse is
-// over them); a critical one, or one the app sets to never expire, stays
-// until it is dismissed. A transient one is closed when its popup leaves.
+// restarts. A new one that repeats one from the same app, with the same
+// summary and body, within 2 s is dropped. A new one, or one its app
+// updates, also pops up: `popups`, newest first, at most 3, older ones
+// only leave the popups. Nothing pops up during do-not-disturb, except a
+// critical one, or while a dashboard shows the list. A popup leaves after
+// the app's timeout, or 5 s when the app sets none, counted only while the
+// popups are not paused (the mouse is over them); a critical one, or one
+// the app sets to never expire, stays until it is dismissed. A transient
+// one is closed when its popup leaves.
 //
 // qs -c main ipc call notifications toggleDnd
 import QtQuick
@@ -28,6 +30,7 @@ Singleton {
     property bool paused: false
     readonly property int maxPopups: 3
     readonly property int defaultTimeout: 5000
+    readonly property int repeatWindow: 2000
     readonly property var list: Array.from(server.trackedNotifications.values).reverse()
     // The popups as { notification, left }, newest first: left is the time
     // in ms until it leaves, or -1 for never.
@@ -53,6 +56,15 @@ Singleton {
     function clear() {
         for (const notification of list)
             notification.dismiss();
+    }
+
+    // Whether the same app sent one with the same summary and body less
+    // than repeatWindow ms ago.
+    function isRepeat(notification) {
+        const now = Date.now();
+        return list.some(n => n !== notification && n.appName === notification.appName
+            && n.summary === notification.summary && n.body === notification.body
+            && now - timeOf(n) < repeatWindow);
     }
 
     // The time it arrived or was last updated, in ms since the epoch.
@@ -123,6 +135,10 @@ Singleton {
         // After a reload the server announces the notifications it kept
         // again; those keep their time and do not pop up again.
         onNotification: notification => {
+            if (!notification.lastGeneration && root.isRepeat(notification)) {
+                notification.expire();
+                return;
+            }
             notification.tracked = true;
             if (!notification.lastGeneration)
                 root.show(notification);
@@ -166,7 +182,7 @@ Singleton {
             const gone = [];
             for (const entry of root.entries) {
                 if (entry.left > 0)
-                    entry.left -= elapsed;
+                    entry.left = Math.max(0, entry.left - elapsed);
                 if (entry.left === -1 || entry.left > 0)
                     kept.push(entry);
                 else
