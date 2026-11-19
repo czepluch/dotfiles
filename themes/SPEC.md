@@ -160,8 +160,9 @@ Updates only the neovim colorscheme; prints a how-to and exits 1 when the
 palette has no `apps/<palette>/neovim.lua`.
 
 ### theme-wallpaper [--browse] [--save] [\<path\>]
-Switch the wallpaper without switching palettes. No path: fuzzel name picker
-over `~/pics/wallpapers/`. `--browse` (bound to SUPER+W): floating yazi
+Switch the wallpaper without switching palettes. No path: opens the
+wallpaper picker in the Quickshell launcher (SUPER+SHIFT+W).
+`--browse`: floating yazi
 window with full image previews - Enter applies, q cancels; uses yazi's
 `--chooser-file` mode and a `wallpaper.browser` window rule.
 Applies via hyprctl IPC and persists
@@ -170,6 +171,14 @@ until the next `theme-set` of a wallpaper-bearing palette. `--save`
 additionally writes the wallpaper into the active palette's TOML - the one
 deliberate git-tracked edit in the system; commit it when ready. theme-set
 delegates its wallpaper step to this script.
+
+### Quickshell pickers
+SUPER+W opens the palette picker and SUPER+SHIFT+W the wallpaper picker in
+the Quickshell launcher. Each runs `theme-set <palette>` or
+`theme-wallpaper <path>` as the selection moves, Enter keeps the choice, and
+Escape or a click outside runs them again with the palette and wallpaper
+from before. Their previews are ImageMagick thumbnails in Quickshell's
+cache directory.
 
 ### theme-import [theme-name]
 Imports a ghostty theme into a palette TOML (unchanged from the old engine;
@@ -180,7 +189,7 @@ Imports an Omarchy theme (MIT) as a tracked palette. `--list` prints every
 built-in theme with the URL of its upstream preview screenshot and marks
 names that already exist as local palettes. `--browse` downloads those
 screenshots into `~/.cache/omarchy-import/` (once) and opens the floating
-yazi browser over them, the same window SUPER+W uses, so themes can be
+yazi browser over them, the same window `theme-wallpaper --browse` uses, so themes can be
 compared side by side; Enter imports the pick (an existing palette is kept
 as is), `--browse --apply` also switches to it, q cancels.
 Accepts a built-in
@@ -191,8 +200,8 @@ the page). Handles both colors.toml dialects: basecamp's named colors
 flat format (which is exactly our 22-key schema - passthrough). Downloads
 the theme's primary background into `~/pics/wallpapers/` by default and
 sets it as the palette wallpaper; `--all-wallpapers` grabs the theme's
-whole background set (typically 1-8 images, a few MB) for SUPER+W
-switching.
+whole background set (typically 1-8 images, a few MB) for the wallpaper
+picker.
 
 ### wallpaper-theme [--browse] [--no-apply] [--legible] [--saturation N] [\<image\>]
 Derives a full palette from a wallpaper and applies it - the second palette
@@ -216,13 +225,13 @@ checksum fix).
 themes/
   colors.toml              # Active palette (gitignored, written by theme-set)
   matugen.toml             # matugen config: template list + staging outputs
-  palettes/                # 13 palettes
-  templates/               # 16 *.tera templates (Pattern A/B/C)
+  palettes/                # palette TOMLs
+  templates/               # *.tera templates (Pattern A/B/C)
   apps/                    # Pattern E metadata (catppuccin-mocha, tokyo-night)
   bin/
     theme-set
     theme-apply
-    theme-wallpaper        # wallpaper picker/switcher (SUPER+W)
+    theme-wallpaper        # wallpaper switcher (the Quickshell picker on SUPER+SHIFT+W runs it)
     wallpaper-theme        # palette-from-wallpaper producer (wallust)
     omarchy-import         # Omarchy theme importer (built-ins + community)
     palette-to-json        # TOML -> matugen JSON + derived colors; --wallpaper

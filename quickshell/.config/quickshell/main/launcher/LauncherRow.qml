@@ -1,7 +1,12 @@
-// One entry of the launcher: an icon, a glyph or an image preview, the name
-// and a dim detail after it, with room left at the end for a button
-// (trailing). The selected entry has a raised glass fill; an entry that
-// waits for a second press to confirm is red and says so.
+pragma ComponentBehavior: Bound
+
+// One entry of the launcher: an icon, a glyph or an image preview (for a
+// palette, "Aa" in its colors until its wallpaper's preview is there, or
+// when it has none), the name and a dim
+// detail after it, color swatches at the end for a palette, and room left
+// at the end for a button (trailing). The selected entry has a raised glass
+// fill; an entry that waits for a second press to confirm is red and says
+// so.
 import QtQuick
 import qs
 import qs.components
@@ -9,14 +14,18 @@ import qs.components
 Item {
     id: root
 
-    // { name, detail, icon, glyph, preview }; see LauncherWindow.
+    // { name, detail, icon, glyph, preview, crop, block, swatches }; see
+    // LauncherPanel.
     required property var item
     property bool selected: false
     property bool confirming: false
     property int trailing: 0
     readonly property alias hovered: hover.hovered
     readonly property bool hasPreview: (item.preview ?? "") !== ""
-    readonly property int leading: hasPreview ? Style.previewWidth : Style.launcherIcon
+    readonly property var swatches: item.swatches ?? []
+    readonly property int swatchesWidth: swatches.length > 0
+        ? swatches.length * (Style.swatchSize + Style.swatchGap) - Style.swatchGap + Style.launcherInset : 0
+    readonly property int leading: hasPreview || item.block ? Style.previewWidth : Style.launcherIcon
     readonly property color ink: confirming ? Theme.textOn(Theme.bad) : Theme.foreground
 
     implicitHeight: hasPreview || item.image ? Style.launcherImageRow : Style.launcherRow
@@ -69,9 +78,26 @@ Item {
             source: root.item.preview ?? ""
             sourceSize.width: 2 * Style.previewWidth
             sourceSize.height: 2 * Style.previewHeight
-            fillMode: Image.PreserveAspectFit
+            fillMode: root.item.crop ? Image.PreserveAspectCrop : Image.PreserveAspectFit
             asynchronous: true
             mipmap: true
+        }
+    }
+
+    Rectangle {
+        visible: !root.hasPreview && !!root.item.block
+        x: Style.launcherEdge
+        anchors.verticalCenter: parent.verticalCenter
+        width: Style.previewWidth
+        height: Style.previewHeight
+        radius: Style.cellRadius
+        color: root.item.block?.background ?? "transparent"
+
+        Label {
+            anchors.fill: parent
+            text: "Aa"
+            size: Style.launcherSize
+            color: root.item.block?.foreground ?? Theme.foreground
         }
     }
 
@@ -80,7 +106,7 @@ Item {
 
         x: Style.launcherEdge + root.leading + Style.launcherInset
         height: parent.height
-        maxWidth: root.width - x - Style.launcherEdge - root.trailing
+        maxWidth: root.width - x - Style.launcherEdge - root.trailing - root.swatchesWidth
         text: root.item.name
         size: Style.launcherSize
         color: root.ink
@@ -89,10 +115,31 @@ Item {
     Label {
         x: nameLabel.x + nameLabel.width + Style.launcherInset
         height: parent.height
-        maxWidth: root.width - x - Style.launcherEdge - root.trailing
+        maxWidth: root.width - x - Style.launcherEdge - root.trailing - root.swatchesWidth
         text: root.confirming ? "Sure?" : root.item.detail ?? ""
         size: Style.launcherSize
         bold: root.confirming
         color: root.confirming ? root.ink : Theme.faint
+    }
+
+    Row {
+        visible: root.swatches.length > 0
+        anchors.right: parent.right
+        anchors.rightMargin: Style.launcherEdge + root.trailing
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: Style.swatchGap
+
+        Repeater {
+            model: root.swatches
+
+            Rectangle {
+                required property string modelData
+
+                width: Style.swatchSize
+                height: Style.swatchSize
+                radius: Style.cellRadius / 2
+                color: modelData
+            }
+        }
     }
 }

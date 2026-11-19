@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# theme-wallpaper - Switch the wallpaper (fuzzel picker or direct path)
+# theme-wallpaper - Switch the wallpaper (Quickshell picker or direct path)
 #
 set -euo pipefail
 
@@ -14,16 +14,17 @@ usage() {
     cat <<'EOF'
 Usage: theme-wallpaper [--browse] [--save] [<path>]
 
-Switch the wallpaper. With no <path>, opens a fuzzel picker over
-~/pics/wallpapers/. Applies instantly via hyprctl IPC and persists to the
-generated hyprpaper.conf, so it survives logins without touching git.
+Switch the wallpaper. With no <path>, opens the wallpaper picker in the
+Quickshell launcher (SUPER+SHIFT+W), which runs this script with the path
+of each wallpaper it shows. Applies instantly via hyprctl IPC and persists
+to the generated hyprpaper.conf, so it survives logins without touching git.
 
 The quick switch lasts until the next `theme-set` of a palette that
 declares its own wallpaper.
 
 Options:
-  --browse      Visual picker: floating yazi window with image previews
-                (bound to SUPER+W). Enter applies, q cancels.
+  --browse      Visual picker: floating yazi window with image previews.
+                Enter applies, q cancels.
   --save        Also write the wallpaper into the active palette file,
                 making it that theme's permanent wallpaper. This edits the
                 git-tracked palettes/<active>.toml - commit it deliberately.
@@ -94,22 +95,13 @@ if [[ $BROWSE -eq 1 && -z "$WALLPAPER" ]]; then
     rm -f "$chooser"
 fi
 
-# No path given: fuzzel picker over the wallpaper directory
+# No path given: the wallpaper picker in the Quickshell launcher
 if [[ -z "$WALLPAPER" ]]; then
-    if [[ ! -d "$WALLPAPER_DIR" ]]; then
-        echo "error: $WALLPAPER_DIR does not exist" >&2
+    if [[ $SAVE -eq 1 ]]; then
+        echo "error: --save needs a <path> or --browse" >&2
         exit 1
     fi
-    shopt -s nullglob nocaseglob
-    files=("$WALLPAPER_DIR"/*.{jpg,jpeg,png,webp})
-    shopt -u nullglob nocaseglob
-    if [[ ${#files[@]} -eq 0 ]]; then
-        echo "error: no images in $WALLPAPER_DIR" >&2
-        exit 1
-    fi
-    choice="$(printf '%s\n' "${files[@]##*/}" | sort | fuzzel --dmenu --prompt "wallpaper: ")" || exit 0
-    [[ -z "$choice" ]] && exit 0
-    WALLPAPER="$WALLPAPER_DIR/$choice"
+    exec qs -c main ipc call launcher toggle wallpapers
 fi
 
 expanded="${WALLPAPER/#\~/$HOME}"

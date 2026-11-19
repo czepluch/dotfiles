@@ -66,8 +66,8 @@ Each directory is a "stow package" that contains configs symlinked to `~/`:
 - **hypr** - Hyprland compositor configuration
 - **waybar** - Former status bar, no longer started (the Quickshell bar replaced it)
 - **mako** - Former notification daemon, no longer started (the Quickshell bar shows notifications)
-- **quickshell** - Bar, notifications, launcher (also the session menu and the clipboard history) and lock screen in QML, run as `qs -c main` by `quickshell.service`; `bar-test.qml` shows a second bar along the bottom for trying changes. A D-Bus service file makes the session bus start `quickshell.service`, not mako, for `org.freedesktop.Notifications`
-- **fuzzel** - Former application launcher; `theme-wallpaper` still uses it for its picker by name (the Quickshell launcher replaced the rest)
+- **quickshell** - Bar, notifications, launcher (also the session menu, the clipboard history and the palette and wallpaper pickers) and lock screen in QML, run as `qs -c main` by `quickshell.service`; `bar-test.qml` shows a second bar along the bottom for trying changes. A D-Bus service file makes the session bus start `quickshell.service`, not mako, for `org.freedesktop.Notifications`
+- **fuzzel** - Former application launcher, no longer used (the Quickshell launcher replaced it)
 - **btop** - System monitor
 - **podman** - Container runtime configuration
 - **screensaver** - Terminal screensaver: logo text art animated by `ttfx`, run manually with `screensaver`
