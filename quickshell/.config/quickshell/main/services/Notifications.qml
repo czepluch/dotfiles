@@ -33,6 +33,8 @@ Singleton {
     // in ms until it leaves, or -1 for never.
     property var entries: []
     readonly property var popups: entries.map(entry => entry.notification).filter(n => list.includes(n))
+    // Notification id -> the time it arrived or was last updated.
+    readonly property var received: JSON.parse(persist.received)
 
     // Runs the default action, which dismisses it unless the app keeps it;
     // without a default action, dismisses it.
@@ -55,16 +57,16 @@ Singleton {
 
     // The time it arrived or was last updated, in ms since the epoch.
     function timeOf(notification) {
-        return persist.received[notification.id] ?? 0;
+        return received[notification.id] ?? 0;
     }
 
     function show(notification) {
         const now = Date.now();
-        const received = {};
+        const times = {};
         for (const n of list)
-            received[n.id] = persist.received[n.id] ?? now;
-        received[notification.id] = now;
-        persist.received = received;
+            times[n.id] = received[n.id] ?? now;
+        times[notification.id] = now;
+        persist.received = JSON.stringify(times);
 
         const critical = notification.urgency === NotificationUrgency.Critical;
         if (listOpen || (dnd && !critical)) {
@@ -109,8 +111,9 @@ Singleton {
         reloadableId: "notifications"
 
         property bool dnd: false
-        // Notification id -> the time it arrived or was last updated.
-        property var received: ({})
+        // The times in `received` as JSON text; a JavaScript object does not
+        // survive a reload.
+        property string received: "{}"
     }
 
     NotificationServer {
@@ -122,9 +125,12 @@ Singleton {
         imageSupported: true
         persistenceSupported: true
 
+        // After a reload the server announces the notifications it kept
+        // again; those keep their time and do not pop up again.
         onNotification: notification => {
             notification.tracked = true;
-            root.show(notification);
+            if (!notification.lastGeneration)
+                root.show(notification);
         }
     }
 
