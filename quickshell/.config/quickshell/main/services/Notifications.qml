@@ -166,7 +166,7 @@ Singleton {
             const gone = [];
             for (const entry of root.entries) {
                 if (entry.left > 0)
-                    entry.left -= elapsed;
+                    entry.left = Math.max(0, entry.left - elapsed);
                 if (entry.left === -1 || entry.left > 0)
                     kept.push(entry);
                 else
