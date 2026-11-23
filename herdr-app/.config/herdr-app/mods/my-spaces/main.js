@@ -1,13 +1,14 @@
 // Workspace spaces as cards: stable colored avatars, worktrees under their checkout,
 // grouped by machine when more than one is known. Each card has up to 3 lines: the
-// space's name with an attention dot; the repo its first terminal is in, its branch,
+// space's name with an attention dot; the repo its first terminal is in (for Claude Code,
+// the folder its session works in), its branch, with a worktree icon in a linked worktree,
 // ahead/behind and uncommitted files (the folder when it isn't a repo); its tabs and
 // agents, when it has more than one tab or any agent. Click to switch, right-click
 // for its menu, drag to reorder.
 
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, ScrollHandle } from "gpui-base";
-import { spaces, machines, panes, agents, home, run, openOverlay, exec, hc, theme, shared, setShared, watchFolder, window, layout } from "herdr";
+import { spaces, machines, panes, agents, home, run, openOverlay, exec, hc, theme, shared, setShared, watchFolder, window, layout, readTextFile, checking } from "herdr";
 
 function find(node, id) {
   if (node?.id === id) return node;
@@ -21,15 +22,25 @@ function find(node, id) {
 // The sidebar's rail goes by its width, not a flag: dragging its edge narrows it too.
 const narrow = () => (find(layout(), "sidebar")?.size?.px ?? Infinity) < 160;
 
-// Where a space is now: its first terminal's live folder, else where it was made.
+// The folder each Claude Code agent's session works in, from the status line input
+// that ~/.claude/statusline.sh saves per herdr terminal. A session that moves into a
+// worktree keeps its terminal in the folder it started in. Pane -> folder.
+const CLAUDE_DIR = ".cache/claude-statusline/terminals";
+const CLAUDE_POLL_MS = 10000;
+let agentFolders = {};
+
+// Where a space is now: its first terminal's live folder (a Claude Code agent's session
+// folder), else where it was made.
 // `ps`: panes(), read once by the caller (each read copies every pane).
 function place(s, ps) {
   const tabs = new Set((s.tabs ?? []).map((c) => c.id));
-  return ps.find((p) => tabs.has(p.tab) && p.cwd)?.cwd || s.folder;
+  const folder = (p) => agentFolders[p.pane] || p.cwd;
+  const first = ps.find((p) => tabs.has(p.tab) && folder(p));
+  return (first && folder(first)) || s.folder;
 }
 const RAIL_CELL = 32;
 // Where a card's second and third lines start: under the name, past the avatar
-// (18 + gap 9) or a worktree's indent and branch icon (22 + 13 + gap 9).
+// (18 + gap 9) or a worktree's indent and worktree icon (22 + 13 + gap 9).
 const cardIndent = (tree) => (tree ? 44 : 27);
 // How often a branch's pull request is looked up again, and how its checks read.
 const PR_EVERY = 300000;
@@ -102,6 +113,37 @@ export default class Spaces extends View {
     // Redraw the "working 4m" times while an agent works.
     cx.timer.every(30000, (cx) => {
       if (spaces().some((s) => (s.tabs ?? []).some((tab) => tab.working_since))) cx.notify();
+    });
+    if (checking()) return;
+    cx.timer.every(CLAUDE_POLL_MS, (cx) => this.loadAgentFolders(cx));
+    this.loadAgentFolders(cx);
+  }
+
+  // Reads each Claude Code agent's session folder into agentFolders; an agent on
+  // another machine (`vps/t1`) from its file there.
+  loadAgentFolders(cx) {
+    cx.spawn(async (cx) => {
+      const next = {};
+      for (const a of agents()) {
+        if (a.app !== "claude-code") continue;
+        try {
+          const [machine, id] = a.address.includes("/") ? a.address.split("/") : [null, a.address];
+          let text;
+          if (machine) {
+            const r = await exec("cat", [`${CLAUDE_DIR}/${id}.json`], { on: machine, timeout: 10000 });
+            text = r.code === 0 ? r.stdout : null;
+          } else {
+            text = await readTextFile(`${home()}/${CLAUDE_DIR}/${id}.json`);
+          }
+          const folder = text ? JSON.parse(text).workspace?.current_dir : null;
+          if (folder) next[a.pane] = folder;
+        } catch (e) {
+          console.log(`claude folder ${a.address}: ${e}`);
+        }
+      }
+      if (JSON.stringify(next) === JSON.stringify(agentFolders)) return;
+      agentFolders = next;
+      cx.notify();
     });
   }
 
@@ -268,7 +310,7 @@ export default class Spaces extends View {
       // Uncommitted files, without the index refresh `git status` would otherwise write.
       const status = await exec("git", ["--no-optional-locks", "status", "--porcelain"], { cwd, on });
       const changes = status.code === 0 ? status.stdout.split("\n").filter(Boolean).length : null;
-      const info = { name, branch: branch.code === 0 ? branch.stdout.trim().replace(/^refs\/heads\//, "") : "(detached)", ahead, behind, changes, repo: JSON.stringify([on, repo]), linked: repo !== `${top}/.git` };
+      const info = { name, branch: branch.code === 0 ? branch.stdout.trim().replace(/^refs\/heads\//, "") : "(detached)", ahead, behind, changes, repo: JSON.stringify([on, repo]), linked: repo !== `${top}/.git`, top };
       this.git[key] = info;
       if (!on) this.watch(repo, cx);
       if (!on) this.loadPr(info, cwd, cx);
@@ -470,33 +512,39 @@ export default class Spaces extends View {
   // The card's second line: "herdr \u00b7 spike  \u21912 \u21931 \u00b15". The repo goes when the
   // name already says it, the branch when it is the name (a worktree is named after
   // its branch). Outside a repo, the folder, with the home folder as "~" on this computer.
-  // The repo is muted, the branch cyan (ansi6) and the folder blue (ansi4).
+  // The repo is muted, the branch cyan (ansi6) and the folder blue (ansi4). A linked
+  // worktree that isn't listed under its main checkout gets a magenta (ansi5) worktree
+  // icon before the branch, and its folder as the tooltip.
   gitLine({ w, g, tree, folder }, t) {
     const same = (a) => a.toLowerCase() === w.name.toLowerCase();
+    const h = home();
+    const tilde = (f) => (!w.machine && f && (f === h || f.startsWith(`${h}/`)) ? `~${f.slice(h.length)}` : f ?? "");
+    const worktree = Boolean(g?.linked && !tree);
     let repo = "", branch = "", place = "";
     if (g) {
       const b = g.branch ?? "detached";
       repo = tree || same(g.name) ? "" : g.name;
       branch = same(b) ? "" : b;
     } else {
-      const h = home();
-      place = !w.machine && folder && (folder === h || folder.startsWith(`${h}/`)) ? `~${folder.slice(h.length)}` : folder ?? "";
+      place = tilde(folder);
     }
-    const where = h_flex().flex_initial().min_w(0).gap(5)
+    const where = h_flex().id(`space-where-${w.id}`).flex_initial().min_w(0).gap(5).items_center()
+      .when(worktree, (el) => el.tooltip(`Worktree ${tilde(g.top)}`))
       .when(Boolean(repo), (el) => el.child(div().min_w(0).truncate().text_color(t.muted).child(repo)))
-      .when(Boolean(repo && branch), (el) => el.child(div().flex_none().child("\u00b7")))
+      .when(Boolean(repo && (branch || worktree)), (el) => el.child(div().flex_none().child("\u00b7")))
+      .when(worktree, (el) => el.child(svg("mods/my-spaces/worktree.svg").size(12).flex_none().text_color(t.ansi5)))
       .when(Boolean(branch), (el) => el.child(div().min_w(0).truncate().text_color(t.ansi6).child(branch)))
       .when(Boolean(place), (el) => el.child(div().min_w(0).truncate().text_color(t.ansi4).child(place)));
     const ahead = g?.ahead > 0, behind = g?.behind > 0, changes = g?.changes > 0;
     const pr = g ? this.prs[JSON.stringify([g.repo, g.branch])]?.pr : null;
-    if (!repo && !branch && !place && !ahead && !behind && !changes && !pr) return null;
+    if (!repo && !branch && !worktree && !place && !ahead && !behind && !changes && !pr) return null;
     return h_flex()
       .gap(6)
       .items_center()
       .text_size(11.5)
       .line_height("15px")
       .text_color(t.dim)
-      .when(Boolean(repo || branch || place), (el) => el.child(where))
+      .when(Boolean(repo || branch || worktree || place), (el) => el.child(where))
       .when(ahead, (el) => el.child(div().flex_none().text_color(t.ansi2).child(`\u2191${g.ahead}`)))
       .when(behind, (el) => el.child(div().flex_none().text_color(t.ansi1).child(`\u2193${g.behind}`)))
       .when(changes, (el) => el.child(div().id(`space-changes-${w.id}`).flex_none().text_color(t.ansi3)
@@ -601,7 +649,7 @@ export default class Spaces extends View {
         h_flex()
           .gap(9)
           .items_center()
-          .when(Boolean(tree), el => el.pl(22).child(svg("mods/workspace-chrome/branch.svg").size(13).flex_none().text_color(t.dim)))
+          .when(Boolean(tree), el => el.pl(22).child(svg("mods/my-spaces/worktree.svg").size(13).flex_none().text_color(t.ansi5)))
           .when(!tree, el => el.child(h_flex().size(18).flex_none().rounded(5).bg(fill).items_center().justify_center().text_size(10.5).font_bold().text_color(t.accent_foreground).child([...w.name][0]?.toUpperCase() ?? "?")))
           .child(div().id(`space-name-${w.id}`).flex_1().min_w(0).truncate().tooltip(w.name).text_color(t.foreground).child(w.name))
           .when(w.status === "blocked" || w.status === "done", (el) => el.child(div().flex_none().text_color(tone(t, w.status)).child(glyph(w.status)))),

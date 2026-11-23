@@ -46,7 +46,7 @@ Each directory is a "stow package" that contains configs symlinked to `~/`:
   - `keys.json` and `settings.json`; the app writes zoom and Settings changes back into `settings.json`
   - the `my-main` layout, a copy of the shipped `main` that uses 7 copied mods:
     - `mods/my-status`: the status bar, plus the ETH/USD price from the Chainlink feed (read through the DappNode execution client) with a green or red arrow for its last move, and the Claude plan usage of the week, with a bar and its reset time, that `~/.claude/statusline.sh` saves to `~/.cache/claude-statusline/`
-    - `mods/my-spaces`: each space as a card with its branch, ahead/behind, uncommitted files, pull request (through `gh`), tabs and agents
+    - `mods/my-spaces`: each space as a card with its branch, ahead/behind, uncommitted files, pull request (through `gh`), tabs and agents; for a Claude Code agent it uses the folder its session works in, from the status line cache, and a worktree gets a worktree icon
     - `mods/my-agents`: the agents list, plus each Claude Code agent's model and effort from the same status line cache, read over herdr's connection for agents on other machines (each machine needs a status line that saves to that cache)
     - `mods/my-changes`: the Changes panel, with added and removed lines at 25% of green and red, modified files in yellow and hunk headers in cyan
     - `mods/my-files`: the Files panel, with the open file or folder in cyan
