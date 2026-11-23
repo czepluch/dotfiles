@@ -1,0 +1,8 @@
+/* GTK 4 colors: the palette's named colors, plus the accent variables, which
+   the adw-gtk3 GTK 4 stylesheet sets from its own accent. */
+@import url("../themes/current/gtk.css");
+
+:root {
+    --accent-bg-color: @accent_bg_color;
+    --accent-fg-color: @accent_fg_color;
+}
