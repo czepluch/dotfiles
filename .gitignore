@@ -21,6 +21,8 @@ Thumbs.db
 # But keep the stow packages that install into ~/.local/
 !bin/.local/
 !bin/.local/**
+!kde/.local/
+!kde/.local/**
 !quickshell/.local/
 !quickshell/.local/**
 !screensaver/.local/

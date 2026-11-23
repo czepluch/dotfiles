@@ -37,7 +37,9 @@ What it does:
   2. Runs theme-apply (matugen renders all templates, atomic swap)
   3. Copies neovim metadata from apps/<name>/ if present
   4. Sends reload signals to ghostty, waybar, mako, Hyprland, herdr and herdr-app
-  5. Updates wallpaper if the palette defines one
+  5. Selects dark GTK apps and the adw-gtk3 theme (gsettings) and the
+     Palette color scheme for KDE apps (kdeglobals), when not set yet
+  6. Updates wallpaper if the palette defines one
 
 Everything is written to ~/.config/themes/ - no git-tracked file is
 ever touched by a palette switch.
@@ -99,6 +101,23 @@ set_wallpaper() {
     # theme-wallpaper does the IPC apply + persistence (and warns if the
     # file is missing - non-fatal here)
     "$THEMES_DIR/bin/theme-wallpaper" "$wallpaper" || true
+}
+
+# GTK apps read their colors from gtk.css, KDE apps from the Palette color
+# scheme. Each setting is written only when it differs from the current one.
+set_toolkits() {
+    local iface=org.gnome.desktop.interface
+    if [[ "$(gsettings get $iface color-scheme 2>/dev/null)" != "'prefer-dark'" ]]; then
+        gsettings set $iface color-scheme prefer-dark 2>/dev/null || true
+    fi
+    if [[ -d /usr/share/themes/adw-gtk3-dark ]] \
+        && [[ "$(gsettings get $iface gtk-theme 2>/dev/null)" != "'adw-gtk3-dark'" ]]; then
+        gsettings set $iface gtk-theme adw-gtk3-dark 2>/dev/null || true
+    fi
+    if command -v kwriteconfig6 &>/dev/null \
+        && [[ "$(kreadconfig6 --file kdeglobals --group UiSettings --key ColorScheme)" != Palette ]]; then
+        kwriteconfig6 --file kdeglobals --group UiSettings --key ColorScheme Palette || true
+    fi
 }
 
 list_palettes() {
@@ -178,12 +197,13 @@ main() {
     herdr server reload-config &>/dev/null || true
     # herdr-app re-reads its theme when the link to it is touched
     touch -h ~/.config/herdr-app/themes/palette.json 2>/dev/null || true
+    set_toolkits
 
     # Set wallpaper if palette defines one
     set_wallpaper "$palette_file"
 
     echo ""
-    echo "Restart yazi, lazygit, btop, and neovim to pick up new theme."
+    echo "Restart yazi, lazygit, btop, neovim, GTK and Qt apps to pick up new theme."
     echo "(starship re-reads its config on the next prompt automatically)"
 }
 

@@ -32,6 +32,7 @@ templates/*.tera  --render-->  ~/.config/themes/.staging/
   10% to 90%), and a `<key>_vivid` variant for every key
   (saturation push away from the channel mean). All integer math matches the
   retired bash engine bit-for-bit (division truncates toward zero).
+  It also derives `surface1..surface6` (the same lerp, 2% to 12%) and the readable colors described under Template Variable Syntax.
 - **matugen** (pinned expectation: 4.1.0, Arch `extra`) imports the palette
   verbatim via `import_json_files` - no Material You harmonization. Rendering
   is all-or-nothing: any template error aborts the run with a precise message
@@ -76,6 +77,11 @@ cyan=color6, white=color7, bright_red=color9 through bright_cyan=color14.
 Neutral ramp: `colors.tone1` (background with 10% foreground) through `colors.tone9` (90% foreground).
 Low tones suit raised surfaces and selection rows, high tones suit muted text.
 
+Surface ramp: `colors.surface1` (background with 2% foreground) through `colors.surface6` (12% foreground), for the window, sidebar, header and popover backgrounds of GTK and KDE apps.
+
+Readable colors: `colors.accent_readable` (also `red_readable`, `green_readable` and `yellow_readable`) is the color, or the foreground when its contrast on the background is below 3, the same rule as `readable()` in the Quickshell `Theme.qml`.
+`colors.on_accent_readable`, `on_red`, `on_green` and `on_yellow` are the text colors on fills of those colors: the background or the foreground, whichever has more contrast.
+
 **Backslash rule**: matugen's Tera collapses `\\` to `\` in raw template
 text. Any literal backslash in a template must be written doubled. This
 matters mainly in `starship.toml.tera` (format-block line continuations and
@@ -96,6 +102,9 @@ App config adds one source/import line pointing at generated output.
 - **btop**: `color_theme` points at `~/.config/btop/themes/current.theme`,
   a committed symlink into `themes/current/`
 - **newt** (nmtui/whiptail): `NEWT_COLORS_FILE` env var in `.zshrc`
+- **qt6ct** (Qt apps): `hyprland.lua` sets `QT_QPA_PLATFORMTHEME=qt6ct`, and the autostart imports it into the systemd user environment for apps started over D-Bus.
+  The stowed `~/.config/qt6ct/qt6ct.conf` points `color_scheme_path` at `~/.config/themes/current/qt6ct-colors.conf` (qt6ct expands `~`) and keeps Fusion, the Breeze icons, the default fonts and icon-only tool buttons.
+  qt6ct writes its settings dialog back into that file.
 - **LS_COLORS**: `.zshrc` sources `ls-colors.zsh` before compinit and fzf-tab
   load, since both read the variable once at startup. Truecolor SGR entries
   (`38;2;r;g;b`); zsh's completion list and fzf-tab pass them through verbatim
@@ -106,7 +115,15 @@ App config adds one source/import line pointing at generated output.
 
 ### C - Full Template
 The whole config is generated; the stow package ships a symlink.
-- **mako, fuzzel, yazi, fastfetch, starship, lazygit, eza, herdr, herdr-app**
+- **mako, fuzzel, yazi, fastfetch, starship, lazygit, eza, herdr, herdr-app, gtk, kde**
+- GTK 3 apps read `~/.config/gtk-3.0/gtk.css`, a stowed symlink to `gtk.css`.
+  The file sets the libadwaita named colors (`window_bg_color`, `accent_bg_color` and so on), which libadwaita and the adw-gtk3 theme (package `adw-gtk-theme`) both use.
+  GTK 4 apps read the stowed `~/.config/gtk-4.0/gtk.css`, which imports `gtk.css` and sets the `--accent-bg-color` and `--accent-fg-color` variables from it, because the GTK 4 part of adw-gtk3 sets them from its own blue accent (GTK 3 rejects `:root`, so the lines are only in the GTK 4 file).
+  theme-set selects the `adw-gtk3-dark` theme and the dark color scheme with gsettings.
+  GTK apps read these files once, at start.
+- KDE apps such as Dolphin apply the color scheme named in `kdeglobals` (`[UiSettings] ColorScheme=Palette`, which theme-set writes) once, at start.
+  The scheme is `~/.local/share/color-schemes/Palette.colors`, a stowed symlink to `kde.colors`.
+  KDE apps also need the qt6ct palette: Dolphin copies the text color into its file view while it builds its window, before the scheme is applied, so without a platform theme the file names stay Qt's default black.
 - herdr-app reads the theme `palette` from `~/.config/herdr-app/themes/palette.json`, a stowed symlink to `herdr-app-theme.json`, selected once with `herdr-app do app.theme '{"name":"palette"}'`. The template sets the terminal colors (background, foreground, `tone2` as selection, cursor, the 16 ANSI colors) and every panel color herdr-app would otherwise derive on its own: text (`foreground`, `tone7` as muted, `tone5` as dim), `accent`, `tone3` as border, `tone1` as popover, `tone2` as raised, `tone7` as ring, `tone5` as idle and unknown, and `foreground` at alpha `0e`, `17` and `24` as hover, selected and input. herdr-app copies working, blocked and done from ANSI yellow, red and blue. The window is 92% opaque, like Ghostty's `background-opacity`: `canvas`, which fills the whole window, is the background at alpha `eb`, and `background` and `chrome` are fully transparent so that no second translucent layer stacks on it (the `my-main` layout sets `terminal_opacity` 0 for the same reason). Its file watcher does not see changes behind the symlink, so theme-set touches the link
 - herdr reads `~/.config/herdr/config.toml`, a stowed symlink to
   `herdr-config.toml`. The template holds the whole herdr config (keys, UI,
@@ -282,11 +299,15 @@ Runtime output (not in git): `~/.config/themes/current/` plus the transient
 | Hyprpaper | No | hyprctl IPC (instant) |
 | Neovim | No | Restart manually |
 | Newt/nmtui | Yes (per-invocation) | - |
+| GTK apps | No (gtk.css is read at start) | Restart manually |
+| Dolphin and other KDE apps | No (the color scheme is read at start) | Restart manually |
+| Other Qt apps (qt6ct) | No (the palette is read at start) | Restart manually |
 
 ## Bootstrap (fresh clone)
 
-1. Install matugen (`paru -S matugen`; python3 is in base)
-2. `stow` all packages - the Pattern C symlinks dangle harmlessly until step 3
+1. Install matugen (`paru -S matugen`; python3 is in base), adw-gtk-theme for GTK 3 apps and qt6ct for Qt apps
+2. `stow` all packages - the Pattern C symlinks dangle harmlessly until step 3.
+   Stow `gtk`, `kde` and `qt6ct` with `--no-folding`, so that `~/.config/gtk-4.0`, `~/.local/share/color-schemes` and `~/.config/qt6ct` stay real folders.
 3. `theme-set <palette>` once - renders everything, seeds hyprpaper.conf
    (stub if the palette has no wallpaper), copies the nvim spec
 
@@ -315,7 +336,6 @@ ignores a missing `NEWT_COLORS_FILE`.
 ## Future Enhancements
 
 - **TUI palette previewer** - browse palettes with live preview
-- **GTK/Qt theme** - dark/light mode + accent via gsettings
 - **Cursor theme** - per palette
 - **wallpaper-theme tuning knobs** - expose wallust's backend/palette-style
   flags (e.g. `harddark16` for punchier accents at the cost of the tty-order

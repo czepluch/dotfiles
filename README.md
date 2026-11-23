@@ -68,6 +68,9 @@ Each directory is a "stow package" that contains configs symlinked to `~/`:
 - **mako** - Former notification daemon, no longer started (the Quickshell bar shows notifications)
 - **quickshell** - Bar, notifications, launcher (also the session menu, the clipboard history and the palette and wallpaper pickers) and lock screen in QML, run as `qs -c main` by `quickshell.service`; `bar-test.qml` shows a second bar along the bottom for trying changes. A D-Bus service file makes the session bus start `quickshell.service`, not mako, for `org.freedesktop.Notifications`
 - **fuzzel** - Former application launcher, no longer used (the Quickshell launcher replaced it)
+- **gtk** - GTK 3 and 4 app colors: `gtk.css` links into the theme system output (see `themes/SPEC.md`), and GTK 3 apps need the `adw-gtk-theme` package. Use `stow --no-folding gtk`, otherwise stow links the whole `~/.config/gtk-4.0` folder into the repo
+- **kde** - Color scheme for KDE apps such as Dolphin: `Palette.colors` links into the theme system output. Use `stow --no-folding kde`, otherwise stow links the whole `~/.local/share/color-schemes` folder into the repo
+- **qt6ct** - Qt app palette, fonts and icons: `qt6ct.conf` reads its palette from the theme system output, and Hyprland sets `QT_QPA_PLATFORMTHEME=qt6ct`. Needs the `qt6ct` package. Use `stow --no-folding qt6ct`, otherwise stow links the whole `~/.config/qt6ct` folder into the repo
 - **btop** - System monitor
 - **podman** - Container runtime configuration
 - **screensaver** - Terminal screensaver: logo text art animated by `ttfx`, run manually with `screensaver`
@@ -89,6 +92,9 @@ stow -t ~ ghostty
 
 # Linux: Install kitty and Wayland packages
 stow -t ~ kitty hypr waybar mako fuzzel btop podman xdg
+
+# Linux: GTK, KDE and Qt app colors
+stow --no-folding -t ~ gtk kde qt6ct
 
 # Uninstall a package
 stow -D -t ~ zsh
