@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
-// The system panel: CPU (with the load of each CPU), temperature, memory,
+// The system panel: CPU (with the load of each core and the size and type
+// of each core group, such as "4P · 8E · 4LP"), temperature, memory,
 // swap, disk, network and battery, with graphs of the last 2 minutes for
 // CPU and temperature, and the processes using the most CPU. It opens from
 // the hardware readouts in the bar; the extra readings run only while it is
@@ -140,6 +141,8 @@ BarPopup {
             labelWidth: root.labelWidth
             valueWidth: root.valueWidth
             detailWidth: root.detailWidth
+            label: "Cores"
+            detail: Stats.coreGroups.map((group, i) => group.length + (Stats.coreTypes[i] ?? "")).join(" · ")
 
             CoreBars {
                 anchors.verticalCenter: parent.verticalCenter
