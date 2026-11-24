@@ -1,10 +1,10 @@
 pragma Singleton
 
 // CPU, temperature, memory, disk, network and process readings from /proc
-// and /sys while the session is active. CPU and temperature are read every
-// 2 s and memory every 10 s. While `detailed` is set (the system panel is
-// open), memory, load, fan speed, network traffic and the top processes are
-// read every 2 s and disk use every 10 s.
+// and /sys while the session is active. CPU, temperature and network
+// traffic are read every 2 s and memory every 10 s. While `detailed` is set
+// (the system panel is open), memory, load, fan speed and the top processes
+// are read every 2 s and disk use every 10 s.
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -33,11 +33,13 @@ Singleton {
     // Fan speed in rpm, or -1 without a fan sensor.
     property int fan: -1
 
-    // Raw samples, oldest first, one per update: CPU usage from 0 to 1 and
-    // temperature in °C.
+    // Raw samples, oldest first, one per update: CPU usage from 0 to 1,
+    // temperature in °C and network traffic in bytes per second.
     readonly property int historyLength: 60
     property var cpuHistory: []
     property var tempHistory: []
+    property var netDownHistory: []
+    property var netUpHistory: []
 
     // Memory in use from 0 to 1 (total minus available), and in bytes.
     property real mem: 0
@@ -131,6 +133,8 @@ Singleton {
         if (lastNet !== null && now > lastNet.time) {
             netDown = Math.max(0, (down - lastNet.down) * 1000 / (now - lastNet.time));
             netUp = Math.max(0, (up - lastNet.up) * 1000 / (now - lastNet.time));
+            netDownHistory = netDownHistory.concat([netDown]).slice(-historyLength);
+            netUpHistory = netUpHistory.concat([netUp]).slice(-historyLength);
         }
         lastNet = { down: down, up: up, time: now };
     }
@@ -144,9 +148,6 @@ Singleton {
     onDetailedChanged: {
         if (!detailed)
             return;
-        lastNet = null;
-        netDown = 0;
-        netUp = 0;
         interfaces.running = true;
         disk.running = true;
         topProcesses.running = true;
@@ -159,6 +160,7 @@ Singleton {
         triggeredOnStart: true
         onTriggered: {
             procStat.reload();
+            netDev.reload();
             if (tempInput.path !== "")
                 tempInput.reload();
             if (root.detailed || root.tick % 5 === 0) {
@@ -167,7 +169,6 @@ Singleton {
             }
             if (root.detailed) {
                 loadavg.reload();
-                netDev.reload();
                 if (fanInput.path !== "")
                     fanInput.reload();
                 if (!topProcesses.running)
@@ -301,13 +302,21 @@ Singleton {
     }
 
     // Interfaces backed by a device, so loopback, VPN and bridge traffic is
-    // not counted.
+    // not counted. Read at start and again when the panel opens. A changed
+    // list starts a new byte count, so the next reading is not a jump.
     Process {
         id: interfaces
 
+        running: true
         command: ["sh", "-c", "for i in /sys/class/net/*; do [ -e \"$i/device\" ] && basename \"$i\"; done; true"]
         stdout: StdioCollector {
-            onStreamFinished: root.netInterfaces = text.split("\n").filter(line => line !== "")
+            onStreamFinished: {
+                const list = text.split("\n").filter(line => line !== "");
+                if (list.join(" ") === root.netInterfaces.join(" "))
+                    return;
+                root.netInterfaces = list;
+                root.lastNet = null;
+            }
         }
     }
 

@@ -2,10 +2,10 @@ pragma ComponentBehavior: Bound
 
 // The system panel: CPU (with the load of each core and the size and type
 // of each core group, such as "4P · 8E · 4LP"), temperature, memory,
-// swap, disk, network and battery, with graphs of the last 2 minutes for
-// CPU and temperature, and the processes using the most CPU. It opens from
-// the hardware readouts in the bar; the extra readings run only while it is
-// open.
+// swap, disk, download, upload and battery, with graphs of the last 2
+// minutes for CPU, temperature, download and upload, and the processes
+// using the most CPU. It opens from the hardware readouts in the bar; the
+// extra readings run only while it is open.
 import QtQuick
 import Quickshell
 import qs
@@ -231,13 +231,31 @@ BarPopup {
             labelWidth: root.labelWidth
             valueWidth: root.valueWidth
             detailWidth: root.detailWidth
-            label: "Net"
-            detail: "↑ " + root.rate(Stats.netUp)
+            label: "Down"
+            detail: root.rate(Stats.netDown)
 
-            Label {
-                height: parent.height
-                text: "↓ " + root.rate(Stats.netDown)
-                size: Style.smallSize
+            // Scaled to the highest rate in the graph, at least 100 kB/s.
+            Graph {
+                anchors.verticalCenter: parent.verticalCenter
+                width: root.meterWidth
+                values: Stats.netDownHistory
+                maximum: Math.max(100000, ...Stats.netDownHistory)
+            }
+        }
+
+        SystemRow {
+            width: parent.width
+            labelWidth: root.labelWidth
+            valueWidth: root.valueWidth
+            detailWidth: root.detailWidth
+            label: "Up"
+            detail: root.rate(Stats.netUp)
+
+            Graph {
+                anchors.verticalCenter: parent.verticalCenter
+                width: root.meterWidth
+                values: Stats.netUpHistory
+                maximum: Math.max(100000, ...Stats.netUpHistory)
             }
         }
 
