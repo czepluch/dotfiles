@@ -20,6 +20,10 @@ Singleton {
     property var cores: []
     // CPU numbers grouped by maximum clock, fastest group first.
     property var coreGroups: []
+    // The core type of each group: "P" (performance), "E" (efficient), "LP"
+    // (efficient without the shared L3 cache, the low-power cores), or ""
+    // on a CPU without efficient cores.
+    property var coreTypes: []
     // Load average over 1 minute.
     property real load: 0
 
@@ -266,16 +270,31 @@ Singleton {
         onLoaded: root.fan = Number(text())
     }
 
-    // CPU numbers with their maximum clock, grouped fastest first.
+    // CPU numbers with their maximum clock, grouped fastest first, and the
+    // core type of each group from its first CPU. The first line lists the
+    // efficient cores (such as "4-15"); each other line is a CPU number, its
+    // maximum clock and 1 when it has an L3 cache.
     Process {
         running: true
-        command: ["sh", "-c", "for c in /sys/devices/system/cpu/cpu[0-9]*; do echo \"${c##*cpu} $(cat \"$c/cpufreq/cpuinfo_max_freq\" 2>/dev/null || echo 0)\"; done"]
+        command: ["sh", "-c", "echo \"atom $(cat /sys/devices/cpu_atom/cpus 2>/dev/null)\"; for c in /sys/devices/system/cpu/cpu[0-9]*; do echo \"${c##*cpu} $(cat \"$c/cpufreq/cpuinfo_max_freq\" 2>/dev/null || echo 0) $([ -e \"$c/cache/index3\" ] && echo 1 || echo 0)\"; done"]
         stdout: StdioCollector {
             onStreamFinished: {
-                const groups = new Map();
-                text.split("\n").filter(line => line !== "").map(line => line.split(" ").map(Number))
+                const lines = text.split("\n").filter(line => line !== "");
+                const atom = new Set();
+                (lines.shift() ?? "").split(" ")[1]?.split(",").filter(range => range !== "").forEach(range => {
+                    const [first, last] = range.split("-").map(Number);
+                    for (let cpu = first; cpu <= (last ?? first); cpu++)
+                        atom.add(cpu);
+                });
+                const groups = new Map(), types = new Map();
+                lines.map(line => line.split(" ").map(Number))
                     .sort((a, b) => b[1] - a[1] || a[0] - b[0])
-                    .forEach(([cpu, clock]) => groups.set(clock, (groups.get(clock) ?? []).concat([cpu])));
+                    .forEach(([cpu, clock, l3]) => {
+                        if (!groups.has(clock))
+                            types.set(clock, atom.size === 0 ? "" : !atom.has(cpu) ? "P" : l3 ? "E" : "LP");
+                        groups.set(clock, (groups.get(clock) ?? []).concat([cpu]));
+                    });
+                root.coreTypes = Array.from(types.values());
                 root.coreGroups = Array.from(groups.values());
             }
         }
