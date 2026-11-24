@@ -77,6 +77,14 @@ async function both(a, b) {
   return done.map((d) => d.value);
 }
 
+// Keep the whole leading emoji in the avatar (same rule in spaces and picker).
+// Newer pictographs such as 🖥 may be drawn as emoji without VS16. A trailing
+// selector, modifier or joiner can signal that we matched only part of a glyph.
+const EMOJI = /^(?:[#*0-9]\uFE0F?\u20E3|\p{Regional_Indicator}{2}|(?:\p{Emoji_Presentation}|(?=[\u{1F000}-\u{1FFFF}])\p{Extended_Pictographic}|\p{Extended_Pictographic}(?=\uFE0F)|\p{Emoji_Modifier_Base}(?=\p{Emoji_Modifier}))\uFE0F?[\p{Emoji_Modifier}\u{E0020}-\u{E007F}]*(?:\u200D\p{Extended_Pictographic}\uFE0F?\p{Emoji_Modifier}?)*)(?![\p{Grapheme_Extend}\p{Emoji_Modifier}\u200D])/u;
+function spaceAvatar(name) {
+  return EMOJI.exec(name)?.[0] ?? ([...name][0]?.toUpperCase() ?? "?");
+}
+
 // A space speaks up only when something in it needs you.
 export function glyph(status) {
   return status === "blocked" || status === "done" ? "●" : "·";
@@ -523,7 +531,13 @@ export default class Spaces extends View {
   // worktree that isn't listed under its main checkout gets a magenta (ansi5) worktree
   // icon before the branch, and its folder as the tooltip.
   gitLine({ w, g, tree, folder }, t) {
-    const same = (a) => a.toLowerCase() === w.name.toLowerCase();
+    const fullName = w.name.toLowerCase();
+    const emoji = EMOJI.exec(w.name)?.[0];
+    const label = emoji ? w.name.slice(emoji.length).trim().toLowerCase() : fullName;
+    const same = (a) => {
+      const text = a.toLowerCase();
+      return text === fullName || text === label;
+    };
     const h = home();
     const tilde = (f) => (!w.machine && f && (f === h || f.startsWith(`${h}/`)) ? `~${f.slice(h.length)}` : f ?? "");
     const worktree = Boolean(g?.linked && !tree);
@@ -657,7 +671,7 @@ export default class Spaces extends View {
           .gap(9)
           .items_center()
           .when(Boolean(tree), el => el.pl(22).child(svg("mods/my-spaces/worktree.svg").size(13).flex_none().text_color(t.ansi5)))
-          .when(!tree, el => el.child(h_flex().size(18).flex_none().rounded(5).bg(fill).items_center().justify_center().text_size(10.5).font_bold().text_color(t.accent_foreground).child([...w.name][0]?.toUpperCase() ?? "?")))
+          .when(!tree, el => el.child(h_flex().size(18).flex_none().rounded(5).bg(fill).items_center().justify_center().text_size(10.5).font_bold().text_color(t.accent_foreground).child(spaceAvatar(w.name))))
           .child(div().id(`space-name-${w.id}`).flex_1().min_w(0).truncate().tooltip(w.name).text_color(t.foreground).child(w.name))
           .when(w.status === "blocked" || w.status === "done", (el) => el.child(div().flex_none().text_color(tone(t, w.status)).child(glyph(w.status)))),
       )
